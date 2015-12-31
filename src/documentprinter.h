@@ -1,0 +1,66 @@
+/*
+ * This file is part of QRK - Qt Registrier Kasse
+ *
+ * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef DOCUMENTPRINTER_H
+#define DOCUMENTPRINTER_H
+
+#include <QPrinter>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QPainter>
+#include <QDateTime>
+#include <QSettings>
+#include <QProcess>
+#include <QObject>
+#include <QProgressBar>
+#include <QFileInfo>
+#include <QTextDocument>
+#include <QDebug>
+
+class DocumentPrinter : public QObject
+{
+    Q_OBJECT
+
+  public:
+    DocumentPrinter(QObject *parent = 0, QProgressBar *progressBar = 0, bool = false);
+    ~DocumentPrinter();
+
+    void printReceipt(QJsonObject data);
+    void printDocument(QTextDocument *document);
+
+  private:
+    QString wordWrap(QString text, int width, QFont font);
+    bool initPrinter(QPrinter &printer);
+    bool initAlternatePrinter(QPrinter &printer);
+    void printI(QJsonObject data, QPrinter &printer);
+    QProgressBar *pb;
+    bool noPrinter;
+    int receiptNum;
+    bool logoRight;
+    int numberCopies;
+    QString paperFormat;
+    bool useReportPrinter;
+
+  signals:
+
+  public slots:
+
+};
+
+#endif // DOCUMENTPRINTER_H

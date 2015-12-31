@@ -1,0 +1,44 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/settings.png</file>
+        <file>icons/exit.png</file>
+        <file>icons/order-with.png</file>
+        <file>icons/order-without.png</file>
+        <file>icons/cancel.png</file>
+        <file>icons/ok.png</file>
+        <file>icons/eraser.png</file>
+        <file>icons/table.png</file>
+        <file>icons/split.png</file>
+        <file>icons/group-pay.png</file>
+        <file>icons/void.png</file>
+        <file>icons/pay.png</file>
+        <file>icons/ok-print.png</file>
+        <file>icons/new.png</file>
+        <file>icons/edit.png</file>
+        <file>icons/list-add.png</file>
+        <file>icons/list-remove.png</file>
+        <file>icons/reports.png</file>
+        <file>icons/print.png</file>
+        <file>icons/receipt.png</file>
+        <file>icons/no-receipt.png</file>
+        <file>icons/clock.png</file>
+        <file>icons/view-fullscreen.png</file>
+        <file>icons/arrow-left.png</file>
+        <file>icons/arrow-right.png</file>
+        <file>icons/logo.png</file>
+        <file>icons/money48.png</file>
+        <file>icons/paymentmodes48.png</file>
+        <file>icons/bankomat.png</file>
+        <file>icons/kassa.png</file>
+        <file>icons/menu.png</file>
+        <file>icons/documents.png</file>
+        <file>sql/QRK-sqlite.sql</file>
+        <file>sql/QRK-mysql.sql</file>
+        <file>icons/task.png</file>
+        <file>icons/day.png</file>
+        <file>icons/month.png</file>
+        <file>sql/QRK-mysql-update-2.sql</file>
+        <file>sql/QRK-sqlite-update-2.sql</file>
+        <file>icons/invoice.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,52 @@
+/* QScrollBar */
+QScrollBar:horizontal
+{
+  border: none;
+  height: 50px;
+  margin: 0 50px 0 50px;
+}
+QScrollBar::add-line:horizontal
+{
+  width: 50px;
+  subcontrol-position: right;
+  subcontrol-origin: margin;
+}
+QScrollBar::sub-line:horizontal
+{
+  width: 50px;
+  subcontrol-position: left;
+  subcontrol-origin: margin;
+}
+QScrollBar::handle:horizontal
+{
+  min-width: 50px;
+}
+
+QScrollBar:vertical
+{
+  border: none;
+  width: 50px;
+  margin: 50px 0 50px 0;
+}
+QScrollBar::add-line:vertical
+{
+  height: 50px;
+  subcontrol-position: bottom;
+  subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical
+{
+  height: 50px;
+  subcontrol-position: top;
+  subcontrol-origin: margin;
+}
+QScrollBar::handle:vertical
+{
+  min-height: 50px;
+}
+
+
+/* QSpinBox */
+QSpinBox { height: 100px; }
+QSpinBox::up-button { width: 50px; }
+QSpinBox::down-button { width: 50px; }
