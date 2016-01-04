@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,13 @@
  */
 
 #include "depexportdialog.h"
+
+#include <QFileDialog>
+#include <QTextStream>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlRecord>
+
 #include "ui_depexportdialog.h"
 
 DepExportDialog::DepExportDialog(QWidget *parent, QProgressBar *progressbar) :

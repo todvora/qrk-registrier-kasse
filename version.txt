@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
+
+VERSION 0.16.0104
+ * fix Monatsabschluss bei Jahreswechsel (falsches Datum)
+ * Sourecode Redesign und Cleanup
+ * Bon zu Rechnung kann jetzt nach der Eingabe nicht direkt geändert werden
+   Editieren der Zeile ist deaktiviert, löschen und Neueingabe der Zeile aber möglich
+ * Tages und Monatsabschluss Formatiert
+ + Stammdaten zu Einstellungs Dialog hinzugefügt
+ + Fußtext auf Kassebon. Im Einstellungs Dialog editierbar
+ * Kopftext unabhängig von Firmennamen änderbar
 
 VERSION 0.15.1231
  + BON-Druck - Zeilenumbruch für lange Artikel

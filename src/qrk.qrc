@@ -40,5 +40,6 @@
         <file>sql/QRK-mysql-update-2.sql</file>
         <file>sql/QRK-sqlite-update-2.sql</file>
         <file>icons/invoice.png</file>
+        <file>icons/save.png</file>
     </qresource>
 </RCC>

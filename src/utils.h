@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #define UTILS_H
 
 #include <QString>
-#include <QDateTime>
+#include <QVariant>
 
 class Utils
 {
@@ -29,6 +29,7 @@ class Utils
     Utils();
 
     static QString getSignature(QDateTime datetime, double sum, double net, int num);
+    static double getYearlyTotal(int year);
 
 };
 

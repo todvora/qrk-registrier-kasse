@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,16 @@
 
 #include "qrkdelegate.h"
 
+#include <QSpinBox>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QCompleter>
+
+#include <QDebug>
+
+
 QrkDelegate::QrkDelegate(int type, QObject *parent)
   :QStyledItemDelegate(parent)
 {
@@ -28,7 +38,7 @@ QrkDelegate::QrkDelegate(int type, QObject *parent)
 
 QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &item, const QModelIndex &index) const
 {
-    if (this->type == SPINBOX) {
+  if (this->type == SPINBOX) {
     QSpinBox *spinbox = new QSpinBox(parent);
     spinbox->setMinimum(-1000);
     spinbox->setMaximum(1000);
@@ -52,7 +62,7 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     while(q.next()){
       combo->addItem(q.value(0).toString());
     }
-        QString v= index.data().value<QString>();
+    QString v= index.data().value<QString>();
     combo->setCurrentIndex(combo->findText(v));
     return combo;
 

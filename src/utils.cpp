@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 
 #include "utils.h"
 
+#include <QDateTime>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+
 Utils::Utils()
 {
 
@@ -33,4 +37,33 @@ QString Utils::getSignature(QDateTime datetime, double sum, double net, int num)
       .arg(num);
 
   return signature;
+}
+
+double Utils::getYearlyTotal(int year)
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  QDateTime from;
+  QDateTime to;
+
+  QString fromString = QString("%1-01-01").arg(year);
+  QString toString = QString("%1-12-31").arg(year);
+
+  from.setDate(QDate::fromString(fromString, "yyyy-MM-dd"));
+  to.setDate(QDate::fromString(toString, "yyyy-MM-dd"));
+  to.setTime(QTime::fromString("23:59:59"));
+
+  /* Summe */
+  q.prepare(QString("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND payedBy < 3")
+            .arg(from.toString(Qt::ISODate))
+            .arg(to.toString(Qt::ISODate)));
+
+  q.exec();
+  q.next();
+
+  double sales = q.value(0).toDouble() ;
+
+  return sales;
+
 }

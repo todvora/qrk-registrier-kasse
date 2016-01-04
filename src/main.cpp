@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
  */
 
 #include "qrk.h"
+#include "settingsdialog.h"
+
+#include "defines.h"
 #include "database.h"
 #include "stdio.h"
 #include "signal.h"
@@ -25,6 +28,7 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QApplication>
+#include <QMessageBox>
 
 //--------------------------------------------------------------------------------
 
@@ -93,17 +97,29 @@ int main(int argc, char *argv[])
 
   // Global
   mainWidget->statusBar()->setStyleSheet(
-      "QStatusBar::item { border: 1px solid lightgrey; border-radius: 3px;} "
-      );
+        "QStatusBar::item { border: 1px solid lightgrey; border-radius: 3px;} "
+        );
 
   mainWidget->show();
 
   if ( !Database::open( dbSelect) )
     return 0;
 
+  QString cri = Database::getCashRegisterId();
+  if ( cri.isEmpty() ) {
+    QMessageBox::warning(0, QObject::tr("Kassenidentifikationsnummer"), QObject::tr("Stammdaten müssen vollständig ausgefüllt werden.."));
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+    SettingsDialog *tab = new SettingsDialog(settings);
+    if (tab->exec() == QDialog::Accepted )
+    {
+      if ( Database::getCashRegisterId().isEmpty() )
+        return 0;
+    }
+  }
+
   QString title = QString("QRK V%1.%2 - Qt Registrier Kasse - %3").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR).arg(Database::getShopName());
   mainWidget->currentRegisterYearLabel->setText(QObject::tr(" Kassenjahr: %1 ").arg(mainWidget->getCurrentRegisterYear()));
-  mainWidget->cashRegisterIdLabel->setText(QObject::tr(" Kassenidentifikationsnummer: %1 ").arg(mainWidget->getCashRegisterId()));
+  mainWidget->cashRegisterIdLabel->setText(QObject::tr(" Kassenidentifikationsnummer: %1 ").arg(Database::getCashRegisterId()));
   mainWidget->setLastEOD(Reports::getLastEOD());
 
   mainWidget->setShopName();

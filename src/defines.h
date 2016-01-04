@@ -17,28 +17,44 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEP_H
-#define DEP_H
+#ifndef DEFINES
+#define DEFINES
 
-#include "defines.h"
-#include <QObject>
-#include <QSqlDatabase>
+#define MIN_HEIGHT 60
+#define QRK_VERSION_MAJOR "0.16"
+#define QRK_VERSION_MINOR "0103"
 
-class DEP : public QObject
+enum REGISTER_COL
 {
-    Q_OBJECT
-  public:
-    explicit DEP(QObject *parent = 0);
-
-    void depInsertReceipt(QJsonObject &data);
-    void depInsertLine(QString title, QString text);
-    void depExport(QString filename);
-
-  signals:
-
-  public slots:
-  private:
-    QSqlDatabase dbc;
+  REGISTER_COL_COUNT,
+  REGISTER_COL_PRODUCT,
+  REGISTER_COL_TAX,
+  REGISTER_COL_SINGLE,
+  REGISTER_COL_TOTAL
 };
 
-#endif // DEP_H
+enum DOCUMENT_COL
+{
+  DOCUMENT_COL_RECEIPT,
+  DOCUMENT_COL_TYPE,
+  DOCUMENT_COL_TOTAL,
+  DOCUMENT_COL_DATE
+};
+
+// values for the receipt.payedBy field
+enum PAYED_BY
+{
+  PAYED_BY_CASH,
+  PAYED_BY_DEBITCARD,
+  PAYED_BY_CREDITCARD,
+  PAYED_BY_REPORT_EOD,
+  PAYED_BY_REPORT_EOM
+};
+
+enum DEP_ACTION
+{
+  DEP_RECEIPT = 0
+};
+
+#endif // DEFINES
+

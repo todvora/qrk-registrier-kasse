@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,10 @@
 #ifndef REPORTS_H
 #define REPORTS_H
 
-#include <dep.h>
-#include <QObject>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QDateTime>
-#include <QProgressBar>
-#include <QElapsedTimer>
-
-class DEP;
+#include "utils.h"
+#include "dep.h"
+#include "database.h"
+#include "qrkregister.h"
 
 class Reports : public QObject
 {
@@ -43,8 +38,11 @@ class Reports : public QObject
     static QDate getLastEOD();
 
     void createEOD(int, QDate);
-    void insertEOD(QStringList, int);
+    void insert(QStringList, int);
     void createEOM(int, QDate);
+
+    bool endOfMonth();
+    bool endOfDay();
 
     static QString getReport(int);
 
@@ -54,10 +52,12 @@ class Reports : public QObject
 
   private:
     QStringList createStat(int, QString, QDateTime, QDateTime);
-    QStringList createYearStat(QDate);
+    QStringList createYearStat(int, QDate);
+
     DEP *dep;
     QProgressBar *pb;
     QString yearsales;
+    int currentReceipt;
 
 };
 

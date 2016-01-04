@@ -17,28 +17,44 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEP_H
-#define DEP_H
+#ifndef QRKHOME_H
+#define QRKHOME_H
 
 #include "defines.h"
-#include <QObject>
-#include <QSqlDatabase>
+#include "settingsdialog.h"
+#include "dep.h"
+#include "reports.h"
 
-class DEP : public QObject
+#include "ui_qrkhome.h"
+
+class QRKHome : public QWidget
 {
     Q_OBJECT
   public:
-    explicit DEP(QObject *parent = 0);
-
-    void depInsertReceipt(QJsonObject &data);
-    void depInsertLine(QString title, QString text);
-    void depExport(QString filename);
+    explicit QRKHome(QWidget *parent = 0);
 
   signals:
+    void registerButton_clicked();
+    void documentButton_clicked();
+    void fullScreenButton_clicked();
+
+    void endOfDay();
+    void endOfMonth();
 
   public slots:
+
+  private slots:
+    void menuSlot();
+    void taskSlot();
+    void exitSlot();
+    void settingsSlot();
+
+
   private:
-    QSqlDatabase dbc;
+    Ui::QRKHome *ui;
+    QFrame *menu;
+    QFrame *task;
+
 };
 
-#endif // DEP_H
+#endif // HOME_H

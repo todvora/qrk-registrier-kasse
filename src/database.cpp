@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,42 @@
  */
 
 #include "database.h"
+
 #include <QDebug>
+#include <QMessageBox>
+#include <QFile>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QDir>
+#include <QDate>
 
 Database::Database(QObject *parent)
   : QObject(parent)
 {
 }
 
+//--------------------------------------------------------------------------------
+
 Database::~Database()
 {
 }
 
+//--------------------------------------------------------------------------------
+
+QString Database::getCashRegisterId()
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+  query.prepare("SELECT strValue FROM globals WHERE name='shopCashRegisterId'");
+  query.exec();
+  if (query.next())
+    return query.value(0).toString();
+
+  return QString();
+}
+
+//--------------------------------------------------------------------------------
 
 bool Database::addProduct(const QList<QVariant> &data)
 {
@@ -55,6 +80,8 @@ bool Database::addProduct(const QList<QVariant> &data)
   return false;
 }
 
+//--------------------------------------------------------------------------------
+
 bool Database::exists(const QString type, const QString &name)
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -66,6 +93,8 @@ bool Database::exists(const QString type, const QString &name)
 
   return false;
 }
+
+//--------------------------------------------------------------------------------
 
 QStringList Database::getLastReceipt()
 {
@@ -90,10 +119,14 @@ QStringList Database::getLastReceipt()
   return list;
 }
 
+//--------------------------------------------------------------------------------
+
 QDate Database::getLastReceiptDate()
 {
   return getLastReceiptDateTime().date();
 }
+
+//--------------------------------------------------------------------------------
 
 QDateTime Database::getLastReceiptDateTime()
 {
@@ -107,6 +140,8 @@ QDateTime Database::getLastReceiptDateTime()
   return QDateTime();
 }
 
+//--------------------------------------------------------------------------------
+
 QString Database::getDatabaseType()
 {
   // read global defintions (DB, ...)
@@ -114,18 +149,46 @@ QString Database::getDatabaseType()
   return settings.value("DB_type").toString();
 }
 
+//--------------------------------------------------------------------------------
+
 QString Database::getShopName()
 {
+  QString name;
+  QString tmp;
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
   query.prepare("SELECT strValue FROM globals WHERE name='shopName'");
   query.exec();
   query.next();
-  QString value = query.value(0).toString();
 
-  return value;
+  name = query.value(0).toString();
+
+  query.prepare("SELECT strValue FROM globals WHERE name='shopOwner'");
+  query.exec();
+  query.next();
+  tmp = query.value(0).toString();
+
+  name += (tmp.isEmpty())? "": "\n" + tmp;
+
+  query.prepare("SELECT strValue FROM globals WHERE name='shopAddress'");
+  query.exec();
+  query.next();
+  tmp = query.value(0).toString();
+
+  name += (tmp.isEmpty())? "": "\n" + tmp;
+
+  query.prepare("SELECT strValue FROM globals WHERE name='shopUid'");
+  query.exec();
+  query.next();
+  tmp = query.value(0).toString();
+
+  name += (tmp.isEmpty())? "": "\n" + tmp;
+
+  return name;
 
 }
+
+//--------------------------------------------------------------------------------
 
 bool Database::open(bool dbSelect)
 {
@@ -154,7 +217,7 @@ bool Database::open(bool dbSelect)
 
   QDir dir("./data");
   if (!dir.exists()) {
-      dir.mkpath(".");
+    dir.mkpath(".");
   }
 
   if (QFile::exists(QString("data/%1-QRK.db").arg(date.year() -1 )))
@@ -299,6 +362,8 @@ bool Database::open(bool dbSelect)
   return true;
 }
 
+//--------------------------------------------------------------------------------
+
 int Database::getPayedBy(int id)
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -310,6 +375,8 @@ int Database::getPayedBy(int id)
   return query.value(0).toInt();
 
 }
+
+//--------------------------------------------------------------------------------
 
 int Database::getActionTypeByName(const QString &name)
 {
@@ -323,6 +390,8 @@ int Database::getActionTypeByName(const QString &name)
 
 }
 
+//--------------------------------------------------------------------------------
+
 QString Database::getActionType(int id)
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -334,6 +403,8 @@ QString Database::getActionType(int id)
   return query.value(0).toString();
 
 }
+
+//--------------------------------------------------------------------------------
 
 QString Database::getTaxType(int id)
 {
@@ -347,6 +418,8 @@ QString Database::getTaxType(int id)
 
 }
 
+//--------------------------------------------------------------------------------
+
 void Database::setStorno(int id, int value)
 {
   try {
@@ -359,6 +432,8 @@ void Database::setStorno(int id, int value)
   }
 
 }
+
+//--------------------------------------------------------------------------------
 
 void Database::setStornoId(int sId, int id)
 {
@@ -382,6 +457,8 @@ void Database::setStornoId(int sId, int id)
 
 }
 
+//--------------------------------------------------------------------------------
+
 int Database::getStorno(int id)
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -396,6 +473,8 @@ int Database::getStorno(int id)
   query.next();
   return query.value(0).toInt();
 }
+
+//--------------------------------------------------------------------------------
 
 int Database::getStornoId(int id)
 {

@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,18 @@
 
 #include "dep.h"
 
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QDateTime>
+
+#include <QDebug>
+
 DEP::DEP(QObject *parent)
   : QObject(parent)
 {
-this->dbc = QSqlDatabase::database("CN");
+  this->dbc = QSqlDatabase::database("CN");
 }
 
 void DEP::depInsertReceipt(QJsonObject &data)
@@ -110,7 +118,7 @@ void DEP::depInsertLine(QString title,  QString text)
         .arg(dt.toString(Qt::ISODate))
         .arg(title + "\t" + text + "\t" + QDateTime::currentDateTime().toString(Qt::ISODate));
 
-//    // qDebug() << query;
+    //    // qDebug() << query;
 
     q.prepare(query);
     q.exec();
@@ -123,5 +131,4 @@ void DEP::depInsertLine(QString title,  QString text)
 
 void DEP::depExport(QString filename)
 {
-
 }

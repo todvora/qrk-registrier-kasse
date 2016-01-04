@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,13 @@
 
 #include "reports.h"
 
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QElapsedTimer>
+#include <QMessageBox>
+
+#include <QDebug>
+
 Reports::Reports(DEP *dep, QProgressBar *pb, QObject *parent) : QObject(parent)
 {
   this->dep = dep;
@@ -26,9 +33,13 @@ Reports::Reports(DEP *dep, QProgressBar *pb, QObject *parent) : QObject(parent)
   pb->setValue(1);
 }
 
+//--------------------------------------------------------------------------------
+
 Reports::~Reports()
 {
 }
+
+//--------------------------------------------------------------------------------
 
 QDate Reports::getLastEOD()
 {
@@ -50,6 +61,8 @@ QDate Reports::getLastEOD()
   return QDate();
 
 }
+
+//--------------------------------------------------------------------------------
 
 bool Reports::canCreateEOD(QDate date)
 {
@@ -81,6 +94,8 @@ bool Reports::canCreateEOD(QDate date)
   return true;
 }
 
+//--------------------------------------------------------------------------------
+
 int Reports::getReportId()
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -90,13 +105,15 @@ int Reports::getReportId()
   q.exec();
 
   if (q.last()) {
-      if (q.value(0).isNull())
-        return -1;
+    if (q.value(0).isNull())
+      return -1;
 
-      return q.value(0).toInt();
+    return q.value(0).toInt();
   }
   return -1;
 }
+
+//--------------------------------------------------------------------------------
 
 bool Reports::canCreateEOM(QDate date)
 {
@@ -127,8 +144,11 @@ bool Reports::canCreateEOM(QDate date)
   return true;
 }
 
+//--------------------------------------------------------------------------------
+
 void Reports::createEOD(int id, QDate date)
 {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
 
@@ -145,34 +165,24 @@ void Reports::createEOD(int id, QDate date)
   QStringList eod;
   eod.append(createStat(id, "Tagesumsatz", from, to));
 
-  // ----------- YEAR ---------------------------
-
-  QString fromString = QString("%1-01-01").arg(date.year());
-  from.setDate(QDate::fromString(fromString, "yyyy-MM-dd"));
-  to.setDate(QDate::fromString(date.toString()));
-  to.setTime(QTime::fromString("23:59:59"));
-
-  eod.append(QString("Jahressummen %1:").arg(date.year()));
-  eod.append("-");
-
-  eod.append(createStat(id, "Jahresumsatz", from, to));
-
-  // ----------------------------------------------
-
   QString line = QString("Tagesbeleg\tTagesbeleg\t\t%1\t%2\t0,0\t0,0\t0,0\t0,0\t0,0\t%3")
       .arg(id)
       .arg(QDateTime::currentDateTime().toString(Qt::ISODate))
-      .arg(yearsales);
+      .arg(Utils::getYearlyTotal(date.year()));
 
   dep->depInsertLine("Beleg", line);
 
-  insertEOD(eod, id);
+  insert(eod, id);
 
   pb->setValue(100);
 
   qDebug() << "Reports::createEOD Total elapsed Time: " << timer.elapsed() << "milliseconds";
 
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
+
 }
+
+//--------------------------------------------------------------------------------
 
 QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime to)
 {
@@ -277,10 +287,10 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   } else {
     QString signature = Utils::getSignature(to, q.value(0).toDouble(), 0.0, id);
     query = QString("UPDATE receipts SET gross=%1, timestamp='%2', signature='%3' WHERE receiptNum=%4")
-              .arg(QString::number(q.value(0).toDouble(),'f',2))
-              .arg(to.toString(Qt::ISODate))
-              .arg(signature)
-              .arg(id);
+        .arg(QString::number(q.value(0).toDouble(),'f',2))
+        .arg(to.toString(Qt::ISODate))
+        .arg(signature)
+        .arg(id);
 
     bool ok = q.exec(query);
     if (!ok) {
@@ -295,19 +305,25 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   query = QString("SELECT sum(orders.count) AS count, products.name, orders.gross, sum(orders.count * orders.gross) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN '%1' AND '%2' GROUP BY products.name ORDER BY orders.tax, products.name ASC").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
   q.exec(query);
 
-  stat.append(tr("Verkaufte Produkte oder Leistungen:"));
+  stat.append(tr("Verkaufte Produkte oder Leistungen"));
   while (q.next())
   {
-    stat.append(QString("%1 %2 %3€ %4€ %5%").arg(q.value(0).toString()).arg(q.value(1).toString()).arg(QString::number(q.value(2).toDouble(),'f',2)).arg(QString::number(q.value(3).toDouble(),'f',2)).arg(q.value(4).toInt()));
+    stat.append(QString("%1: %2: %3 €: %4 €: %5%")
+                .arg(q.value(0).toString())
+                .arg(q.value(1).toString())
+                .arg(QString::number(q.value(2).toDouble(),'f',2))
+                .arg(QString::number(q.value(3).toDouble(),'f',2))
+                .arg(q.value(4).toInt()));
   }
-  stat.append("-");
 
   qDebug() << "Reports::createStat(" << type << ") elapsed Time: " << timer.elapsed() << "milliseconds";
 
   return stat;
 }
 
-void Reports::insertEOD(QStringList list, int id)
+//--------------------------------------------------------------------------------
+
+void Reports::insert(QStringList list, int id)
 {
   QElapsedTimer timer;
   timer.start();
@@ -327,12 +343,16 @@ void Reports::insertEOD(QStringList list, int id)
     q.exec();
     pb->setValue(i++);
   }
-  qDebug() << "Reports::insertEOD elapsed Time: " << timer.elapsed() << "milliseconds";
+  qDebug() << "Reports::insert elapsed Time: " << timer.elapsed() << "milliseconds";
 
 }
 
+//--------------------------------------------------------------------------------
+
 void Reports::createEOM(int id, QDate date)
 {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
 
@@ -357,34 +377,74 @@ void Reports::createEOM(int id, QDate date)
   to.setDate(QDate::fromString(date.toString()));
   to.setTime(QTime::fromString("23:59:59"));
 
-  eod.append(QString("Jahressummen %1:").arg(date.year()));
-  eod.append("-");
-
-  eod.append(createStat(id, "Jahresumsatz", from, to));
+  if (date.month() == 12) {
+    eod.append(createYearStat(id, date));
+  }
 
   // ----------------------------------------------
 
   QString line = QString("Monatsbeleg\tMonatsbeleg\t\t%1\t%2\t0,0\t0,0\t0,0\t0,0\t0,0\t%3")
       .arg(id)
       .arg(QDateTime::currentDateTime().toString(Qt::ISODate))
-      .arg(yearsales);
+      .arg(Utils::getYearlyTotal( date.year() ));
 
   dep->depInsertLine("Beleg", line);
 
-  insertEOD(eod, id);
+  insert(eod, id);
 
   pb->setValue(100);
 
   qDebug() << "Reports::createEOM Total elapsed Time: " << timer.elapsed() << "milliseconds";
-
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
 
 }
+
+//--------------------------------------------------------------------------------
+
+QStringList Reports::createYearStat(int id, QDate date)
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  QElapsedTimer timer;
+  timer.start();
+
+  QDateTime from;
+  QDateTime to;
+
+  // ----------- YEAR ---------------------------
+  QStringList eoy;
+  QString fromString = QString("%1-01-01").arg(date.year());
+  from.setDate(QDate::fromString(fromString, "yyyy-MM-dd"));
+  to.setDate(QDate::fromString(date.toString()));
+  to.setTime(QTime::fromString("23:59:59"));
+
+  eoy.append(QString("Jahressummen %1:").arg(date.year()));
+  eoy.append("-");
+
+  eoy.append(createStat(id, "Jahresumsatz", from, to));
+
+  qDebug() << "Reports::createEOY Total elapsed Time: " << timer.elapsed() << "milliseconds";
+
+  return eoy;
+}
+
+//--------------------------------------------------------------------------------
 
 QString Reports::getReport(int id)
 {
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
+
+  q.prepare(QString("SELECT payedBy, timestamp FROM receipts WHERE receiptNum=%1").arg(id));
+  q.exec();
+  q.next();
+
+  int type = q.value(0).toInt();
+  QString format = (type == 4)? "MMMM yyyy": "dd MMMM yyyy";
+  QString header = QString("%1 - %2").arg(Database::getActionType(type)).arg(q.value(1).toDate().toString(format));
+
   q.prepare(QString("SELECT text FROM reports WHERE receiptNum=%1").arg(id));
   q.exec();
 
@@ -392,32 +452,185 @@ QString Reports::getReport(int id)
 
   text.append("<!DOCTYPE html><html><head>\n");
   text.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-  text.append("<style type=\"text/css\">"
-              "table{ border: 1px solid black; }"
-              "</style>");
-
-  text.append("</head><body>\n<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n");
-
+  text.append("</head><body>\n<table cellpadding=\"3\" cellspacing=\"1\" width=\"100%\">\n");
 
   int x = 0;
+  int span = 5;
+  bool needOneMoreCol = false;
+
+  text.append(QString("<tr><th colspan=\"%1\">%2</th></tr>").arg(span).arg(header) );
+  text.append(QString("<tr><th colspan=\"%1\"></th></tr>").arg(span));
+
   while (q.next()){
+    needOneMoreCol = false;
+    span = 5;
+
     QString t = q.value(0).toString();
-    t.replace('-',"<hr>");
-    t.replace('=',"<hr>");
-
     x++;
+    QString color = "";
     if (x % 2 == 1)
-      text.append("<tr><td bgcolor='#FFFFFF'>");
+      color = "bgcolor='#F5F5F5'";
     else
-      text.append("<tr><td bgcolor='#E1E8F1'>");
+      color = "bgcolor='#FFFFFF'";
 
-    if (t.indexOf(QRegularExpression("^[0-9]{1,2}%: w+$")) != -1)
-      qDebug() << "start ok";
+    text.append("<tr>");
 
-    text.append(t);
-    text.append("</td></tr>");
+    QStringList list;
+
+    if (t.indexOf('-') == 0) {
+      t.replace('-',"<hr>");
+      text.append(QString("<td colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg(t));
+      needOneMoreCol = false;
+    } else if (t.indexOf('=') == 0) {
+      t.replace('=',"<hr size=\"5\">");
+      text.append(QString("<td colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg(t));
+      needOneMoreCol = false;
+    } else if (t.indexOf(QRegularExpression("[0-9]{1,2}%:")) != -1) {
+      list = t.split(":");
+      span = span - list.count();
+      foreach (const QString &str, list) {
+        text.append(QString("<td align=\"right\" colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg(str));
+        span = 1;
+      }
+      needOneMoreCol = true;
+    } else if (t.indexOf(QRegularExpression("^\\d:")) != -1) {
+      list = t.split(":",QString::SkipEmptyParts);
+      span = span - list.count();
+      int count = 0;
+
+      QString align = "left";
+      foreach (const QString &str, list) {
+        if (count > 1) align="right";
+        text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg(str));
+        count++;
+        span = 1;
+      }
+      needOneMoreCol = false;
+    } else {
+      list = t.split(":",QString::SkipEmptyParts);
+      span = span - list.count();
+      int count = 0;
+
+      QString align = "left";
+      foreach (const QString &str, list) {
+        if (count > 0) align="right";
+        text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg(str));
+        count++;
+        span = 1;
+      }
+      needOneMoreCol = true;
+    }
+
+    if (needOneMoreCol)
+      text.append(QString("<td colspan=\"%1\" %2></td>").arg(span).arg(color));
+
+    text.append("</tr>");
   }
   text.append("</table></body></html>\n");
 
   return text;
 }
+
+//--------------------------------------------------------------------------------
+
+bool Reports::endOfDay()
+{
+  QMessageBox msgBox;
+  msgBox.setWindowTitle(tr("Tagesabschluss"));
+
+  QDate date = Database::getLastReceiptDate();
+  bool create = Reports::canCreateEOD(date);
+  if (create) {
+    if (date == QDate::currentDate()) {
+      msgBox.setText(tr("Nach dem Erstellen des Tagesabschlusses ist eine Bonierung für den heutigen Tag nicht mehr möglich."));
+    } else {
+      msgBox.setText(tr("Nach dem Erstellen des Tagesabschlusses für %1 ist eine Nachbonierung erst ab %2 möglich.").arg(date.toString()).arg(QDateTime::currentDateTime().toString()));
+    }
+    msgBox.setStandardButtons(QMessageBox::Yes);
+    msgBox.addButton(QMessageBox::No);
+    msgBox.setButtonText(QMessageBox::Yes, tr("Erstellen"));
+    msgBox.setButtonText(QMessageBox::No, tr("Abbrechen"));
+    msgBox.setDefaultButton(QMessageBox::No);
+    if(msgBox.exec() == QMessageBox::Yes){
+      QRKRegister *reg = new QRKRegister(pb);
+      currentReceipt = reg->createReceipts();
+      reg->finishReceipts(3, currentReceipt, true);
+      createEOD(currentReceipt, date);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.setText(tr("Tagesabschluss wurde bereits erstellt."));
+    msgBox.setInformativeText(tr("Erstellungsdatum %1").arg(date.toString()));
+    msgBox.setStandardButtons(QMessageBox::Yes);
+    msgBox.setButtonText(QMessageBox::Yes, tr("OK"));
+    msgBox.exec();
+    return false;
+  }
+
+  return false;
+}
+
+//--------------------------------------------------------------------------------
+
+bool Reports::endOfMonth()
+{
+
+  // check if current month is newer than last Receipt Month
+
+  QDate rDate = Database::getLastReceiptDate();
+  int receiptMonth = (rDate.year() * 100) + rDate.month();
+  int currMonth = (QDate::currentDate().year() * 100) + QDate::currentDate().month();
+
+  bool ok = (rDate.isValid() && receiptMonth < currMonth);
+
+  if (ok) {
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(tr("Monatsabschluss"));
+    QDateTime checkdate = QDateTime::currentDateTime();
+    if (QDate::currentDate().month() > 1)
+      checkdate.setDate(QDate::fromString(QString("%1-%2-31").arg(QDate::currentDate().year()).arg(QDate::currentDate().month()),"yyyy-MM-dd").addMonths(-1));
+    else
+      checkdate.setDate(QDate::fromString(QString("%1-12-31").arg(QDate::currentDate().year()),"yyyy-MM-dd").addYears(-1));
+
+    checkdate.setTime(QTime::fromString("23:59:59"));
+
+    QDateTime dateTime = Database::getLastReceiptDateTime();
+
+    bool create = Reports::canCreateEOD(dateTime.date());
+    if (dateTime <= checkdate && create) {
+      msgBox.setText(tr("Der Tagesabschlusses für %1 muß zuerst erstellt werden.").arg(dateTime.date().toString()));
+      msgBox.setStandardButtons(QMessageBox::Yes);
+      msgBox.addButton(QMessageBox::No);
+      msgBox.setButtonText(QMessageBox::Yes, tr("Erstellen"));
+      msgBox.setButtonText(QMessageBox::No, tr("Abbrechen"));
+      msgBox.setDefaultButton(QMessageBox::No);
+      if(msgBox.exec() == QMessageBox::Yes){
+        if (! endOfDay())
+          return false;
+      } else {
+        return false;
+      }
+    }
+    if (create) {
+      QRKRegister *reg = new QRKRegister(pb);
+      currentReceipt =  reg->createReceipts();
+      reg->finishReceipts(4, currentReceipt, true);
+      createEOM(currentReceipt, checkdate.date());
+    } else {
+      QDate next = QDate::currentDate();
+      next.setDate(next.year(), next.addMonths(1).month(), 1);
+      QMessageBox::information(0, "Montatsabschluss",
+                               tr("Der Monatsabschluss kann erst ab %1 gemacht werden.").arg(next.toString()));
+    }
+  } else {
+    QDate next = QDate::currentDate();
+    next.setDate(next.year(), next.addMonths(1).month(), 1);
+    QMessageBox::information(0, "Montatsabschluss", tr("Der Monatsabschluss kann erst ab %1 gemacht werden.").arg(next.toString()));
+  }
+
+  return true;
+}
+

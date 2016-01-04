@@ -17,28 +17,47 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEP_H
-#define DEP_H
+#ifndef QRKDOCUMENT_H
+#define QRKDOCUMENT_H
 
 #include "defines.h"
-#include <QObject>
-#include <QSqlDatabase>
+#include "qsortfiltersqlquerymodel.h"
+#include "qrkdelegate.h"
+#include "database.h"
+#include "reports.h"
+#include "documentprinter.h"
 
-class DEP : public QObject
+#include "ui_qrkdocument.h"
+
+class QRKDocument : public QWidget
 {
     Q_OBJECT
-  public:
-    explicit DEP(QObject *parent = 0);
 
-    void depInsertReceipt(QJsonObject &data);
-    void depInsertLine(QString title, QString text);
-    void depExport(QString filename);
+  public:
+
+    explicit QRKDocument(QProgressBar *progressBar, QWidget *parent = 0);
+    void documentList();
 
   signals:
+    void cancelDocumentButton_clicked();
+    void documentButton_clicked();
 
   public slots:
+
+  private slots:
+    void onCancellationButton_clicked();
+    void onPrintcopyButton_clicked();
+
+  protected slots:
+    void onDocumentSelectionChanged(const QItemSelection &, const QItemSelection &);
+
   private:
-    QSqlDatabase dbc;
+    Ui::QRKDocument *ui;
+    QSqlQueryModel *documentContentModel;
+    QSortFilterSqlQueryModel *documentListModel;
+
+    int currentReceipt;
+    QProgressBar *progressBar;
 };
 
-#endif // DEP_H
+#endif // QRKDOCUMENT_H

@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,45 +23,33 @@
 #include "databasedefinition.h"
 #include "settingsdialog.h"
 
-#include <QObject>
-#include <QMessageBox>
-#include <QSettings>
-#include <QFile>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QStringList>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QDir>
-#include <QDate>
-
-
 class Database : public QObject
 {
-  Q_OBJECT
-public:
-  Database(QObject *parent = 0);
-  ~Database();
+    Q_OBJECT
+  public:
+    Database(QObject *parent = 0);
+    ~Database();
 
-  static bool open(bool dbSelect);
-  static QString getShopName();
-  static QStringList getLastReceipt();
-  static QDate getLastReceiptDate();
-  static QDateTime getLastReceiptDateTime();
-  static bool addProduct(const QList<QVariant> &data);
-  static bool exists(const QString type, const QString &name);
-  static int getPayedBy(int);
-  static int getActionTypeByName(const QString &name);
-  static QString getActionType(int id);
-  static QString getTaxType(int id);
+    static bool open(bool dbSelect);
+    static QString getShopName();
+    static QStringList getLastReceipt();
+    static QDate getLastReceiptDate();
+    static QDateTime getLastReceiptDateTime();
+    static bool addProduct(const QList<QVariant> &data);
+    static bool exists(const QString type, const QString &name);
+    static int getPayedBy(int);
+    static int getActionTypeByName(const QString &name);
+    static QString getActionType(int id);
+    static QString getTaxType(int id);
     static void setStornoId(int, int);
-  static int getStorno(int);
-  static int getStornoId(int);
+    static int getStorno(int);
+    static int getStornoId(int);
+    static QString getCashRegisterId();
 
-private:
-  static QString getDatabaseType();
-  static void setStorno(int,int = 1);
+  private:
+    static QString getDatabaseType();
+    static void setStorno(int,int = 1);
+    static int cashRegisterId;
 
 };
 

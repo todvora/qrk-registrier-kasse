@@ -28,7 +28,10 @@ SOURCES += main.cpp\
     dep.cpp \
     reports.cpp \
     utils.cpp \
-    r2bdialog.cpp
+    r2bdialog.cpp \
+    qrkhome.cpp \
+    qrkdocument.cpp \
+    qrkregister.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -43,14 +46,20 @@ HEADERS  += \
     dep.h \
     reports.h \
     utils.h \
-    r2bdialog.h
+    r2bdialog.h \
+    qrkdocument.h \
+    qrkhome.h \
+    qrkregister.h \
+    defines.h
 
 FORMS += \
     ui/qrk.ui \
     ui/databasedefinition.ui \
-    ui/settingsdialog.ui \
     ui/depexportdialog.ui \
-    ui/r2bdialog.ui
+    ui/r2bdialog.ui \
+    ui/qrkdocument.ui \
+    ui/qrkhome.ui \
+    ui/qrkregister.ui
 
 RESOURCES += \
     qrk.qrc

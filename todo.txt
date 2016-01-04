@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,12 @@
 
 To Do Liste:
 
+erledigt    Fußzeile                fixed in VERSION 0.16.0104
+erledigt    Stammdaten Eingabe      fixed in VERSION 0.16.0104
+erledigt    Fußtext auf Kassebon    fixed in VERSION 0.16.0104
 erledigt    Bon zu beleg 2-zeilig   fixed in VERSION 0.15.1231
 
 offen       Bon zu Beleg einzeln in Tagesabschluss auflisten
-offen       Fußtext auf Kassebon
-
+offen       Deutsche und Schweizer Steuersätze
+offen       Dokumente - Filter über alle Felder
+offen       Kundentext bei Dokumenten anzeigen
