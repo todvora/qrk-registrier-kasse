@@ -60,16 +60,8 @@
      <string>Hi&amp;lfe</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuEOD">
-    <property name="title">
-     <string>Test</string>
-    </property>
-    <addaction name="actionEOD"/>
-    <addaction name="actionEOM"/>
-   </widget>
    <addaction name="menuDatei"/>
    <addaction name="menuHilfe"/>
-   <addaction name="menuEOD"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionDEP_Exportieren">

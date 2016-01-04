@@ -83,7 +83,7 @@ void QRKDocument::documentList()
 void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItemSelection & )
 {
   QModelIndexList indexList = ui->documentList->selectionModel()->selectedIndexes();
-  int row;
+  int row = -1;
   foreach (QModelIndex index, indexList) {
     row = index.row();
   }
