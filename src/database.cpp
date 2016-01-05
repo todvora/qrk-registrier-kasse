@@ -41,6 +41,65 @@ Database::~Database()
 
 //--------------------------------------------------------------------------------
 
+QString Database::getTaxLocation()
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+  query.prepare("SELECT strValue FROM globals WHERE name='taxlocation'");
+  query.exec();
+  if (query.next())
+    return query.value(0).toString();
+
+  return "AT";
+
+}
+
+//--------------------------------------------------------------------------------
+
+QString Database::getDefaultTax()
+{
+
+  QString taxlocation = getTaxLocation();
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+  query.prepare(QString("SELECT tax FROM taxTypes WHERE taxlocation = '%1' LIMIT 1").arg(taxlocation));
+  query.exec();
+  if (query.next())
+    return query.value(0).toString();
+
+  return "20";
+
+}
+
+//--------------------------------------------------------------------------------
+
+QString Database::getShortCurrency()
+{
+  QString currency = getCurrency();
+  if (currency == "CHF")
+    return "Fr";
+  else
+    return "€";
+
+}
+
+//--------------------------------------------------------------------------------
+
+QString Database::getCurrency()
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+  query.prepare("SELECT strValue FROM globals WHERE name='currency'");
+  query.exec();
+  if (query.next())
+    return query.value(0).toString();
+
+  return "EUR";
+}
+
+//--------------------------------------------------------------------------------
+
 QString Database::getCashRegisterId()
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -192,7 +251,7 @@ QString Database::getShopName()
 
 bool Database::open(bool dbSelect)
 {
-  const int CURRENT_SCHEMA_VERSION = 2;
+  const int CURRENT_SCHEMA_VERSION = 3;
   // read global defintions (DB, ...)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 

@@ -56,6 +56,8 @@ class QrkDelegate : public QStyledItemDelegate
 
   private:
     int type;
+    QString shortcurrency;
+    QString taxlocation;
 
 };
 

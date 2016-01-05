@@ -18,6 +18,7 @@
  */
 
 #include "qrkdelegate.h"
+#include "database.h"
 
 #include <QSpinBox>
 #include <QLineEdit>
@@ -30,10 +31,10 @@
 
 
 QrkDelegate::QrkDelegate(int type, QObject *parent)
-  :QStyledItemDelegate(parent)
+  :QStyledItemDelegate(parent), type(type)
 {
-  this->type = type;
-
+  shortcurrency = Database::getShortCurrency();
+  taxlocation = Database::getTaxLocation();
 }
 
 QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &item, const QModelIndex &index) const
@@ -55,9 +56,9 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     combo->setDuplicatesEnabled(false);
     QSqlDatabase dbc= QSqlDatabase::database("CN");
     QSqlQuery q(dbc);
-    q.prepare("SELECT tax FROM taxTypes");
+    q.prepare(QString("SELECT tax FROM taxTypes WHERE taxlocation='%1' ORDER BY id").arg(taxlocation));
     if(!q.exec()){
-      // qDebug()<<"Can't get taxType list!";
+      qDebug()<<"Can't get taxType list!";
     }
     while(q.next()){
       combo->addItem(q.value(0).toString());
@@ -110,16 +111,20 @@ QString QrkDelegate::displayText(const QVariant &value, const QLocale &locale) c
     int x = QString::number(value.toDouble()).length() - QString::number(value.toDouble()).indexOf(".");
     QString formattedNum;
     if (x > 3 && QString::number(value.toDouble()).indexOf(".") > 0) {
-      formattedNum = QString("%1").arg(locale.toString(value.toDouble(), 'f', 3)).arg(tr("€"));
-      formattedNum = QString("%1.. %2").arg(formattedNum.left(formattedNum.length() - 1)).arg(tr("€"));
+      formattedNum = QString("%1").arg(locale.toString(value.toDouble(), 'f', 3)).arg(shortcurrency);
+      formattedNum = QString("%1.. %2").arg(formattedNum.left(formattedNum.length() - 1)).arg(shortcurrency);
     } else {
-      formattedNum = QString("%1 %2").arg(locale.toString(value.toDouble(), 'f', 2)).arg(tr("€"));
+      formattedNum = QString("%1 %2").arg(locale.toString(value.toDouble(), 'f', 2)).arg(shortcurrency);
     }
     return formattedNum;
 
   } else if (this->type == COMBO_TAX) {
     QString formattedNum;
-    formattedNum = QString("%1 %").arg(locale.toString(value.toInt()));
+    if (taxlocation == "CH")
+      formattedNum = QString("%1 %").arg(locale.toString(value.toDouble()));
+    else
+      formattedNum = QString("%1 %").arg(locale.toString(value.toInt()));
+
     return formattedNum;
   }
 

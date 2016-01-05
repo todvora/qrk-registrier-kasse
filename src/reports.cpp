@@ -26,11 +26,12 @@
 
 #include <QDebug>
 
-Reports::Reports(DEP *dep, QProgressBar *pb, QObject *parent) : QObject(parent)
+Reports::Reports(DEP *dep, QProgressBar *pb, QObject *parent)
+  : QObject(parent), dep(dep)
 {
-  this->dep = dep;
   this->pb = pb;
   pb->setValue(1);
+
 }
 
 //--------------------------------------------------------------------------------
@@ -251,7 +252,9 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
       zm = q.value(0).toString();
       stat.append(QString("%1").arg(q.value(0).toString()));
     }
-    stat.append(QString("%1%: %2 €").arg(q.value(1).toInt()).arg(QString::number(q.value(2).toDouble(), 'f', 2)));
+    stat.append(QString("%1%: %2")
+                .arg(q.value(1).toInt())
+                .arg(QString::number(q.value(2).toDouble(), 'f', 2)));
   }
   stat.append("-");
 
@@ -269,7 +272,9 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   stat.append(tr("Umsätze nach Steuersätzen"));
   while (q.next())
   {
-    stat.append(QString("%1%: %2 €").arg(q.value(0).toString()).arg(QString::number(q.value(1).toDouble(), 'f', 2)));
+    stat.append(QString("%1%: %2")
+                .arg(q.value(0).toString())
+                .arg(QString::number(q.value(1).toDouble(), 'f', 2)));
   }
   stat.append("-");
 
@@ -299,7 +304,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     }
   }
 
-  stat.append(QString("%1: %2 €").arg(type).arg(sales));
+  stat.append(QString("%1: %2").arg(type).arg(sales));
   stat.append("=");
 
   query = QString("SELECT sum(orders.count) AS count, products.name, orders.gross, sum(orders.count * orders.gross) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN '%1' AND '%2' GROUP BY products.name ORDER BY orders.tax, products.name ASC").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
@@ -308,7 +313,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   stat.append(tr("Verkaufte Produkte oder Leistungen"));
   while (q.next())
   {
-    stat.append(QString("%1: %2: %3 €: %4 €: %5%")
+    stat.append(QString("%1: %2: %3: %4: %5%")
                 .arg(q.value(0).toString())
                 .arg(q.value(1).toString())
                 .arg(QString::number(q.value(2).toDouble(),'f',2))
@@ -599,8 +604,10 @@ bool Reports::endOfMonth()
 
     QDateTime dateTime = Database::getLastReceiptDateTime();
 
-    bool create = Reports::canCreateEOD(dateTime.date());
-    if (dateTime <= checkdate && create) {
+    bool canCreateEOD = Reports::canCreateEOD(dateTime.date());
+    bool canCreateEOM = Reports::canCreateEOM(dateTime.date());
+
+    if (dateTime <= checkdate && canCreateEOD) {
       msgBox.setText(tr("Der Tagesabschlusses für %1 muß zuerst erstellt werden.").arg(dateTime.date().toString()));
       msgBox.setStandardButtons(QMessageBox::Yes);
       msgBox.addButton(QMessageBox::No);
@@ -614,7 +621,7 @@ bool Reports::endOfMonth()
         return false;
       }
     }
-    if (create) {
+    if (canCreateEOM) {
       QRKRegister *reg = new QRKRegister(pb);
       currentReceipt =  reg->createReceipts();
       reg->finishReceipts(4, currentReceipt, true);

@@ -49,7 +49,6 @@ class QRKHome : public QWidget
     void exitSlot();
     void settingsSlot();
 
-
   private:
     Ui::QRKHome *ui;
     QFrame *menu;

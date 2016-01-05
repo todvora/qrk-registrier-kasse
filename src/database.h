@@ -45,6 +45,10 @@ class Database : public QObject
     static int getStorno(int);
     static int getStornoId(int);
     static QString getCashRegisterId();
+    static QString getCurrency();
+    static QString getShortCurrency();
+    static QString getTaxLocation();
+    static QString getDefaultTax();
 
   private:
     static QString getDatabaseType();

@@ -75,8 +75,9 @@ void SettingsDialog::accept()
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='shopOwner'").arg(master->getShopOwner()));
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='shopAddress'").arg(master->getShopAddress()));
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='shopUid'").arg(master->getShopUid()));
-  query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='shopLocation'").arg(master->getShopLocation()));
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='shopCashRegisterId'").arg(master->getShopCashRegisterId()));
+  query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='currency'").arg(master->getShopCurrency()));
+  query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='taxlocation'").arg(master->getShopTaxes()));
 
   settings.setValue("paperFormat", printer->getPaperFormat());
   settings.setValue("useReportPrinter", printer->getUseReportPrinter());
@@ -129,7 +130,6 @@ GeneralTab::GeneralTab(QSettings &, QWidget *parent)
 
   mainLayout->addStretch(1);
   setLayout(mainLayout);
-
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
@@ -194,8 +194,9 @@ MasterDataTab::MasterDataTab(QSettings &, QWidget *parent)
   shopOwner = new QLineEdit;
   shopAddress = new QTextEdit;
   shopUid = new QLineEdit;
-  shopLocation = new QComboBox;
   shopCashRegisterId = new QLineEdit;
+  taxlocation = new QComboBox;
+  currency = new QComboBox;
 
   query.prepare("SELECT strValue FROM globals WHERE name='shopName'");
   query.exec();
@@ -225,17 +226,12 @@ MasterDataTab::MasterDataTab(QSettings &, QWidget *parent)
   else
     query.exec("INSERT INTO globals (name, strValue) VALUES('shopUid', '')");
 
+  currency->addItem("EUR");
+  currency->addItem("CHF");
 
-  shopLocation->addItem("Österreich");
-  shopLocation->addItem("Deutschland");
-  shopLocation->addItem("Schweiz");
-
-  query.prepare("SELECT strValue FROM globals WHERE name='shopLocation'");
-  query.exec();
-  if (query.next())
-    shopLocation->setCurrentText(query.value(0).toString());
-  else
-    query.exec("INSERT INTO globals (name, strValue) VALUES('shopLocation', '')");
+  taxlocation->addItem("AT");
+  taxlocation->addItem("DE");
+  taxlocation->addItem("CH");
 
   query.prepare("SELECT strValue FROM globals WHERE name='shopCashRegisterId'");
   query.exec();
@@ -244,17 +240,39 @@ MasterDataTab::MasterDataTab(QSettings &, QWidget *parent)
   else
     query.exec("INSERT INTO globals (name, strValue) VALUES('shopCashRegisterId', '')");
 
+  query.prepare("SELECT strValue FROM globals WHERE name='currency'");
+  query.exec();
+  if (query.next())
+    currency->setCurrentText(query.value(0).toString());
+  else
+    query.exec("INSERT INTO globals (name, strValue) VALUES('currency', '')");
+
+  query.prepare("SELECT strValue FROM globals WHERE name='taxlocation'");
+  query.exec();
+  if (query.next())
+    taxlocation->setCurrentText(query.value(0).toString());
+  else
+    query.exec("INSERT INTO globals (name, strValue) VALUES('taxlocation', '')");
+
   QFormLayout *shopLayout = new QFormLayout;
   shopLayout->setAlignment(Qt::AlignLeft);
   shopLayout->addRow(tr("Firmenname:"),shopName);
   shopLayout->addRow(tr("Eigentümer:"),shopOwner);
   shopLayout->addRow(tr("Adresse:"),shopAddress);
   shopLayout->addRow(tr("UID:"),shopUid);
-  shopLayout->addRow(tr("Standort:"),shopLocation);
   shopLayout->addRow(tr("Kassenidentifikationsnummer:"),shopCashRegisterId);
+
+  QGroupBox *currencyGroup = new QGroupBox();
+  QFormLayout *currencyLayout = new QFormLayout;
+  currency->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+  taxlocation->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+  currencyLayout->addRow(tr("Währung:"),currency);
+  currencyLayout->addRow(tr("Steuersatz:"),taxlocation);
+  currencyGroup->setLayout(currencyLayout);
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
   mainLayout->addLayout(shopLayout);
+  mainLayout->addWidget(currencyGroup);
 
   mainLayout->addStretch(1);
   setLayout(mainLayout);
@@ -281,9 +299,14 @@ QString MasterDataTab::getShopUid()
   return shopUid->text();
 }
 
-QString MasterDataTab::getShopLocation()
+QString MasterDataTab::getShopTaxes()
 {
-  return shopLocation->currentText();
+  return taxlocation->currentText();
+}
+
+QString MasterDataTab::getShopCurrency()
+{
+  return currency->currentText();
 }
 
 QString MasterDataTab::getShopCashRegisterId()

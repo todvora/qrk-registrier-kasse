@@ -20,12 +20,21 @@
 #include "qrkhome.h"
 
 #include <QMessageBox>
+#include <QDesktopWidget>
 
 QRKHome::QRKHome(QWidget *parent)
   : QWidget(parent),ui(new Ui::QRKHome), menu(0)
 
 {
   ui->setupUi(this);
+
+  if ( QApplication::desktop()->width() < 1200 )
+  {
+    ui->documentButton->setMinimumWidth(0);
+    ui->pushButton1->setMinimumWidth(0);
+    ui->registerButton->setMinimumWidth(0);
+    ui->taskButton->setMinimumWidth(0);
+  }
 
   // create the menu popup
   {
@@ -89,7 +98,8 @@ QRKHome::QRKHome(QWidget *parent)
     connect(ui->registerButton, SIGNAL(clicked()), this, SIGNAL(registerButton_clicked()));
     connect(ui->documentButton, SIGNAL(clicked()), this, SIGNAL(documentButton_clicked()));
 
-    // for TESTS    connect(ui->pushButton1, SIGNAL(clicked()), this, SLOT(settingsSlot()));
+    // for TESTS
+    connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(endOfDay()));
 
   }
 

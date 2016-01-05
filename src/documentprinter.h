@@ -48,6 +48,7 @@ class DocumentPrinter : public QObject
     int numberCopies;
     QString paperFormat;
     bool useReportPrinter;
+    QString currency;
 
   signals:
 

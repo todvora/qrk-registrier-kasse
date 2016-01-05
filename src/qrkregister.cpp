@@ -24,13 +24,29 @@
 #include <QMessageBox>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDesktopWidget>
 #include <QDebug>
 
 QRKRegister::QRKRegister(QProgressBar *progressBar, QWidget *parent)
   : QWidget(parent), ui(new Ui::QRKRegister), currentReceipt(0), totallyup(false), noPrinter(false)
 
 {
+
   ui->setupUi(this);
+
+  if ( QApplication::desktop()->width() < 1200 )
+  {
+    ui->cancelRegisterButton->setMinimumWidth(0);
+    ui->cashReceipt->setMinimumWidth(0);
+    ui->creditcardReceipt->setMinimumWidth(0);
+    ui->debitcardReceipt->setMinimumWidth(0);
+    ui->totallyupButton->setMinimumWidth(0);
+    ui->totallyupExitButton->setMinimumWidth(0);
+    ui->plusButton->setMinimumWidth(0);
+    ui->minusButton->setMinimumWidth(0);
+    ui->receiptToInvoice->setMinimumWidth(0);
+  }
+
   this->progressBar = progressBar;
   this->totallyup = totallyup;
   this->noPrinter = noPrinter;
@@ -84,7 +100,9 @@ void QRKRegister::init()
 
   ui->orderList->setModel(orderListModel);
   connect(ui->orderList->model(), SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(itemChangedSlot(const QModelIndex&, const QModelIndex&)));
-  //  stackedWidget->setCurrentIndex(1);
+
+  currency = Database::getCurrency();
+  taxlocation = Database::getTaxLocation();
 
 }
 
@@ -104,7 +122,7 @@ void QRKRegister::updateOrderSum()
   }
 
   //  sum = (long)(sum*100+0.5)/100.0;
-  ui->sumLabel->setText(tr("%1 €").arg(QString::number(sum, 'f', 2)));
+  ui->sumLabel->setText(tr("%1 %2").arg(QString::number(sum, 'f', 2)).arg(currency));
 
 }
 
@@ -204,7 +222,7 @@ bool QRKRegister::createOrder(bool storno)
       count *= -1;
 
     QString product = ui->orderList->model()->data(ui->orderList->model()->index(row, 1, QModelIndex())).toString();
-    int tax = ui->orderList->model()->data(ui->orderList->model()->index(row, 2, QModelIndex())).toDouble();
+    double tax = ui->orderList->model()->data(ui->orderList->model()->index(row, 2, QModelIndex())).toDouble();
     double egross = ui->orderList->model()->data(ui->orderList->model()->index(row, 3, QModelIndex())).toDouble();
 
     QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -276,7 +294,7 @@ void QRKRegister::newOrder()
                                     .arg(bonNr)
                                     .arg(date)
                                     .arg(taxName)
-                                    .arg(QString::number(gross, 'f', 2)).arg(tr("€")));
+                                    .arg(QString::number(gross, 'f', 2)).arg(currency));
     }
   }
 
@@ -356,7 +374,7 @@ QJsonObject QRKRegister::compileData(int id)
   // TaxTypes
 
   QSqlQuery taxTypes(dbc);
-  taxTypes.prepare(QString("SELECT tax, comment FROM taxTypes ORDER BY id"));
+  taxTypes.prepare(QString("SELECT tax, comment FROM taxTypes WHERE taxlocation='%1' ORDER BY id").arg(taxlocation));
   taxTypes.exec();
   while(taxTypes.next())
   {
@@ -390,14 +408,14 @@ QJsonObject QRKRegister::compileData(int id)
   QJsonArray Orders;
 
   double sum = 0;
-  QMap<int, double> taxes; // <tax-percent, sum>
+  QMap<double, double> taxes; // <tax-percent, sum>
 
   while(orders.next())//load all data from the database
   {
     int count = orders.value(0).toInt();
     double singlePrice = orders.value(2).toDouble();
     double gross = singlePrice * count;
-    int tax = orders.value(3).toInt();
+    double tax = orders.value(3).toDouble();
 
     sum += gross;
 
@@ -419,8 +437,8 @@ QJsonObject QRKRegister::compileData(int id)
   }
 
   QJsonArray Taxes;
-  QList<int> keys = taxes.keys();
-  for (int i = 0; i < keys.count(); i++)
+  QList<double> keys = taxes.keys();
+  for (double i = 0.0; i < keys.count(); i++)
   {
     QJsonObject tax;
     tax["t1"] = QString("%1%").arg( keys[i] );
@@ -542,10 +560,12 @@ void QRKRegister::plusSlot()
   orderListModel->insertRow(row);
   ui->orderList->model()->blockSignals(true);
 
+  QString defaultTax = Database::getDefaultTax();
+
   orderListModel->setColumnCount(5);
   orderListModel->setItem(row, REGISTER_COL_COUNT, new QStandardItem(QString("1")));
   orderListModel->setItem(row, REGISTER_COL_PRODUCT, new QStandardItem(QString(tr("Artikelname"))));
-  orderListModel->setItem(row, REGISTER_COL_TAX, new QStandardItem(QString("20")));
+  orderListModel->setItem(row, REGISTER_COL_TAX, new QStandardItem(defaultTax));
   orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(QString("0")));
   orderListModel->setItem(row, REGISTER_COL_TOTAL, new QStandardItem(QString("0")));
 

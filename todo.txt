@@ -19,12 +19,13 @@
 
 To Do Liste:
 
+erledigt    Deutsche und Schweizer  fixed in VERSION 0.16.0105
+            Steuersätze
 erledigt    Fußzeile                fixed in VERSION 0.16.0104
 erledigt    Stammdaten Eingabe      fixed in VERSION 0.16.0104
 erledigt    Fußtext auf Kassebon    fixed in VERSION 0.16.0104
 erledigt    Bon zu beleg 2-zeilig   fixed in VERSION 0.15.1231
 
 offen       Bon zu Beleg einzeln in Tagesabschluss auflisten
-offen       Deutsche und Schweizer Steuersätze
 offen       Dokumente - Filter über alle Felder
 offen       Kundentext bei Dokumenten anzeigen

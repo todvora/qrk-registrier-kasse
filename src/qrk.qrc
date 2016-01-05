@@ -41,5 +41,7 @@
         <file>sql/QRK-sqlite-update-2.sql</file>
         <file>icons/invoice.png</file>
         <file>icons/save.png</file>
+        <file>sql/QRK-mysql-update-3.sql</file>
+        <file>sql/QRK-sqlite-update-3.sql</file>
     </qresource>
 </RCC>

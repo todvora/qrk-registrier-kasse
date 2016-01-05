@@ -17,6 +17,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0105
+ + Deutsche und Schweizer Steuersätze
+
 VERSION 0.16.0104
  * fix Monatsabschluss bei Jahreswechsel (falsches Datum)
  * Sourecode Redesign und Cleanup

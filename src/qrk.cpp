@@ -58,7 +58,6 @@ QRK::QRK()
   this->setCentralWidget(stackedWidget);
 
   timer->start(1000);
-  cashRegisterId = Database::getCashRegisterId();
 
   iniStack();
 
@@ -116,6 +115,7 @@ void QRK::timerDone()
 void QRK::init()
 {
   setShopName();
+  cashRegisterId = Database::getCashRegisterId();
 }
 
 //--------------------------------------------------------------------------------

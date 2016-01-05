@@ -18,6 +18,7 @@
  */
 
 #include "documentprinter.h"
+#include "database.h"
 
 #include <QSettings>
 #include <QJsonObject>
@@ -29,7 +30,7 @@
 #include <QDebug>
 
 DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, bool noPrinter)
-  :QObject(parent), noPrinter(false)
+  :QObject(parent), noPrinter(noPrinter)
 {
 
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
@@ -37,6 +38,7 @@ DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, boo
   logoRight = settings.value("logoRight", false).toBool();
   numberCopies = settings.value("numberCopies", 1).toInt();
   paperFormat = settings.value("paperFormat", "A4").toString();
+  currency = Database::getCurrency();
 
   if (noPrinter) {
     useReportPrinter = false;
@@ -47,7 +49,6 @@ DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, boo
     }
   }
 
-  this->noPrinter = noPrinter;
   pb = progressBar;
   pb->setValue(0);
 }
@@ -282,9 +283,9 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
     const QJsonObject& order = item.toObject();
 
     int count = order.value("count").toInt();
-    QString grossText = QString("%1 %2").arg(QString::number(order.value("gross").toDouble(), 'f', 2)).arg(tr("€"));
+    QString grossText = QString("%1").arg(QString::number(order.value("gross").toDouble(), 'f', 2));
     //      if ( count > 1 || count < -1)
-    QString singleGrossText = QString("%1 x %2 %3").arg(QString::number(count)).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2)).arg(tr("€"));
+    QString singleGrossText = QString("%1 x %2").arg(QString::number(count)).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2));
     int grossWidth = grossMetrics.boundingRect(grossText).width();
 
     //      QString product = fontMetr.elidedText(order.value("product").toString(), Qt::ElideMiddle, WIDTH - grossWidth - 5);
@@ -331,7 +332,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   painter.save();
   painter.setFont(boldFont);
   painter.drawText(0, y, WIDTH, boldMetr.height(), Qt::AlignRight,
-                   tr("Gesamt: %1 €").arg(QString::number(data.value("sum").toDouble(), 'f', 2)));
+                   tr("Gesamt: %1").arg(QString::number(data.value("sum").toDouble(), 'f', 2)));
   painter.restore();
   y += boldMetr.height() + 10;
 
@@ -341,12 +342,17 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   {
     const QJsonObject& tax = item.toObject();
     painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignRight,
-                     tr("MwSt %1: %2 €")
+                     tr("MwSt %1: %2")
                      .arg(tax.value("t1").toString())
                      .arg(QString::number(tax.value("t2").toString().toDouble(), 'f', 2)));
 
     y += 5 + fontMetr.height();
   }
+
+  QString currencyText = tr("(Alle Beträge in %1)").arg(currency);
+  painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignCenter, currencyText);
+  y += 5 + fontMetr.height();
+
 
   pb->setValue(progress + 10);
 

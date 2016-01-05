@@ -21,16 +21,25 @@
 
 #include <QMessageBox>
 #include <QJsonObject>
+#include <QDesktopWidget>
 
 QRKDocument::QRKDocument(QProgressBar *progressBar, QWidget *parent)
   : QWidget(parent), ui(new Ui::QRKDocument)
 
 {
+
   this->progressBar = progressBar;
   ui->setupUi(this);
-  // page 3
 
   ui->textBrowser->setHidden(true);
+
+  if ( QApplication::desktop()->width() < 1200 )
+  {
+    ui->cancelDocumentButton->setMinimumWidth(0);
+    ui->cancellationButton->setMinimumWidth(0);
+    ui->pushButton->setMinimumWidth(0);
+    ui->pushButton_2->setMinimumWidth(0);
+  }
 
   connect(ui->cancelDocumentButton, SIGNAL(clicked()), this, SIGNAL(cancelDocumentButton_clicked()));
   connect(ui->printcopyButton, SIGNAL(clicked()), this, SLOT(onPrintcopyButton_clicked()));

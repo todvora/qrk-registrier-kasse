@@ -97,16 +97,19 @@ class MasterDataTab : public QWidget
     QString getShopOwner();
     QString getShopAddress();
     QString getShopUid();
-    QString getShopLocation();
     QString getShopCashRegisterId();
+    QString getShopTaxes();
+    QString getShopCurrency();
 
   private:
     QLineEdit *shopName;
     QLineEdit *shopOwner;
     QTextEdit *shopAddress;
     QLineEdit *shopUid;
-    QComboBox *shopLocation;
     QLineEdit *shopCashRegisterId;
+    QComboBox *currency;
+    QComboBox *taxlocation;
+
 };
 
 class SettingsDialog : public QDialog
