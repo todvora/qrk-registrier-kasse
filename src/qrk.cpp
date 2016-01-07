@@ -18,6 +18,26 @@
  */
 
 #include "qrk.h"
+#include "defines.h"
+#include "database.h"
+#include "qrkdelegate.h"
+#include "dep.h"
+#include "reports.h"
+#include "receiptitemmodel.h"
+#include "qsortfiltersqlquerymodel.h"
+#include "documentprinter.h"
+#include "depexportdialog.h"
+#include "utils.h"
+#include "r2bdialog.h"
+#include "qrkhome.h"
+#include "qrkregister.h"
+#include "qrkdocument.h"
+
+#include <QStackedWidget>
+#include <QLCDNumber>
+#include <QTimer>
+#include <QMessageBox>
+#include <QCloseEvent>
 
 //-----------------------------------------------------------------------
 
@@ -51,7 +71,7 @@ QRK::QRK()
   font.setPointSize(11);
   QApplication::setFont(font);
 
-  setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+//  setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
   //Stacked Widget
   stackedWidget = new QStackedWidget(this);
@@ -66,6 +86,7 @@ QRK::QRK()
   connect(qrk_home, SIGNAL(endOfDay()), this, SLOT(endOfDaySlot()));
   connect(qrk_home, SIGNAL(endOfMonth()), this, SLOT(endOfMonthSlot()));
   connect(qrk_home, SIGNAL(fullScreenButton_clicked()), this, SLOT(fullScreenSlot()));
+  connect(qrk_home, SIGNAL(exitButton_clicked()), this, SLOT(exitSlot()));
 
   connect(qrk_home, SIGNAL(registerButton_clicked()), this, SLOT(onRegisterButton_clicked()));
   connect(qrk_home, SIGNAL(documentButton_clicked()), this, SLOT(onDocumentButton_clicked()));
@@ -218,3 +239,25 @@ void QRK::fullScreenSlot()
   else
     showFullScreen();
 }
+
+//--------------------------------------------------------------------------------
+
+void QRK::closeEvent (QCloseEvent *event)
+{
+  if ( QMessageBox::question(this, tr("Beenden"), tr("Möchten sie wirklich beenden ?"),
+                             QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes )
+  {
+    QApplication::exit();
+  } else {
+    event->ignore();
+  }
+}
+
+//--------------------------------------------------------------------------------
+
+void QRK::exitSlot()
+{
+  QCloseEvent *event = new QCloseEvent;
+  closeEvent(event);
+}
+

@@ -204,6 +204,8 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
   delete dep;
   QApplication::setOverrideCursor(Qt::ArrowCursor);
 
+  QMessageBox::information(0, QObject::tr("Drucker"), QObject::tr("%1 %2 wurde gedruckt. Nächster Vorgang wird gestartet.").arg(data.value("comment").toString()).arg(receiptNum));
+
   return true;
 
 }

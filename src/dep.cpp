@@ -24,7 +24,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QDateTime>
-
+#include <QFile>
 #include <QDebug>
 
 DEP::DEP(QObject *parent)
@@ -127,8 +127,4 @@ void DEP::depInsertLine(QString title,  QString text)
     qDebug() << "DEP::depInsertLine Error: " << e.text();
   }
 
-}
-
-void DEP::depExport(QString filename)
-{
 }

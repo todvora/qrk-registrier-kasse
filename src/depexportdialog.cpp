@@ -18,12 +18,16 @@
  */
 
 #include "depexportdialog.h"
+#include "dep.h"
 
 #include <QFileDialog>
 #include <QTextStream>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QMessageBox>
+
+#include <QDebug>
 
 #include "ui_depexportdialog.h"
 
@@ -81,17 +85,41 @@ void DepExportDialog::onExportButton_clicked()
 {
   QString filename = QFileDialog::getSaveFileName( this, "Save file", "", ".csv");
 
+  if (filename.isNull())
+    return;
+
+  QFile *outputFile = new QFile(filename);
+  if (outputFile->exists()) {
+    if ( QMessageBox::question(this, tr("Export"), tr("Die Datei %1 existiert bereits.\nMöchten Sie sie überschreiben?").arg(filename),
+                                 QMessageBox::Yes, QMessageBox::No) == QMessageBox::No )
+    {
+      emit onExportButton_clicked();
+      return;
+    }
+  }
+
+  if (depExport(outputFile))
+    QMessageBox::information(0, QObject::tr("Export"), QObject::tr("DEP (DatenErfassungsProtokoll) wurde nach %1 exportiert.").arg(filename));
+  else
+    QMessageBox::warning(0, QObject::tr("Export"), QObject::tr("DEP (DatenErfassungsProtokoll) konnte nicht nach %1 exportiert werden.\nÜberprüfen Sie bitte Ihre Schreibberechtigung.").arg(filename));
+
+  this->close();
+}
+
+bool DepExportDialog::depExport(QFile *outputFile)
+{
+
   /* Try and open a file for output */
-  QFile outputFile(filename);
-  outputFile.open(QIODevice::WriteOnly);
+  outputFile->open(QIODevice::WriteOnly);
 
   /* Check it opened OK */
-  if(!outputFile.isOpen()){
-    // qDebug() << "- Error, unable to open" << filename << "for output";
+  if(!outputFile->isOpen()){
+    qDebug() << "- Error, unable to open" << outputFile->fileName() << "for output";
+    return false;
   }
 
   /* Point a QTextStream object at the file */
-  QTextStream outStream(&outputFile);
+  QTextStream outStream(outputFile);
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
@@ -123,7 +151,7 @@ void DepExportDialog::onExportButton_clicked()
   }
 
   /* Close the file */
-  outputFile.close();
+  outputFile->close();
 
-  this->close();
+  return true;
 }

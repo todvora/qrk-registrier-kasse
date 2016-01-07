@@ -218,6 +218,8 @@ void QRKDocument::onPrintcopyButton_clicked()
     delete p;
     QApplication::setOverrideCursor(Qt::ArrowCursor);
 
+    QMessageBox::information(0, QObject::tr("Drucker"), QObject::tr("%1 wurde gedruckt.").arg(payedByText));
+
   } else {
 
     currentReceipt = id;
@@ -231,7 +233,7 @@ void QRKDocument::onPrintcopyButton_clicked()
     int storno = Database::getStorno(id);
     if (storno == 2) {
       id = Database::getStornoId(id);
-      data["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1-%2").arg(QDate::currentDate().year()).arg(id):tr("KASSABON");
+      data["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):tr("KASSABON");
     }
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -239,6 +241,8 @@ void QRKDocument::onPrintcopyButton_clicked()
     p->printReceipt(data);
     delete p;
     QApplication::setOverrideCursor(Qt::ArrowCursor);
+    QMessageBox::information(0, QObject::tr("Drucker"), QObject::tr("%1 %2 ( Kopie) wurde gedruckt.").arg(data.value("comment").toString()).arg(currentReceipt));
+
     emit documentButton_clicked();
   }
 }

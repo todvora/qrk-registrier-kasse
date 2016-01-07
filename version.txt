@@ -17,6 +17,11 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0106
+ + Einige Informations Boxen hinzugefügt
+ * fix es wurden immer zwei Belege gedruckt.
+ * fix DEP Export überschreibt Datei ohne nachfrage
+
 VERSION 0.16.0105
  + Deutsche und Schweizer Steuersätze
 

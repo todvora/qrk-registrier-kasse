@@ -37,6 +37,7 @@ class QRKHome : public QWidget
     void registerButton_clicked();
     void documentButton_clicked();
     void fullScreenButton_clicked();
+    void exitButton_clicked();
 
     void endOfDay();
     void endOfMonth();
@@ -46,7 +47,6 @@ class QRKHome : public QWidget
   private slots:
     void menuSlot();
     void taskSlot();
-    void exitSlot();
     void settingsSlot();
 
   private:

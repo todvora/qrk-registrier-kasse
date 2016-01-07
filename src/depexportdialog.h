@@ -23,6 +23,8 @@
 #include <QDialog>
 #include <QProgressBar>
 
+class QFile;
+
 namespace Ui {
   class DepExportDialog;
 }
@@ -44,6 +46,7 @@ class DepExportDialog : public QDialog
 
   private:
     Ui::DepExportDialog *ui;
+    bool depExport(QFile *outfile);
 
     QDateTime *fromDT;
     QDateTime *toDT;

@@ -32,7 +32,6 @@ class DEP : public QObject
 
     void depInsertReceipt(QJsonObject &data);
     void depInsertLine(QString title, QString text);
-    void depExport(QString filename);
 
   signals:
 

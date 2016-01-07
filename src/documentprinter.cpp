@@ -26,7 +26,7 @@
 #include <QPainter>
 #include <QFileInfo>
 #include <QDateTime>
-
+#include <QMessageBox>
 #include <QDebug>
 
 DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, bool noPrinter)
@@ -43,9 +43,11 @@ DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, boo
   if (noPrinter) {
     useReportPrinter = false;
   } else {
-    useReportPrinter = settings.value("useReportPrinter", true).toBool();
+    useReportPrinter = settings.value("useReportPrinter", false).toBool();
     if (numberCopies > 1 && useReportPrinter) {
       numberCopies = 1;
+    } else {
+      useReportPrinter = false;
     }
   }
 
@@ -98,20 +100,21 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   printer.setNumCopies(numberCopies);
 
   QPainter painter(&printer);
-  QFont font("Arial", 8);
+  QFont font("Courier-New", 8);
   painter.setFont(font);
   QFontMetrics fontMetr = painter.fontMetrics();
 
   QFont grossFont(font);
-  grossFont.setFixedPitch(true);
+//  grossFont.setFixedPitch(true);
   QFontMetrics grossMetrics(grossFont, &printer);
 
-  QFont boldFont("Arial", 10, 100);  // for sum
+  QFont boldFont("Courier-New", 10, 100);  // for sum
   QFontMetrics boldMetr(boldFont);
 
+  QPen pen(Qt::black);
+  painter.setPen(pen);
 
   const int WIDTH = printer.pageRect().width();
-  // const int WIDTH = printer.pageLayout().paintRect().width();
 
   int y = 0;
 
@@ -122,21 +125,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
     logo = true;
   }
 
-
-  /*
-    QPixmap logoPixmap;
-    logoPixmap.load(":/icons/logo.png");
-
-    painter.drawPixmap(WIDTH - logoPixmap.width() - 1, y, logoPixmap);
-    QRect rect = painter.boundingRect(0, y, WIDTH - logoPixmap.width(), logoPixmap.height(), Qt::AlignCenter, shopName);
-    painter.drawText(0, y, rect.width(), rect.height(), Qt::AlignCenter, shopName);
-    y += 5 + qMax(rect.height(), logoPixmap.height()) + 4;
-    painter.drawLine(0, y, WIDTH, y);
-
-*/
-
   pb->setValue(10);
-
 
   QPixmap logoPixmap;
   QString shopName = data.value("shopName").toString();
@@ -144,66 +133,43 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   if (logo) {
 
     logoPixmap.load("logo.png");
-    /*
-        QRect rect = painter.viewport();
-        QSize size = logoImage.size();
-        size.scale(rect.size(), Qt::KeepAspectRatio);
-        painter.setViewport(rect.x(), rect.y(),size.width(), size.height());
-        painter.setWindow(logoImage.rect());
-*/
-
-    // qDebug() << "Printer resolution: " << printer.resolution();
-
-    //        logoPixmap.size().scale(rect.size(), Qt::KeepAspectRatio);
-
 
     if (logoRight) {
-
       painter.drawPixmap(WIDTH - logoPixmap.width() - 1, y, logoPixmap);
       QRect rect = painter.boundingRect(0, y, WIDTH - logoPixmap.width(), logoPixmap.height(), Qt::AlignCenter, shopName);
       painter.drawText(0, y, rect.width(), rect.height(), Qt::AlignCenter, shopName);
 
       y += 5 + qMax(rect.height(), logoPixmap.height()) + 4;
       painter.drawLine(0, y, WIDTH, y);
-
+      y += 5;
     } else {
-
       painter.drawPixmap((WIDTH / 2) - (logoPixmap.width()/2) - 1, y, logoPixmap);
-      int height= logoPixmap.height();
-      y += 5 + qMax(height, logoPixmap.height()) + 4;
+      y += 5 + logoPixmap.height() + 4;
     }
-  }
-
-  //    painter.drawLine(0, y, WIDTH, y);
-
-  //    y += 9;
-  pb->setValue(15);
-
-  if (! logoRight || !logo) {
-    int shopnameHeight = shopName.split(QRegExp("\n|\r\n|\r"),QString::SkipEmptyParts).count() * fontMetr.height();
+  } else {
+    int shopnameHeight = shopName.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
     painter.drawText(0, y, WIDTH, shopnameHeight + 4, Qt::AlignCenter, shopName);
-
     y += 5 + shopnameHeight;
   }
-  //    painter.drawLine(0, y, WIDTH, y);
+
+  pb->setValue(15);
 
   if (! data.value("printHeader").toString().isEmpty()) {
-    y += 5;
     QString printHeader = data.value("printHeader").toString();
-    int headerTextHeight = printHeader.split(QRegExp("\n|\r\n|\r"),QString::SkipEmptyParts).count() * fontMetr.height();
+    int headerTextHeight = printHeader.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
     painter.drawText(0, y, WIDTH, headerTextHeight, Qt::AlignCenter, printHeader);
     y += 5 + headerTextHeight + 4;
     painter.drawLine(0, y, WIDTH, y);
   }
 
-
   if (! data.value("headerText").toString().isEmpty()) {
     y += 5;
     QString headerText = data.value("headerText").toString();
-    int headerTextHeight = headerText.split(QRegExp("\n|\r\n|\r"),QString::SkipEmptyParts).count() * fontMetr.height();
+    int headerTextHeight = headerText.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
     painter.drawText(0, y, WIDTH, headerTextHeight, Qt::AlignLeft, headerText);
     y += 5 + headerTextHeight + 4;
     painter.drawLine(0, y, WIDTH, y);
+    y += 5;
   }
 
   pb->setValue(20);
@@ -211,8 +177,9 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   painter.save();
   painter.setFont(boldFont);
 
-  y += 5 + fontMetr.height();
+  y += 5 + boldMetr.height();
   painter.drawText(0, y, WIDTH, boldMetr.height(), Qt::AlignCenter, data.value("comment").toString());
+  y += 5 + boldMetr.height() * 2;
 
   painter.restore();
 
@@ -220,45 +187,33 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   if (data.value("isCopy").toBool())
     copy = tr("( Kopie )");
 
-  y += 5 + boldMetr.height();
   painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignLeft,
-                   tr("Pos: %1 Kasse: %2  Bon-Nr: %3-%4 %5")
+                   tr("Pos: %1 Kasse: %2  Bon-Nr: %3 %4")
                    .arg(data.value("positions").toInt())
-                   .arg(data.value("kasse").toInt())
-                   .arg(data.value("currentRegisterYear").toInt())
+                   .arg(data.value("kasse").toString())
                    .arg(data.value("receiptNum").toInt())
                    .arg(copy));
+  y += 5 + fontMetr.height();
 
   pb->setValue(30);
 
-  /*
-    y += 5 + fontMetr.height();
-    painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignLeft,
-                     tr("Re-Nr:: %1-%2-%3")
-                     .arg(QDateTime::fromString(data.value("receiptTime").toString(), Qt::ISODate).toString("yyyyMMdd"))
-                     .arg(data.value("kasse").toInt() , 2, 10, QChar('0'))
-                     .arg(data.value("receiptNum").toInt()));
-*/
-
-  y += 5 + fontMetr.height();
   painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignLeft, tr("Datum: %1 Uhrzeit: %2")
                    .arg(QDateTime::fromString(data.value("receiptTime").toString(), Qt::ISODate).toString("dd.MM.yyyy"))
                    .arg(QDateTime::fromString(data.value("receiptTime").toString(), Qt::ISODate).toString("hh:mm:ss")));
+  y += 5 + fontMetr.height();
 
   pb->setValue(40);
 
-  y += 5 + fontMetr.height();
   painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignLeft,
                    data.value("typeText").toString());
-
   y += 5 + fontMetr.height();
+
   painter.drawLine(0, y, WIDTH, y);
+  y += 5;
 
   pb->setValue(50);
 
   // paint orders
-
-  y += 5;
 
   const int X_COUNT = 0;
   const int X_NAME  = 25;
@@ -284,14 +239,12 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
     int count = order.value("count").toInt();
     QString grossText = QString("%1").arg(QString::number(order.value("gross").toDouble(), 'f', 2));
-    //      if ( count > 1 || count < -1)
     QString singleGrossText = QString("%1 x %2").arg(QString::number(count)).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2));
     int grossWidth = grossMetrics.boundingRect(grossText).width();
 
-    //      QString product = fontMetr.elidedText(order.value("product").toString(), Qt::ElideMiddle, WIDTH - grossWidth - 5);
     QString product = order.value("product").toString();
     product = wordWrap(product, WIDTH - grossWidth - 5, font);
-    int productHeight = product.split(QRegExp("\n|\r\n|\r"),QString::SkipEmptyParts).count() * fontMetr.height();
+    int productHeight = product.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
 
     // check if new drawText is heigher than page height
     if ( (y + productHeight + 20) > printer.pageRect().height() )
@@ -318,6 +271,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   pb->setValue(progress + 10);
 
   painter.drawLine(0, y, WIDTH, y);
+  y += 5;
 
   // if there is not enough space for sum+tax lines, start new page
   if ( (y + (data.value("taxesCount").toInt() * (5 + fontMetr.height())) + boldMetr.height() + 10) > printer.pageRect().height() )
@@ -328,14 +282,13 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
   pb->setValue(progress + 10);
 
-  y += 5;
   painter.save();
   painter.setFont(boldFont);
   painter.drawText(0, y, WIDTH, boldMetr.height(), Qt::AlignRight,
                    tr("Gesamt: %1").arg(QString::number(data.value("sum").toDouble(), 'f', 2)));
   painter.restore();
-  y += boldMetr.height() + 10;
 
+  y += 5 + boldMetr.height();
 
   QJsonArray Taxes = data["Taxes"].toArray();
   foreach (const QJsonValue & item, Taxes)
@@ -348,6 +301,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
     y += 5 + fontMetr.height();
   }
+  y += 5 + fontMetr.height();
 
   QString currencyText = tr("(Alle Beträge in %1)").arg(currency);
   painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignCenter, currencyText);
@@ -357,13 +311,12 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   pb->setValue(progress + 10);
 
   if (! data.value("printFooter").toString().isEmpty()) {
-    y += 10;
+    y += 5;
     QString printFooter = data.value("printFooter").toString();
-    int headerTextHeight = printFooter.split(QRegExp("\n|\r\n|\r"),QString::SkipEmptyParts).count() * fontMetr.height();
+    int headerTextHeight = printFooter.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
     painter.drawText(0, y, WIDTH, headerTextHeight, Qt::AlignCenter, printFooter);
     y += 5 + headerTextHeight + 4;
   }
-
 
   painter.end();
 
@@ -379,7 +332,7 @@ bool DocumentPrinter::initPrinter(QPrinter &printer)
 
   qDebug() << "Print Resolution: " << printer.resolution();
 
-  //  printer.setResolution(150);
+//  printer.setResolution(300);
 
   if ( noPrinter || printer.outputFormat() == QPrinter::PdfFormat)
     printer.setOutputFileName(QString("QRK-BON%1.pdf").arg( receiptNum ));
@@ -408,13 +361,11 @@ bool DocumentPrinter::initAlternatePrinter(QPrinter &printer)
 
   // defaults fit for 2"(width) x 4"(height) settings for the page of a TSC/TTP-245C printer
 
-  /*
- *   QString f = settings.value("paperFormat").toString();
+    QString f = settings.value("paperFormat").toString();
   if (f == "A4")
       printer.setPaperSize(printer.A4);
   if (f == "A5")
       printer.setPaperSize(printer.A5);
-*/
 
   return true;
 }

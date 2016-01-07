@@ -20,29 +20,20 @@
 #ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
-#include "defines.h"
-#include "database.h"
-#include "qrkdelegate.h"
-#include "dep.h"
+#include <ui_qrk.h>
 #include "reports.h"
-#include "receiptitemmodel.h"
-#include "qsortfiltersqlquerymodel.h"
-#include "documentprinter.h"
-#include "depexportdialog.h"
-#include "utils.h"
-#include "r2bdialog.h"
-#include "qrkhome.h"
-#include "qrkregister.h"
-#include "qrkdocument.h"
-
-// #include "settingsdialog.h"
 
 #include <QWidget>
-#include <QStackedWidget>
-#include <QLCDNumber>
-#include <QTimer>
+#include <QDate>
 
-#include <ui_qrk.h>
+class QLabel;
+class QProgressBar;
+
+class QRKHome;
+class QRKDocument;
+class QRKRegister;
+class QStackedWidget;
+class QLCDNumber;
 
 class QRK : public QMainWindow
 {
@@ -80,12 +71,15 @@ class QRK : public QMainWindow
     void onCancelDocumentButton_clicked();
     void actionDEP_Export();
     void fullScreenSlot();
+    void exitSlot();
 
   protected slots:
     virtual void timerDone();
 
+
   private:
     void init();
+    void closeEvent (QCloseEvent *event);
 
     QString shopname();
     QLCDNumber *dateLcd;

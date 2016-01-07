@@ -47,7 +47,7 @@ QRKHome::QRKHome(QWidget *parent)
     b = new QPushButton(QIcon(":/icons/exit.png"), tr("Beenden"));
     b->setFixedHeight(MIN_HEIGHT);
     b->setIconSize(QSize(32, 32));
-    connect(b, SIGNAL(clicked()), this, SLOT(exitSlot()));
+    connect(b, SIGNAL(clicked()), this, SIGNAL(exitButton_clicked()));
     vbox->addWidget(b);
 
     b = new QPushButton(QIcon(":/icons/view-fullscreen.png"), tr("Vollbild"));
@@ -115,17 +115,6 @@ void QRKHome::menuSlot()
 
   menu->move(mapToGlobal(p));
   menu->show();
-}
-
-//--------------------------------------------------------------------------------
-
-void QRKHome::exitSlot()
-{
-  if ( QMessageBox::question(this, tr("Beenden"), tr("Möchten sie wirklich beenden ?"),
-                             QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes )
-  {
-    QApplication::exit();
-  }
 }
 
 //--------------------------------------------------------------------------------
