@@ -81,6 +81,7 @@ class QRKRegister : public QWidget
     ReceiptItemModel *orderListModel;
     bool totallyup;
     bool noPrinter;
+    bool useInputNetPrice;
     QString currency;
     QString taxlocation;
 

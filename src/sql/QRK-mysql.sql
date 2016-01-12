@@ -92,7 +92,7 @@ CREATE INDEX `receipts_stornoId_index` ON `receipts` (`stornoId`);
 CREATE TABLE `dep` (
     `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `version`           text NOT NULL,
-    `cashregisterid`    int(11) NOT NULL,
+    `cashregisterid`    text NOT NULL,
     `datetime`          datetime NOT NULL,
     `text`              text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

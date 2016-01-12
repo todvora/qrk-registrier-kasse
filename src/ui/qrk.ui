@@ -65,6 +65,8 @@
     <property name="title">
      <string>Hi&amp;lfe</string>
     </property>
+    <addaction name="actionAbout_QRK"/>
+    <addaction name="actionAbout_QT"/>
    </widget>
    <addaction name="menuDatei"/>
    <addaction name="menuHilfe"/>
@@ -88,6 +90,16 @@
   <action name="actionEOM">
    <property name="text">
     <string>E&amp;OM</string>
+   </property>
+  </action>
+  <action name="actionAbout_QRK">
+   <property name="text">
+    <string>&amp;Über QRK</string>
+   </property>
+  </action>
+  <action name="actionAbout_QT">
+   <property name="text">
+    <string>Über &amp;QT</string>
    </property>
   </action>
  </widget>

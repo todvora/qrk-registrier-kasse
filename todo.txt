@@ -19,13 +19,15 @@
 
 To Do Liste:
 
-erledigt    Bon zu Beleg einzeln in Tagesabschluss auflisten (VERSION 0.16.0106)
-erledigt    Deutsche und Schweizer  fixed in VERSION 0.16.0105
+erledigt    Netto Preiseingabe ermöglichen          (VERSION 0.16.0112)
+erledigt    Bon zu Beleg einzeln in Tagesabschluss  (VERSION 0.16.0106)
+            auflisten
+erledigt    Deutsche und Schweizer                  (VERSION 0.16.0105)
             Steuersätze
-erledigt    Fußzeile                fixed in VERSION 0.16.0104
-erledigt    Stammdaten Eingabe      fixed in VERSION 0.16.0104
-erledigt    Fußtext auf Kassebon    fixed in VERSION 0.16.0104
-erledigt    Bon zu beleg 2-zeilig   fixed in VERSION 0.15.1231
+erledigt    Fußzeile                                (VERSION 0.16.0104)
+erledigt    Stammdaten Eingabe                      (VERSION 0.16.0104)
+erledigt    Fußtext auf Kassebon                    (VERSION 0.16.0104)
+erledigt    Bon zu beleg 2-zeilig Drucken           (VERSION 0.15.1231)
 
 offen       Dokumente - Filter über alle Felder
 offen       Kundentext bei Dokumenten anzeigen
@@ -36,3 +38,4 @@ offen       Grössere Buttons für Touch
 offen       QR-Code für 2017
 offen       AES256 für 2017
 offen       Cardreader Support
+offen       DEP Export (JSONFormat)

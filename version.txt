@@ -17,6 +17,11 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0112
+ + Nettoeingabe möglich (Im Settings Dialog einstellbar)
+ * Datenbank anpassungen
+ * AES256 phase 1
+
 VERSION 0.16.0106
  + Einige Informations Boxen hinzugefügt
  * fix es wurden immer zwei Belege gedruckt.

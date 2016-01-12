@@ -23,6 +23,7 @@
 #include <QSqlError>
 #include <QElapsedTimer>
 #include <QMessageBox>
+#include <QJsonObject>
 
 #include <QDebug>
 
@@ -171,14 +172,67 @@ void Reports::createEOD(int id, QDate date)
       .arg(QDateTime::currentDateTime().toString(Qt::ISODate))
       .arg(Utils::getYearlyTotal(date.year()));
 
-  dep->depInsertLine("Beleg", line);
 
   insert(eod, id);
+
+  dep->depInsertLine("Beleg", line);
 
   pb->setValue(100);
 
   qDebug() << "Reports::createEOD Total elapsed Time: " << timer.elapsed() << "milliseconds";
 
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
+
+}
+
+//--------------------------------------------------------------------------------
+
+void Reports::createEOM(int id, QDate date)
+{
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  QElapsedTimer timer;
+  timer.start();
+  QDateTime from;
+  QDateTime to;
+
+  // ---------- MONTH -----------------------------
+  from.setDate(QDate::fromString(date.toString()));
+  from.setDate(QDate::fromString(QString("%1-%2-01").arg(date.year()).arg(date.month()),"yyyy-MM-dd"));
+  to.setDate(QDate::fromString(date.toString()));
+  to.setTime(QTime::fromString("23:59:59"));
+
+  QStringList eod;
+  eod.append(createStat(id, "Monatsumsatz", from, to));
+
+  // ----------- YEAR ---------------------------
+
+  QString fromString = QString("%1-01-01").arg(date.year());
+  from.setDate(QDate::fromString(fromString, "yyyy-MM-dd"));
+  to.setDate(QDate::fromString(date.toString()));
+  to.setTime(QTime::fromString("23:59:59"));
+
+  if (date.month() == 12) {
+    eod.append(createYearStat(id, date));
+  }
+
+  // ----------------------------------------------
+
+  QString line = QString("Monatsbeleg\tMonatsbeleg\t\t%1\t%2\t0,0\t0,0\t0,0\t0,0\t0,0\t%3")
+      .arg(id)
+      .arg(QDateTime::currentDateTime().toString(Qt::ISODate))
+      .arg(Utils::getYearlyTotal( date.year() ));
+
+  insert(eod, id);
+
+  dep->depInsertLine("Beleg", line);
+
+  pb->setValue(100);
+
+  qDebug() << "Reports::createEOM Total elapsed Time: " << timer.elapsed() << "milliseconds";
   QApplication::setOverrideCursor(Qt::ArrowCursor);
 
 }
@@ -290,7 +344,13 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   if (type == "Jahresumsatz") {
     yearsales = sales;
   } else {
-    QString signature = Utils::getSignature(to, q.value(0).toDouble(), 0.0, id);
+    QJsonObject data;
+    data["receiptNum"] = id;
+    data["receiptTime"] = to.toString(Qt::ISODate);
+
+//    QString signature = Utils::getSignature(to, q.value(0).toDouble(), 0.0, id);
+    QString signature = Utils::getSignature(data);
+
     query = QString("UPDATE receipts SET gross=%1, timestamp='%2', signature='%3' WHERE receiptNum=%4")
         .arg(QString::number(q.value(0).toDouble(),'f',2))
         .arg(to.toString(Qt::ISODate))
@@ -349,58 +409,6 @@ void Reports::insert(QStringList list, int id)
     pb->setValue(i++);
   }
   qDebug() << "Reports::insert elapsed Time: " << timer.elapsed() << "milliseconds";
-
-}
-
-//--------------------------------------------------------------------------------
-
-void Reports::createEOM(int id, QDate date)
-{
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-
-  QSqlDatabase dbc = QSqlDatabase::database("CN");
-  QSqlQuery q(dbc);
-
-  QElapsedTimer timer;
-  timer.start();
-  QDateTime from;
-  QDateTime to;
-
-  // ---------- MONTH -----------------------------
-  from.setDate(QDate::fromString(date.toString()));
-  from.setDate(QDate::fromString(QString("%1-%2-01").arg(date.year()).arg(date.month()),"yyyy-MM-dd"));
-  to.setDate(QDate::fromString(date.toString()));
-  to.setTime(QTime::fromString("23:59:59"));
-
-  QStringList eod;
-  eod.append(createStat(id, "Monatsumsatz", from, to));
-
-  // ----------- YEAR ---------------------------
-
-  QString fromString = QString("%1-01-01").arg(date.year());
-  from.setDate(QDate::fromString(fromString, "yyyy-MM-dd"));
-  to.setDate(QDate::fromString(date.toString()));
-  to.setTime(QTime::fromString("23:59:59"));
-
-  if (date.month() == 12) {
-    eod.append(createYearStat(id, date));
-  }
-
-  // ----------------------------------------------
-
-  QString line = QString("Monatsbeleg\tMonatsbeleg\t\t%1\t%2\t0,0\t0,0\t0,0\t0,0\t0,0\t%3")
-      .arg(id)
-      .arg(QDateTime::currentDateTime().toString(Qt::ISODate))
-      .arg(Utils::getYearlyTotal( date.year() ));
-
-  dep->depInsertLine("Beleg", line);
-
-  insert(eod, id);
-
-  pb->setValue(100);
-
-  qDebug() << "Reports::createEOM Total elapsed Time: " << timer.elapsed() << "milliseconds";
-  QApplication::setOverrideCursor(Qt::ArrowCursor);
 
 }
 

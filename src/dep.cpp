@@ -18,6 +18,7 @@
  */
 
 #include "dep.h"
+#include "database.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -54,13 +55,13 @@ void DEP::depInsertReceipt(QJsonObject &data)
     var.append(QString("%1\t").arg(o["count"].toInt()));
     var.append(QString("%1\t").arg(QString::number(o["singleprice"].toDouble(),'f', 2)));
     var.append(QString("%1\t").arg(QString::number(o["gross"].toDouble(),'f', 2)));
-    var.append(QString("%1\t").arg(o["tax"].toInt()));
+    var.append(QString("%1\t").arg(o["tax"].toDouble()));
     var.append(QString("%1'").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
 
     QString q = QString("INSERT INTO dep %1 VALUES(%2,%3,%4,%5)")
         .arg(val)
         .arg(QString("'%1'").arg(data.value("version").toString()))
-        .arg(QString("%1").arg(data.value("kasse").toInt()))
+        .arg(QString("'%1'").arg(data.value("kasse").toString()))
         .arg(QString("'%1'").arg(data.value("receiptTime").toString()))
         .arg(var);
 
@@ -90,7 +91,7 @@ void DEP::depInsertReceipt(QJsonObject &data)
   QString q = QString("INSERT INTO dep %1 VALUES(%2,%3,%4,%5)")
       .arg(val)
       .arg(QString("'%1'").arg(data.value("version").toString()))
-      .arg(QString("%1").arg(data.value("kasse").toInt()))
+      .arg(QString("'%1'").arg(data.value("kasse").toString()))
       .arg(QString("'%1'").arg(data.value("receiptTime").toString()))
       .arg(var);
 
@@ -111,16 +112,19 @@ void DEP::depInsertLine(QString title,  QString text)
     QSqlQuery q(dbc);
 
     QString val = "(version,cashregisterid,datetime,text)";
-    QString query = QString("INSERT INTO dep %1 VALUES('%2',%3,'%4','%5')")
+    QString query = QString("INSERT INTO dep %1 VALUES('%2','%3','%4','%5')")
         .arg(val)
         .arg( QString("%1.%2").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR))
-        .arg( 1 )
+        .arg( Database::getCashRegisterId() )
         .arg(dt.toString(Qt::ISODate))
         .arg(title + "\t" + text + "\t" + QDateTime::currentDateTime().toString(Qt::ISODate));
 
     //    // qDebug() << query;
 
-    q.prepare(query);
+    bool ok = q.prepare(query);
+    if (!ok)
+      qDebug() << "DEP::depInsertLine Error: " << q.lastError().text();
+
     q.exec();
 
   } catch (QSqlError e) {

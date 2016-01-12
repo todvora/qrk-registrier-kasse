@@ -49,6 +49,8 @@ class Database : public QObject
     static QString getShortCurrency();
     static QString getTaxLocation();
     static QString getDefaultTax();
+    static int getLastReceiptNum();
+
 
   private:
     static QString getDatabaseType();

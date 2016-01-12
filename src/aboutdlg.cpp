@@ -17,45 +17,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEFINES
-#define DEFINES
+#include "aboutdlg.h"
 
-#define MIN_HEIGHT 60
-#define QRK_VERSION_MAJOR "0.16"
-#define QRK_VERSION_MINOR "0112"
-
-enum REGISTER_COL
+AboutDlg::AboutDlg( QWidget* parent)
+    : QDialog( parent), ui(new Ui::AboutDlg)
 {
-  REGISTER_COL_COUNT,
-  REGISTER_COL_PRODUCT,
-  REGISTER_COL_TAX,
-  REGISTER_COL_NET,
-  REGISTER_COL_SINGLE,
-  REGISTER_COL_TOTAL
-};
+  ui->setupUi(this);
+    // connect( btClose, SIGNAL( clicked() ), this, SLOT( close() ) );
+}
 
-enum DOCUMENT_COL
+AboutDlg::~AboutDlg()
 {
-  DOCUMENT_COL_RECEIPT,
-  DOCUMENT_COL_TYPE,
-  DOCUMENT_COL_TOTAL,
-  DOCUMENT_COL_DATE
-};
-
-// values for the receipt.payedBy field
-enum PAYED_BY
-{
-  PAYED_BY_CASH,
-  PAYED_BY_DEBITCARD,
-  PAYED_BY_CREDITCARD,
-  PAYED_BY_REPORT_EOD,
-  PAYED_BY_REPORT_EOM
-};
-
-enum DEP_ACTION
-{
-  DEP_RECEIPT = 0
-};
-
-#endif // DEFINES
-
+    // no need to delete child widgets, Qt does it all for us
+}

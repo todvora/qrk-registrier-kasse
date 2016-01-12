@@ -99,7 +99,7 @@ QRKHome::QRKHome(QWidget *parent)
     connect(ui->documentButton, SIGNAL(clicked()), this, SIGNAL(documentButton_clicked()));
 
     // for TESTS
-    connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(endOfDay()));
+    // connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(endOfDay()));
 
   }
 

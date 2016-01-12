@@ -92,6 +92,7 @@ QString QRKRegister::getHeaderText()
 
 void QRKRegister::init()
 {
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
   QDate last = Database::getLastReceiptDate();
   if (last.toString(Qt::ISODate) == lastEOD.toString(Qt::ISODate))
     last = last.addDays(1);
@@ -103,6 +104,8 @@ void QRKRegister::init()
 
   currency = Database::getCurrency();
   taxlocation = Database::getTaxLocation();
+
+  useInputNetPrice = settings.value("useInputNetPrice", false).toBool();
 
 }
 
@@ -144,14 +147,15 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
     receiptTime = QDateTime::currentDateTime();
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
-
   QSqlQuery query(dbc);
-  query.exec("SELECT value FROM globals WHERE name='lastReceiptNum'");
-  query.next();
-  int receiptNum = query.value(0).toInt();
 
+  int receiptNum = Database::getLastReceiptNum();
+  int ok =false;
   receiptNum++;
-  query.exec(QString("UPDATE globals SET value=%1 WHERE name='lastReceiptNum'").arg(receiptNum));
+  currentReceipt = receiptNum;
+  ok = query.exec(QString("UPDATE globals SET value=%1 WHERE name='lastReceiptNum'").arg(receiptNum));
+  if (!ok)
+    qDebug() << "QRKRegister Update globals error: " << query.lastError().text();
 
   double sum = 0.0;
   double net = 0.0;
@@ -159,8 +163,11 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
   if (!isReport) {
 
     QSqlQuery orders(dbc);
-    orders.prepare(QString("SELECT orders.count, orders.gross, orders.tax FROM orders WHERE orders.receiptId=%1")
+    ok = orders.prepare(QString("SELECT orders.count, orders.gross, orders.tax FROM orders WHERE orders.receiptId=%1")
                    .arg(receiptNum));
+
+    if (!ok)
+      qDebug() << "QRKRegister Select orders error: " << query.lastError().text();
 
     orders.exec();
 
@@ -168,7 +175,7 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
     {
       int count = orders.value("count").toInt();
       double singlePrice = orders.value("gross").toDouble();
-      int tax = orders.value("tax").toInt();
+      int tax = orders.value("tax").toDouble();
 
       double gross = singlePrice * count;
       sum += gross;
@@ -176,15 +183,28 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
     }
   }
 
-  QString signature = Utils::getSignature(receiptTime, sum, net, receiptNum);
-  query.exec(QString("UPDATE receipts SET timestamp='%1', receiptNum=%2, payedBy=%3, gross=%4, net=%5,signature='%6' WHERE id=%7")
+  ok = query.prepare(QString("UPDATE receipts SET timestamp='%1', receiptNum=%2, payedBy=%3, gross=%4, net=%5 WHERE id=%6")
              .arg(receiptTime.toString(Qt::ISODate))
              .arg(receiptNum)
              .arg(payedBy)
              .arg(sum)
              .arg(net)
+             .arg(receiptNum));
+
+  if (!ok)
+    qDebug() << "QRKRegister Update receipts error: " << query.lastError().text();
+
+  query.exec();
+
+  QJsonObject data = compileData(id);
+  QString signature = Utils::getSignature(data);
+
+  ok = query.exec(QString("UPDATE receipts SET signature='%1' WHERE id=%2")
              .arg(signature)
              .arg(receiptNum));
+
+  if (!ok)
+    qDebug() << "QRKRegister Update receipts signature error: " << query.lastError().text();
 
   if (isReport)
     return true;
@@ -193,7 +213,6 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
     Database::setStornoId(receiptNum, id);
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  QJsonObject data = compileData(id);
   DocumentPrinter *p = new DocumentPrinter(this, progressBar, noPrinter);
   p->printReceipt(data);
 
@@ -219,13 +238,13 @@ bool QRKRegister::createOrder(bool storno)
 
   for (int row = 0; row < ui->orderList->model()->rowCount(); row++)
   {
-    int count = ui->orderList->model()->data(ui->orderList->model()->index(row, 0, QModelIndex())).toInt();
+    int count = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_COUNT, QModelIndex())).toInt();
     if (storno)
       count *= -1;
 
-    QString product = ui->orderList->model()->data(ui->orderList->model()->index(row, 1, QModelIndex())).toString();
-    double tax = ui->orderList->model()->data(ui->orderList->model()->index(row, 2, QModelIndex())).toDouble();
-    double egross = ui->orderList->model()->data(ui->orderList->model()->index(row, 3, QModelIndex())).toDouble();
+    QString product = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString();
+    double tax = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_TAX, QModelIndex())).toDouble();
+    double egross = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_SINGLE, QModelIndex())).toDouble();
 
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc) ;
@@ -254,12 +273,10 @@ int QRKRegister::createReceipts()
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
 
-  try {
-    query.exec(QString("INSERT INTO receipts (`timestamp`) VALUES('%1')")
-               .arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
-  } catch (QSqlError &e) {
-    qDebug() << "QRK::createReceipts() " << e.text();
-  }
+  int ok = query.exec(QString("INSERT INTO receipts (`timestamp`) VALUES('%1')")
+                      .arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+  if (!ok)
+    qDebug() << "QRK::createReceipts() " << query.lastError().text();
 
   QString driverName = dbc.driverName();
   if ( driverName == "QMYSQL" ) {
@@ -304,26 +321,30 @@ void QRKRegister::newOrder()
 
   currentReceipt = 0;  // a new receipt not yet in the DB
 
-  orderListModel->setColumnCount(5);
+  orderListModel->setColumnCount(6);
   orderListModel->setHeaderData(REGISTER_COL_COUNT, Qt::Horizontal, QObject::tr("Anzahl"));
   orderListModel->setHeaderData(REGISTER_COL_PRODUCT, Qt::Horizontal, QObject::tr("Produkt"));
   orderListModel->setHeaderData(REGISTER_COL_TAX, Qt::Horizontal, QObject::tr("MwSt."));
+  orderListModel->setHeaderData(REGISTER_COL_NET, Qt::Horizontal, QObject::tr("E-Netto"));
   orderListModel->setHeaderData(REGISTER_COL_SINGLE, Qt::Horizontal, QObject::tr("E-Preis"));
   orderListModel->setHeaderData(REGISTER_COL_TOTAL, Qt::Horizontal, QObject::tr("Preis"));
 
   //  ui->orderList->horizontalHeader()->saveGeometry();
   //    ui->orderList->setColumnWidth(1, 350);
   ui->orderList->setAutoScroll(true);
+  ui->orderList->setWordWrap(true);
   ui->orderList->setSelectionMode(QAbstractItemView::MultiSelection);
   ui->orderList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_COUNT, new QrkDelegate (QrkDelegate::SPINBOX, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_PRODUCT, new QrkDelegate (QrkDelegate::PRODUCTS, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_TAX, new QrkDelegate (QrkDelegate::COMBO_TAX, this));
+  ui->orderList->setItemDelegateForColumn(REGISTER_COL_NET, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_SINGLE, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_TOTAL, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
 
   ui->orderList->horizontalHeader()->setSectionResizeMode(REGISTER_COL_PRODUCT, QHeaderView::Stretch);
+  ui->orderList->setColumnHidden(REGISTER_COL_NET, !useInputNetPrice);
 
   updateOrderSum();
   plusSlot();
@@ -342,7 +363,10 @@ QJsonObject QRKRegister::compileData(int id)
 
   // receiptNum, ReceiptTime
   q = (QString("SELECT `receiptNum`,`timestamp`, `payedBy` FROM receipts WHERE id=%1").arg(currentReceipt));
-  query.exec(q);
+  int ok = query.exec(q);
+  if (!ok)
+    qDebug() << "QRKRegister CompileData select error: " << query.lastError().text();
+
   query.next();
   int receiptNum = query.value(0).toInt();
   QDateTime receiptTime = query.value(1).toDateTime();
@@ -350,7 +374,10 @@ QJsonObject QRKRegister::compileData(int id)
 
   // Positions
   q = QString("SELECT COUNT(*) FROM orders WHERE receiptId=%1").arg(currentReceipt);
-  query.exec(q);
+  ok = query.exec(q);
+  if (!ok)
+    qDebug() << "QRKRegister CompileData select COUNT error: " << query.lastError().text();
+
   query.next();
   int positions = query.value(0).toInt();
 
@@ -468,6 +495,8 @@ void QRKRegister::itemChangedSlot( const QModelIndex& i, const QModelIndex&)
   int row = i.row();
   int col = i.column();
   double sum(0.0);
+  double net(0.0);
+  double tax(0.0);
 
   QString s = ui->orderList->model()->data(orderListModel->index(row, col, QModelIndex())).toString();
 
@@ -499,10 +528,30 @@ void QRKRegister::itemChangedSlot( const QModelIndex& i, const QModelIndex&)
       s = QString("%1").arg(sum);
       orderListModel->item(row, REGISTER_COL_TOTAL)->setText( s );
       break ;
+    case REGISTER_COL_TAX:
+      net = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toDouble();
+      sum = net * (1.0 + s.toDouble() / 100.0);
+
+      orderListModel->item(row, REGISTER_COL_SINGLE)->setText( QString("%1").arg(sum) );
+      break;
+    case REGISTER_COL_NET:
+      s.replace(",", ".");
+      orderListModel->blockSignals(true);
+      tax = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toDouble();
+      s = QString("%1").arg(s.toDouble() * ((100 + tax) / 100));
+      orderListModel->item(row, REGISTER_COL_SINGLE)->setText( s );
+      sum = s.toDouble() * ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_COUNT, QModelIndex())).toDouble();
+      s = QString("%1").arg(sum);
+      orderListModel->item(row, REGISTER_COL_TOTAL)->setText( s );
+      orderListModel->blockSignals(false);
+      break;
     case REGISTER_COL_SINGLE:
       s.replace(",", ".");
       orderListModel->blockSignals(true);
       orderListModel->item(row, REGISTER_COL_SINGLE)->setText( s );
+      tax = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toDouble();
+      net = s.toDouble() / (1.0 + tax / 100.0);
+      orderListModel->item(row, REGISTER_COL_NET)->setText( QString("%1").arg(net) );
       sum = s.toDouble() * ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_COUNT, QModelIndex())).toDouble();
       //        sum = (long)(sum*100+0.5)/100.0;
       sum = QString::number(sum, 'f', 2).toDouble();
@@ -515,9 +564,11 @@ void QRKRegister::itemChangedSlot( const QModelIndex& i, const QModelIndex&)
       s.replace(",", ".");
       s = QString("%1").arg(QString::number(s.toDouble(), 'f', 2));
       orderListModel->blockSignals(true);
-      orderListModel->item(row, REGISTER_COL_TOTAL)->setText( s );
+      orderListModel->item(row, REGISTER_COL_TOTAL)->setText( s );      
       sum = s.toDouble() / ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_COUNT, QModelIndex())).toDouble();
-
+      tax = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toDouble();
+      net = sum / (1.0 + tax / 100.0);
+      orderListModel->item(row, REGISTER_COL_NET)->setText( QString("%1").arg(net) );
       s = QString("%1").arg(sum);
       orderListModel->item(row, REGISTER_COL_SINGLE)->setText( s );
       orderListModel->blockSignals(false);
@@ -564,10 +615,11 @@ void QRKRegister::plusSlot()
 
   QString defaultTax = Database::getDefaultTax();
 
-  orderListModel->setColumnCount(5);
+  orderListModel->setColumnCount(6);
   orderListModel->setItem(row, REGISTER_COL_COUNT, new QStandardItem(QString("1")));
   orderListModel->setItem(row, REGISTER_COL_PRODUCT, new QStandardItem(QString(tr("Artikelname"))));
   orderListModel->setItem(row, REGISTER_COL_TAX, new QStandardItem(defaultTax));
+  orderListModel->setItem(row, REGISTER_COL_NET, new QStandardItem(QString("0")));
   orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(QString("0")));
   orderListModel->setItem(row, REGISTER_COL_TOTAL, new QStandardItem(QString("0")));
 
@@ -587,7 +639,7 @@ void QRKRegister::plusSlot()
   ui->orderList->setSelectionBehavior(QAbstractItemView::SelectRows);
 
   /* TODO: Workaround ... resize set only once will not work
-   * but here col 1 will lost QHeaderView::Stretch
+   * but here col REGISTER_COL_PRODUCT will lost QHeaderView::Stretch
   */
   ui->orderList->resizeColumnsToContents();
   ui->orderList->horizontalHeader()->setSectionResizeMode(REGISTER_COL_PRODUCT, QHeaderView::Stretch);

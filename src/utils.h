@@ -28,8 +28,11 @@ class Utils
   public:
     Utils();
 
-    static QString getSignature(QDateTime datetime, double sum, double net, int num);
+    static QString getSignature(QJsonObject data);
     static double getYearlyTotal(int year);
+
+  private:
+    static QString getLastReceiptSignature();
 
 };
 

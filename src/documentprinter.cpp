@@ -330,7 +330,7 @@ bool DocumentPrinter::initPrinter(QPrinter &printer)
 {
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
-  qDebug() << "Print Resolution: " << printer.resolution();
+//  qDebug() << "Print Resolution: " << printer.resolution();
 
 //  printer.setResolution(300);
 

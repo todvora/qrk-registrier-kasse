@@ -18,25 +18,129 @@
  */
 
 #include "utils.h"
+#include "database.h"
+#include "aesutil.h"
 
 #include <QDateTime>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QSqlError>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QByteArray>
+#include <QDebug>
 
 Utils::Utils()
 {
 
 }
 
-QString Utils::getSignature(QDateTime datetime, double sum, double net, int num)
+QString Utils::getSignature(QJsonObject data)
 {
-  QString signature = QString("D(%1)G(%2)N(%3)I(%5)")
-      .arg(datetime.toString(Qt::ISODate))
-      .arg(QString("%1").arg(QString::number(sum, 'f', 2)))
-      .arg(QString("%1").arg(QString::number(net, 'f', 2)))
-      .arg(num);
 
-  return signature;
+  QString taxlocation =  Database::getTaxLocation();
+  QSqlDatabase dbc= QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  QJsonObject sign;
+
+  sign["Kassen-ID"] = Database::getCashRegisterId();
+  sign["Belegnummer"] = QString::number(data.value("receiptNum").toInt());
+  sign["Beleg-Datum-Uhrzeit"] = data.value("receiptTime").toString();
+
+  int ok = q.prepare(QString("SELECT tax FROM taxTypes WHERE taxlocation='%1' ORDER BY id").arg(taxlocation));
+  if (!ok)
+    qDebug() << "Utils select tax error: " << q.lastError().text();
+
+  q.exec();
+  while(q.next()){
+    sign[Database::getTaxType( q.value(0).toInt() )] = QString::number( data.value(Database::getTaxType(q.value(0).toInt())).toDouble(), 'f', 2);
+  }
+
+  QString concatenatedValue = sign["Kassen-ID"].toString() + sign["Belegnummer"].toString();
+
+  double turnOverValue = getYearlyTotal(QDate::currentDate().year());
+  QString encrypted = AESUtil::encrypt(concatenatedValue, turnOverValue, AESUtil::getPrivateKey());
+  // double decrypted = AESUtil::decrypt(concatenatedValue, encrypted, AESUtil::getPrivateKey()).toDouble();
+
+  sign["Stand-Umsatz-Zaehler-AES256-ICM"] = encrypted;
+
+  QString ls = getLastReceiptSignature();
+
+  sign["Zertifikat-Seriennummer"] = "1";
+  sign["Sig-Voriger-Beleg"] = ls;
+
+  QJsonDocument doc(sign);
+  QByteArray bytes = doc.toJson(doc.Compact);
+
+//  qDebug() << "Utils::getSignature: " << QString::fromStdString( bytes.toStdString() );
+
+  return QString::fromStdString( bytes.toStdString() );
+}
+
+/*
+return "_" + rkSuite.getSuiteID() + "_" + cashBoxID + "_" + receiptIdentifier.
++ "_" + dateFormat.format(receiptDateAndTime) + "_" + decimalFormat.format(sumTaxSetNormal).
++ "_" + decimalFormat.format(sumTaxSetErmaessigt1) + "_" + decimalFormat.format(sumTaxSetErmaessigt2).
++ "_" + decimalFormat.format(sumTaxSetNull) + "_" + decimalFormat.format(sumTaxSetBesonders).
++ "_" + encryptedTurnoverValue + "_" + signatureCertificateSerialNumber + "_" + signatureValuePreviousReceipt;
+*/
+
+
+QString Utils::getLastReceiptSignature()
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  int lastReceiptId = Database::getLastReceiptNum() - 1;
+  int ok = q.prepare(QString("SELECT signature FROM receipts WHERE receiptNum=%1").arg(lastReceiptId));
+  if (!ok)
+    qDebug() << "Utils select signature error: " << q.lastError().text();
+
+  q.exec();
+
+  if (q.next())
+  {
+
+    // RK Suite defined in Detailspezifikation/ABS 2
+    // R1_AT0("1", "AT0", "ES256", "SHA-256", 8);
+    QString s = q.value(0).toString();
+    QJsonDocument doc = QJsonDocument::fromJson(s.toUtf8());
+
+    if(doc.isObject())
+    {
+      QJsonObject sig = doc.object();
+      QString sign = "_R1_AT0_";
+      sign.append( sig.value("Kassen-ID").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Belegnummer").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Beleg-Datum-Uhrzeit").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Normal").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Ermaessigt1").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Ermaessigt2").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Null").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Besonders").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Stand-Umsatz-Zaehler-AES256-ICM").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Zertifikat-Seriennummer").toString() );
+      sign.append( "_" );
+      sign.append( sig.value("Sig-Voriger-Beleg").toString() );
+
+      return AESUtil::sigLastReceipt(sign);
+
+    }
+
+  }
+
+  return AESUtil::sigLastReceipt(Database::getCashRegisterId());
+
 }
 
 double Utils::getYearlyTotal(int year)

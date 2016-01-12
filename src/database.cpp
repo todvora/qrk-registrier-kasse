@@ -155,20 +155,31 @@ bool Database::exists(const QString type, const QString &name)
 
 //--------------------------------------------------------------------------------
 
-QStringList Database::getLastReceipt()
+int Database::getLastReceiptNum()
 {
-
-  QStringList list;
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
   query.prepare("SELECT value FROM globals WHERE name='lastReceiptNum'");
   query.exec();
-  query.next();
 
-  int lastReceipt = query.value(0).toInt();
+  if ( query.next() )
+    return query.value(0).toInt();
+
+  return 0;
+}
+
+QStringList Database::getLastReceipt()
+{
+
+  QStringList list;
+
+  int lastReceipt = getLastReceiptNum();
 
   if (lastReceipt == 0)
     return list;
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
 
   query.prepare(QString("SELECT timestamp, receiptNum, payedBy, gross FROM receipts WHERE receiptNum=%1").arg(lastReceipt));
   query.exec();
@@ -251,7 +262,7 @@ QString Database::getShopName()
 
 bool Database::open(bool dbSelect)
 {
-  const int CURRENT_SCHEMA_VERSION = 3;
+  const int CURRENT_SCHEMA_VERSION = 4;
   // read global defintions (DB, ...)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
@@ -362,7 +373,7 @@ bool Database::open(bool dbSelect)
 
     query.exec(QString("INSERT INTO `dep`(`id`,`version`,`cashregisterid`,`datetime`,`text`) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tProduktposition\tBeschreibung\tMenge\tEinzelpreis\tGesamtpreis\tUSt. Satz\tErstellungsdatum')"));
     query.exec(QString("INSERT INTO `dep`(`id`,`version`,`cashregisterid`,`datetime`,`text`) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tBeleg\tBelegtyp\tBemerkung\tNachbonierung\tBelegnummer\tDatum\tUmsatz Normal\tUmsatz Ermaessigt1\tUmsatz Ermaessigt2\tUmsatz Null\tUmsatz Besonders\tJahresumsatz bisher\tErstellungsdatum')"));
-    query.exec(QString("INSERT INTO `dep`(`id`,`version`,`cashregisterid`,`datetime`,`text`) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Nr\tProgrammversion\tKassen-Id\tBeleg-Textposition\tText\tErstellungsdatum')"));
+    query.exec(QString("INSERT INTO `dep`(`id`,`version`,`cashregisterid`,`datetime`,`text`) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tBeleg-Textposition\tText\tErstellungsdatum')"));
 
   }
   else  // db already exists; check if we need to run an update

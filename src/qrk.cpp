@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "aboutdlg.h"
 #include "qrk.h"
 #include "defines.h"
 #include "database.h"
@@ -82,6 +83,8 @@ QRK::QRK()
   iniStack();
 
   connect(ui->actionDEP_Exportieren, SIGNAL(triggered()), this, SLOT(actionDEP_Export()));
+  connect(ui->actionAbout_QRK, SIGNAL(triggered()), this, SLOT(actionAbout_QRK()));
+  connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
   connect(qrk_home, SIGNAL(endOfDay()), this, SLOT(endOfDaySlot()));
   connect(qrk_home, SIGNAL(endOfMonth()), this, SLOT(endOfMonthSlot()));
@@ -144,6 +147,18 @@ void QRK::init()
 void QRK::setShopName()
 {
   shopName = Database::getShopName();
+}
+
+//--------------------------------------------------------------------------------
+
+void QRK::actionAbout_QRK()
+{
+  AboutDlg *dlg = new AboutDlg(this);
+
+  dlg->exec();
+  dlg->close();
+
+  delete dlg;
 }
 
 //--------------------------------------------------------------------------------

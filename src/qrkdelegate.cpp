@@ -68,7 +68,7 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     return combo;
 
   } else if (this->type == PRODUCTS) {
-    QLineEdit *editor = new QLineEdit( parent ) ;
+    QLineEdit *editor = new QLineEdit( parent );
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
     query.prepare("SELECT name FROM products WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'");

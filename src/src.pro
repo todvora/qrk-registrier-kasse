@@ -31,7 +31,9 @@ SOURCES += main.cpp\
     r2bdialog.cpp \
     qrkhome.cpp \
     qrkdocument.cpp \
-    qrkregister.cpp
+    qrkregister.cpp \
+    aboutdlg.cpp \
+    aesutil.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -50,7 +52,9 @@ HEADERS  += \
     qrkdocument.h \
     qrkhome.h \
     qrkregister.h \
-    defines.h
+    defines.h \
+    aboutdlg.h \
+    aesutil.h
 
 FORMS += \
     ui/qrk.ui \
@@ -59,9 +63,14 @@ FORMS += \
     ui/r2bdialog.ui \
     ui/qrkdocument.ui \
     ui/qrkhome.ui \
-    ui/qrkregister.ui
+    ui/qrkregister.ui \
+    ui/aboutdlg.ui
 
 RESOURCES += \
     qrk.qrc
 
 DISTFILES +=
+
+# LIBS += -lqrencode
+# LIBS += -lpthread
+LIBS += -lcrypto++

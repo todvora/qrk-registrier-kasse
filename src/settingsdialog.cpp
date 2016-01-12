@@ -31,11 +31,13 @@ SettingsDialog::SettingsDialog(QSettings &s, QWidget *parent)
   general = new GeneralTab(settings);
   master = new MasterDataTab(settings);
   printer = new PrinterTab(settings);
+  extra = new ExtraTab(settings);
 
   tabWidget = new QTabWidget;
   tabWidget->addTab(master, tr("Stammdaten"));
   tabWidget->addTab(printer, tr("Drucker"));
   tabWidget->addTab(general, tr("Allgemein"));
+  tabWidget->addTab(extra, tr("Extra"));
 
   QPushButton *pushButton = new QPushButton;
   pushButton->setMinimumHeight(60);
@@ -79,6 +81,8 @@ void SettingsDialog::accept()
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='currency'").arg(master->getShopCurrency()));
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='taxlocation'").arg(master->getShopTaxes()));
 
+  settings.setValue("useInputNetPrice", extra->getInputNetPrice());
+
   settings.setValue("paperFormat", printer->getPaperFormat());
   settings.setValue("useReportPrinter", printer->getUseReportPrinter());
   settings.setValue("logoRight", printer->getIsLogoRight());
@@ -94,6 +98,35 @@ void SettingsDialog::accept()
 
   QDialog::accept();
 
+}
+
+ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
+  : QWidget(parent)
+{
+
+  useInputNetPriceCheck = new QCheckBox;
+  useInputNetPriceCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+
+  QGroupBox *registerGroup = new QGroupBox();
+  registerGroup->setTitle(tr("Kasse"));
+  QFormLayout *extraLayout = new QFormLayout;
+  extraLayout->setAlignment(Qt::AlignLeft);
+  extraLayout->addRow(tr("Netto Eingabe ermöglichen:"),useInputNetPriceCheck);
+  registerGroup->setLayout(extraLayout);
+
+  QVBoxLayout *mainLayout = new QVBoxLayout;
+  mainLayout->addWidget(registerGroup);
+
+  mainLayout->addStretch(1);
+  setLayout(mainLayout);
+
+  useInputNetPriceCheck->setChecked(settings.value("useInputNetPrice", false).toBool());
+
+}
+
+bool ExtraTab::getInputNetPrice()
+{
+  return useInputNetPriceCheck->isChecked();
 }
 
 GeneralTab::GeneralTab(QSettings &, QWidget *parent)
@@ -314,7 +347,6 @@ QString MasterDataTab::getShopCashRegisterId()
   return shopCashRegisterId->text();
 }
 
-
 PrinterTab::PrinterTab(QSettings &settings, QWidget *parent)
   : QWidget(parent)
 {
@@ -473,4 +505,3 @@ int PrinterTab::getmarginBottom()
 {
   return marginBottomSpin->value();
 }
-

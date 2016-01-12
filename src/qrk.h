@@ -70,6 +70,7 @@ class QRK : public QMainWindow
     void onDocumentButton_clicked();
     void onCancelDocumentButton_clicked();
     void actionDEP_Export();
+    void actionAbout_QRK();
     void fullScreenSlot();
     void exitSlot();
 

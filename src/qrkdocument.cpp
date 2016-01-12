@@ -124,7 +124,7 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     ui->documentLabel->setText(QString("Beleg Nr: %1\t%2\t%3\t\t%4").arg(receiptNum).arg(payedByText).arg(QString::number(price, 'f', 2)).arg(stornoText));
 
     QSqlDatabase dbc = QSqlDatabase::database("CN");
-    int id = ui->documentList->model()->data(documentListModel->index(row, 0, QModelIndex())).toInt();
+    int id = ui->documentList->model()->data(documentListModel->index(row, REGISTER_COL_COUNT, QModelIndex())).toInt();
 
     documentContentModel->setQuery(QString("SELECT orders.count, products.name, orders.tax, orders.gross, orders.count * orders.gross AS Price FROM orders INNER JOIN products ON products.id=orders.product WHERE orders.receiptId=%1").arg(id), dbc);
     documentContentModel->setHeaderData(REGISTER_COL_COUNT, Qt::Horizontal, tr("Anz."));

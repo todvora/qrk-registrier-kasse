@@ -31,6 +31,21 @@ class QCheckBox;
 class QSpinBox;
 class QLineEdit;
 
+class ExtraTab : public QWidget
+{
+    Q_OBJECT
+
+  public:
+    explicit ExtraTab(QSettings &s, QWidget *parent = 0);
+    bool getInputNetPrice();
+
+  private slots:
+
+  private:
+    QCheckBox *useInputNetPriceCheck;
+
+};
+
 class GeneralTab : public QWidget
 {
     Q_OBJECT
@@ -130,6 +145,7 @@ class SettingsDialog : public QDialog
     GeneralTab *general;
     MasterDataTab *master;
     PrinterTab *printer;
+    ExtraTab *extra;
 
 };
 
