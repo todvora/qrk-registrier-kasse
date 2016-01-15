@@ -374,12 +374,20 @@ bool DocumentPrinter::initPrinter(QPrinter &printer)
   printer.setPaperSize(QSizeF(settings.value("paperWidth", 80).toInt(),
                               settings.value("paperHeight", 210).toInt()), QPrinter::Millimeter);
 
+  const QMarginsF marginsF(settings.value("marginLeft", 0).toDouble(),
+            settings.value("marginTop", 17).toDouble(),
+            settings.value("marginRight", 5).toDouble(),
+            settings.value("marginBottom", 0).toInt());
+
+  printer.setPageMargins(marginsF,QPageLayout::Millimeter);
+
+/*
   printer.setPageMargins(settings.value("marginLeft", 0).toInt(),
                          settings.value("marginTop", 17).toInt(),
                          settings.value("marginRight", 5).toInt(),
                          settings.value("marginBottom", 0).toInt(),
                          QPrinter::Millimeter);
-
+*/
   return true;
 }
 
