@@ -140,6 +140,8 @@ void QRK::init()
 {
   setShopName();
   cashRegisterId = Database::getCashRegisterId();
+
+  qrk_home->init();
 }
 
 //--------------------------------------------------------------------------------
@@ -229,6 +231,7 @@ void QRK::onCancelRegisterButton_clicked()
   currentReceipt = 0;
   qrk_register->clearModel();
   stackedWidget->setCurrentIndex(0);
+  qrk_home->init();
 }
 
 //--------------------------------------------------------------------------------

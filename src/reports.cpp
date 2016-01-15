@@ -252,13 +252,15 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   pb->setValue(value + 8);
 
   /* Anzahl verkaufter Produkte oder Leistungen */
-  QString query = QString("SELECT count(orders.count) FROM orders WHERE receiptId IN (SELECT id FROM receipts WHERE timestamp BETWEEN '%1' AND '%2')").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
+  QString query = QString("SELECT sum(orders.count) FROM orders WHERE receiptId IN (SELECT id FROM receipts WHERE timestamp BETWEEN '%1' AND '%2')").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
   q.prepare(query);
   q.exec();
   q.next();
 
+  int sumProducts = q.value(0).toInt();
+
   QStringList stat;
-  stat.append(QString("Anzahl verkaufter Produkte oder Leistungen: %1").arg(q.value(0).toString()));
+  stat.append(QString("Anzahl verkaufter Produkte oder Leistungen: %1").arg(sumProducts));
 
   pb->setValue(value + 8);
 
@@ -370,7 +372,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   query = QString("SELECT sum(orders.count) AS count, products.name, orders.gross, sum(orders.count * orders.gross) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN '%1' AND '%2' GROUP BY products.name ORDER BY orders.tax, products.name ASC").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
   q.exec(query);
 
-  stat.append(tr("Verkaufte Produkte oder Leistungen"));
+  stat.append(tr("Verkaufte Produkte oder Leistungen (Gruppiert) Gesamt: %1").arg(sumProducts));
   while (q.next())
   {
     stat.append(QString("%1: %2: %3: %4: %5%")

@@ -18,9 +18,12 @@
  */
 
 #include "qrkhome.h"
+#include "database.h"
 
 #include <QMessageBox>
 #include <QDesktopWidget>
+#include <QSettings>
+
 
 QRKHome::QRKHome(QWidget *parent)
   : QWidget(parent),ui(new Ui::QRKHome), menu(0)
@@ -94,12 +97,13 @@ QRKHome::QRKHome(QWidget *parent)
 
     connect(ui->taskButton, SIGNAL(clicked()), this, SLOT(taskSlot()));
 
-
     connect(ui->registerButton, SIGNAL(clicked()), this, SIGNAL(registerButton_clicked()));
     connect(ui->documentButton, SIGNAL(clicked()), this, SIGNAL(documentButton_clicked()));
 
+
     // for TESTS
     // connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(endOfDay()));
+
 
   }
 
@@ -107,6 +111,32 @@ QRKHome::QRKHome(QWidget *parent)
 
 // page 1 Main
 //--------------------------------------------------------------------------------
+
+void QRKHome::init()
+{
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+  if (settings.value("backupDirectory").toString().isEmpty()){
+    QPixmap pixmap;
+    pixmap.load(":icons/cancel.png");
+    ui->backupDirIconLabel->setPixmap(pixmap);
+    ui->backupDirLabel->setText(tr("n/a"));
+  } else {
+    ui->backupDirLabel->setText(settings.value("backupDirectory").toString());
+  }
+  if (settings.value("dataDirectory").toString().isEmpty()){
+    QPixmap pixmap;
+    pixmap.load(":icons/cancel.png");
+    ui->dataDirIconLabel->setPixmap(pixmap);
+    ui->dataDirlabel->setText(tr("n/a"));
+  } else {
+    ui->dataDirlabel->setText(settings.value("dataDirectory").toString());
+  }
+
+  ui->lcdNumberDay->display(Database::getDayCounter());
+  ui->lcdNumberMonth->display(Database::getMonthCounter());
+  ui->lcdNumberYear->display(Database::getYearCounter());
+
+}
 
 void QRKHome::menuSlot()
 {
@@ -125,7 +155,7 @@ void QRKHome::settingsSlot()
   SettingsDialog *tab = new SettingsDialog(settings);
   if (tab->exec() == QDialog::Accepted )
   {
-    // init();
+    init();
   }
 }
 

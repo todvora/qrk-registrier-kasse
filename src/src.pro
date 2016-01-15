@@ -73,4 +73,4 @@ DISTFILES +=
 
 # LIBS += -lqrencode
 # LIBS += -lpthread
-LIBS += -lcrypto++
+LIBS += -lcryptopp

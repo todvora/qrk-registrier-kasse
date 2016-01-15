@@ -46,7 +46,9 @@ class QRKDocument : public QWidget
 
   private slots:
     void onCancellationButton_clicked();
-    void onPrintcopyButton_clicked();
+    void onPrintcopyButton_clicked(bool = false);
+    void onInvoiceCompanyButton_clicked();
+
 
   protected slots:
     void onDocumentSelectionChanged(const QItemSelection &, const QItemSelection &);

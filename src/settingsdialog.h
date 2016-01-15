@@ -54,15 +54,22 @@ class GeneralTab : public QWidget
     explicit GeneralTab(QSettings &s, QWidget *parent = 0);
     QString getHeader();
     QString getFooter();
-    QString getBackupPath();
+    QString getBackupDirectory();
+    QString getDataDirectory();
+    QString getLogo();
 
   private slots:
-    void backupButton_clicked();
+    void backupDirectoryButton_clicked();
+    void dataDirectoryButton_clicked();
+    void logoButton_clicked();
 
   private:
     QTextEdit *printHeaderEdit;
     QTextEdit *printFooterEdit;
     QLineEdit *backupDirectoryEdit;
+    QLineEdit *dataDirectoryEdit;
+    QLineEdit *logoEdit;
+
 };
 
 class PrinterTab : public QWidget
@@ -74,6 +81,32 @@ class PrinterTab : public QWidget
 
     QString getReportPrinter();
     QString getPaperFormat();
+    QString getInvoiceCompanyPrinter();
+    QString getInvoiceCompanyPaperFormat();
+    int getInvoiceCompanyMarginLeft();
+    int getInvoiceCompanyMarginRight();
+    int getInvoiceCompanyMarginTop();
+    int getInvoiceCompanyMarginBottom();
+
+  private:
+
+    QComboBox *reportPrinterCombo;
+    QComboBox *paperFormatCombo;
+    QComboBox *invoiceCompanyPrinterCombo;
+    QComboBox *invoiceCompanyPaperFormatCombo;
+    QSpinBox *invoiceCompanyMarginLeftSpin;
+    QSpinBox *invoiceCompanyMarginRightSpin;
+    QSpinBox *invoiceCompanyMarginTopSpin;
+    QSpinBox *invoiceCompanyMarginBottomSpin;
+};
+
+class ReceiptPrinterTab : public QWidget
+{
+    Q_OBJECT
+
+  public:
+    explicit ReceiptPrinterTab(QSettings &s, QWidget *parent = 0);
+
     QString getReceiptPrinter();
     bool getUseReportPrinter();
     bool getIsLogoRight();
@@ -86,8 +119,6 @@ class PrinterTab : public QWidget
     int getmarginBottom();
 
   private:
-
-    QComboBox *reportPrinterCombo;
     QComboBox *paperFormatCombo;
     QComboBox *receiptPrinterCombo;
     QCheckBox *useReportPrinterCheck;
@@ -145,6 +176,7 @@ class SettingsDialog : public QDialog
     GeneralTab *general;
     MasterDataTab *master;
     PrinterTab *printer;
+    ReceiptPrinterTab *receiptprinter;
     ExtraTab *extra;
 
 };

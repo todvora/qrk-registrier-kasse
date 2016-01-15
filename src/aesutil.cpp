@@ -24,15 +24,15 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
-#include <crypto++/aes.h>
-#include <crypto++/modes.h>
-//#include <crypto++/filters.h>
-#include <crypto++/hex.h>
-//#include <crypto++/sha.h>
-#include <crypto++/base64.h>
-#include <crypto++/base32.h>
-#include <crypto++/rsa.h>
-#include <crypto++/osrng.h>
+#include <cryptopp/aes.h>
+#include <cryptopp/modes.h>
+//#include <cryptopp/filters.h>
+#include <cryptopp/hex.h>
+//#include <cryptopp/sha.h>
+#include <cryptopp/base64.h>
+#include <cryptopp/base32.h>
+#include <cryptopp/rsa.h>
+#include <cryptopp/osrng.h>
 
 using namespace std;
 using namespace CryptoPP;

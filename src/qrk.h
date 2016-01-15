@@ -48,6 +48,7 @@ class QRK : public QMainWindow
     void setNoPrinter() { noPrinter = true; }  // do not print to printer but only to pdf file for testing only
     void setShopName();
     int getCurrentRegisterYear(){return currentRegisterYear;}
+    void init();
 
     QLabel *currentRegisterYearLabel;
     QLabel *cashRegisterIdLabel;
@@ -79,7 +80,6 @@ class QRK : public QMainWindow
 
 
   private:
-    void init();
     void closeEvent (QCloseEvent *event);
 
     QString shopname();

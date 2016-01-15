@@ -32,6 +32,7 @@ class QRKHome : public QWidget
     Q_OBJECT
   public:
     explicit QRKHome(QWidget *parent = 0);
+    void init();
 
   signals:
     void registerButton_clicked();

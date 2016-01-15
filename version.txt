@@ -17,6 +17,21 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0115
+ * Manche Druckertreiber unterstützen nur eine kopie pro Druckerauftrag
+   Diese Eigenschaft wurde behoben. Es wird jetzt wenn nötig ein zweiter
+   Druckauftrag gesendet
+ + Datenverzeichnis Pfadangabe im Settings Dialog
+ + Logoauswahl im Settings Dialog
+ + Druck für Firmenrechnung
+ + Einige Informationsanzeigen im Hauptfenster hinzugefügt
+ * Fix falsche  Anzahl verkaufter Produkte oder Leistungen im Tages/Monatsbericht
+ * einige fixes an die ich mich nicht mehr erinnern kann :)
+
+VERSION 0.16.0112a
+ * nur Linux
+ * Fehler bei der Installation behoben (Abhängigkeiten)
+
 VERSION 0.16.0112
  + Nettoeingabe möglich (Im Settings Dialog einstellbar)
  * Datenbank anpassungen

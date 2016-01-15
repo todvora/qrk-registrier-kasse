@@ -39,6 +39,82 @@ Database::~Database()
 {
 }
 
+QString Database::getDayCounter()
+{
+
+  QDateTime dateFrom;
+  QDateTime dateTo;
+
+  dateFrom.setDate(QDate::currentDate());
+  dateTo.setDate(QDate::currentDate());
+  dateTo.setTime(QTime::currentTime());
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+
+  /* Summe */
+  query.prepare(QString("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND payedBy < 3").arg(dateFrom.toString(Qt::ISODate)).arg(dateTo.toString(Qt::ISODate)));
+  query.exec();
+  query.next();
+
+  return QString::number(query.value(0).toDouble(), 'f', 2);
+
+}
+
+QString Database::getMonthCounter()
+{
+
+  QDateTime dateFrom;
+  QDateTime dateTo;
+
+  dateFrom.setDate(QDate::fromString(
+                     QString("%1.%2.01 00:00:00")
+                     .arg(QDate::currentDate().year())
+                     .arg(QDate::currentDate().month())
+                     , "yyyy.MM.dd HH::mm:ss")
+                     );
+  dateTo.setDate(QDate::currentDate());
+  dateTo.setTime(QTime::currentTime());
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+
+  /* Summe */
+  query.prepare(QString("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND payedBy < 3").arg(dateFrom.toString(Qt::ISODate)).arg(dateTo.toString(Qt::ISODate)));
+  query.exec();
+  query.next();
+
+  return QString::number(query.value(0).toDouble(), 'f', 2);
+
+}
+
+QString Database::getYearCounter()
+{
+
+  QDateTime dateFrom;
+  QDateTime dateTo;
+
+  dateFrom.setDate(QDate::fromString(
+                     QString("%1-01-01 00:00:00")
+                     .arg(QDate::currentDate().year())
+                     , "yyyy-MM-dd HH::mm:ss")
+                   );
+
+  dateTo.setDate(QDate::currentDate());
+  dateTo.setTime(QTime::currentTime());
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+
+  /* Summe */
+  query.prepare(QString("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND payedBy < 3").arg(dateFrom.toString(Qt::ISODate)).arg(dateTo.toString(Qt::ISODate)));
+  query.exec();
+  query.next();
+
+  return QString::number(query.value(0).toDouble(), 'f', 2);
+
+}
+
 //--------------------------------------------------------------------------------
 
 QString Database::getTaxLocation()

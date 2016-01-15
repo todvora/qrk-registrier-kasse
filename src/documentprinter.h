@@ -40,6 +40,7 @@ class DocumentPrinter : public QObject
     QString wordWrap(QString text, int width, QFont font);
     bool initPrinter(QPrinter &printer);
     bool initAlternatePrinter(QPrinter &printer);
+    bool initInvoiceCompanyPrinter(QPrinter &printer);
     void printI(QJsonObject data, QPrinter &printer);
     QProgressBar *pb;
     bool noPrinter;
@@ -49,6 +50,7 @@ class DocumentPrinter : public QObject
     QString paperFormat;
     bool useReportPrinter;
     QString currency;
+    QString logoFileName;
 
   signals:
 

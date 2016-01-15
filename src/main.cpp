@@ -124,6 +124,8 @@ int main(int argc, char *argv[])
 
   mainWidget->setShopName();
   mainWidget->setWindowTitle ( title );
+  mainWidget->init();
+
 
   signal(SIGTERM, sighandler);
 

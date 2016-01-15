@@ -37,12 +37,13 @@ QRKDocument::QRKDocument(QProgressBar *progressBar, QWidget *parent)
   {
     ui->cancelDocumentButton->setMinimumWidth(0);
     ui->cancellationButton->setMinimumWidth(0);
-    ui->pushButton->setMinimumWidth(0);
+    ui->invoiceCompanyPrintcopyButton->setMinimumWidth(0);
     ui->pushButton_2->setMinimumWidth(0);
   }
 
   connect(ui->cancelDocumentButton, SIGNAL(clicked()), this, SIGNAL(cancelDocumentButton_clicked()));
   connect(ui->printcopyButton, SIGNAL(clicked()), this, SLOT(onPrintcopyButton_clicked()));
+  connect(ui->invoiceCompanyPrintcopyButton, SIGNAL(clicked(bool)), this, SLOT(onInvoiceCompanyButton_clicked()));
   connect(ui->cancellationButton, SIGNAL(clicked()), this, SLOT(onCancellationButton_clicked()));
 
   // ----------------------------------------------------------------------------
@@ -105,7 +106,8 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
   if (type == PAYED_BY_REPORT_EOD || type == PAYED_BY_REPORT_EOM) { /* actionType Tagesbeleg*/
     ui->documentContent->setHidden(true);
     ui->textBrowser->setHidden(false);
-    ui->cancellationButton->setHidden(true);
+    ui->cancellationButton->setEnabled(false);
+    ui->invoiceCompanyPrintcopyButton->setEnabled(false);
     ui->documentLabel->setText(QString("Beleg Nr: %1\t%2\t%3").arg(receiptNum).arg(payedByText).arg(QString::number(price, 'f', 2)));
 
     ui->textBrowser->setHtml(Reports::getReport(receiptNum));
@@ -113,7 +115,8 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
   } else {
     ui->documentContent->setHidden(false);
     ui->textBrowser->setHidden(true);
-    ui->cancellationButton->setHidden(false);
+    ui->cancellationButton->setEnabled(true);;
+    ui->invoiceCompanyPrintcopyButton->setEnabled(true);
 
     QString stornoText = "";
     if (Database::getStorno(receiptNum) == 1)
@@ -195,7 +198,14 @@ void QRKDocument::onCancellationButton_clicked()
 
 //--------------------------------------------------------------------------------
 
-void QRKDocument::onPrintcopyButton_clicked()
+void QRKDocument::onInvoiceCompanyButton_clicked()
+{
+  onPrintcopyButton_clicked(true);
+}
+
+//--------------------------------------------------------------------------------
+
+void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
 {
 
   QModelIndex idx = ui->documentList->currentIndex();
@@ -235,6 +245,8 @@ void QRKDocument::onPrintcopyButton_clicked()
       id = Database::getStornoId(id);
       data["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):tr("KASSABON");
     }
+
+    data["isInvoiceCompany"] = isInvoiceCompany;
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     DocumentPrinter *p = new DocumentPrinter(this, progressBar);

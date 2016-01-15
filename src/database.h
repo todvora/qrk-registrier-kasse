@@ -50,6 +50,9 @@ class Database : public QObject
     static QString getTaxLocation();
     static QString getDefaultTax();
     static int getLastReceiptNum();
+    static QString getDayCounter();
+    static QString getMonthCounter();
+    static QString getYearCounter();
 
 
   private:

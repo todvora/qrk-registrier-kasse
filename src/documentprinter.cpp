@@ -35,6 +35,7 @@ DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, boo
 
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
+  logoFileName = settings.value("logo", "logo.png").toString();
   logoRight = settings.value("logoRight", false).toBool();
   numberCopies = settings.value("numberCopies", 1).toInt();
   paperFormat = settings.value("paperFormat", "A4").toString();
@@ -82,22 +83,34 @@ void DocumentPrinter::printReceipt(QJsonObject data)
   //    printer.setResolution(600);
 
   receiptNum = data.value("receiptNum").toInt();
-
   pb->setValue(1);
-  if ( initPrinter(printer) )
-    printI(data, printer );
 
-  if (useReportPrinter) {
-    if (initAlternatePrinter(printer))
-      printI( data, printer );
+  if (data.value("isInvoiceCompany").toBool()) {
+    if ( initInvoiceCompanyPrinter(printer) )
+      printI(data, printer );
+
+  } else {
+
+    if ( initPrinter(printer) )
+      printI(data, printer );
+
+    /* Some Printdriver do not accept more than 1 print.
+     * so we send a second printjob
+     */
+    if (numberCopies > 1)
+      printI(data, printer );
+
+    if (useReportPrinter) {
+      if (initAlternatePrinter(printer))
+        printI( data, printer );
+    }
   }
-
 }
 
 void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 {
 
-  printer.setNumCopies(numberCopies);
+//  printer.setNumCopies(numberCopies);
 
   QPainter painter(&printer);
   QFont font("Courier-New", 8);
@@ -105,7 +118,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   QFontMetrics fontMetr = painter.fontMetrics();
 
   QFont grossFont(font);
-//  grossFont.setFixedPitch(true);
+  //  grossFont.setFixedPitch(true);
   QFontMetrics grossMetrics(grossFont, &printer);
 
   QFont boldFont("Courier-New", 10, 100);  // for sum
@@ -119,7 +132,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   int y = 0;
 
   bool logo = false;
-  QFileInfo checkFile("logo.png");
+  QFileInfo checkFile(logoFileName);
   // check if file exists and if yes: Is it really a file and no directory?
   if (checkFile.exists() && checkFile.isFile()) {
     logo = true;
@@ -127,29 +140,34 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
   pb->setValue(10);
 
+  bool isInvoiceCompany = data.value("isInvoiceCompany").toBool();
+
   QPixmap logoPixmap;
   QString shopName = data.value("shopName").toString();
 
-  if (logo) {
 
-    logoPixmap.load("logo.png");
+  if (!isInvoiceCompany) {
+    if (logo) {
 
-    if (logoRight) {
-      painter.drawPixmap(WIDTH - logoPixmap.width() - 1, y, logoPixmap);
-      QRect rect = painter.boundingRect(0, y, WIDTH - logoPixmap.width(), logoPixmap.height(), Qt::AlignCenter, shopName);
-      painter.drawText(0, y, rect.width(), rect.height(), Qt::AlignCenter, shopName);
+      logoPixmap.load(logoFileName);
 
-      y += 5 + qMax(rect.height(), logoPixmap.height()) + 4;
-      painter.drawLine(0, y, WIDTH, y);
-      y += 5;
+      if (logoRight) {
+        painter.drawPixmap(WIDTH - logoPixmap.width() - 1, y, logoPixmap);
+        QRect rect = painter.boundingRect(0, y, WIDTH - logoPixmap.width(), logoPixmap.height(), Qt::AlignCenter, shopName);
+        painter.drawText(0, y, rect.width(), rect.height(), Qt::AlignCenter, shopName);
+
+        y += 5 + qMax(rect.height(), logoPixmap.height()) + 4;
+        painter.drawLine(0, y, WIDTH, y);
+        y += 5;
+      } else {
+        painter.drawPixmap((WIDTH / 2) - (logoPixmap.width()/2) - 1, y, logoPixmap);
+        y += 5 + logoPixmap.height() + 4;
+      }
     } else {
-      painter.drawPixmap((WIDTH / 2) - (logoPixmap.width()/2) - 1, y, logoPixmap);
-      y += 5 + logoPixmap.height() + 4;
+      int shopnameHeight = shopName.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
+      painter.drawText(0, y, WIDTH, shopnameHeight + 4, Qt::AlignCenter, shopName);
+      y += 5 + shopnameHeight;
     }
-  } else {
-    int shopnameHeight = shopName.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
-    painter.drawText(0, y, WIDTH, shopnameHeight + 4, Qt::AlignCenter, shopName);
-    y += 5 + shopnameHeight;
   }
 
   pb->setValue(15);
@@ -310,7 +328,20 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
   pb->setValue(progress + 10);
 
-  if (! data.value("printFooter").toString().isEmpty()) {
+  if(isInvoiceCompany) {
+    y += 5;
+    QString printFooter = tr("Dient als Steuerbeleg für ihr Finanzamt.\n"
+                             "Wichtig: Beleg bitte aufbewahren.\n"
+                             "Diese Rechnung ist nur in Verbindung\n"
+                             "Mit dem angehefteten Kassenbon gültig.\n"
+                             ">> Datum = Liefer- und Rechnungsdatum <<\n");
+
+    int headerTextHeight = printFooter.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
+    painter.drawText(0, y, WIDTH, headerTextHeight, Qt::AlignCenter, printFooter);
+    y += 5 + headerTextHeight + 4;
+
+  }
+  else if (! data.value("printFooter").toString().isEmpty()) {
     y += 5;
     QString printFooter = data.value("printFooter").toString();
     int headerTextHeight = printFooter.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
@@ -330,9 +361,9 @@ bool DocumentPrinter::initPrinter(QPrinter &printer)
 {
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
-//  qDebug() << "Print Resolution: " << printer.resolution();
+  //  qDebug() << "Print Resolution: " << printer.resolution();
 
-//  printer.setResolution(300);
+  //  printer.setResolution(300);
 
   if ( noPrinter || printer.outputFormat() == QPrinter::PdfFormat)
     printer.setOutputFileName(QString("QRK-BON%1.pdf").arg( receiptNum ));
@@ -349,7 +380,6 @@ bool DocumentPrinter::initPrinter(QPrinter &printer)
                          settings.value("marginBottom", 0).toInt(),
                          QPrinter::Millimeter);
 
-
   return true;
 }
 
@@ -361,11 +391,32 @@ bool DocumentPrinter::initAlternatePrinter(QPrinter &printer)
 
   // defaults fit for 2"(width) x 4"(height) settings for the page of a TSC/TTP-245C printer
 
-    QString f = settings.value("paperFormat").toString();
+  QString f = settings.value("paperFormat").toString();
   if (f == "A4")
-      printer.setPaperSize(printer.A4);
+    printer.setPaperSize(printer.A4);
   if (f == "A5")
-      printer.setPaperSize(printer.A5);
+    printer.setPaperSize(printer.A5);
+
+  return true;
+}
+
+bool DocumentPrinter::initInvoiceCompanyPrinter(QPrinter &printer)
+{
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+
+  printer.setPrinterName(settings.value("invoiceCompanyPrinter").toString());
+
+  QString f = settings.value("invoiceCompanyPaperFormat").toString();
+  if (f == "A4")
+    printer.setPaperSize(printer.A4);
+  if (f == "A5")
+    printer.setPaperSize(printer.A5);
+
+  printer.setPageMargins(settings.value("invoiceCompanyMarginLeft", 90).toInt(),
+                         settings.value("invoiceCompanyMarginTop", 50).toInt(),
+                         settings.value("invoiceCompanyMarginRight", 5).toInt(),
+                         settings.value("invoiceCompanyMarginBottom", 0).toInt(),
+                         QPrinter::Millimeter);
 
   return true;
 }

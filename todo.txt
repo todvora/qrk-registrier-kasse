@@ -18,6 +18,17 @@
  */
 
 To Do Liste:
+erledigt    Datenverzeichnis Pfadangabe im Settings Dialog (VERSION 0.16.0115)
+erledigt    Logoauswahl im Settings Dialog (VERSION 0.16.0115)
+erledigt    (VERSION 0.16.0115)
+            Button für Kopie als Firmenrechnung, dabei soll der Bon ohne Logo, ohne Kopf und ohne Fußtext rechts auf ein A4
+            auf einen eigens definierbaren Drucker gedruckt werden
+            (Damit dort ein vorgedrucktes Firmenpapier eingelegt werden kann" mit dem zusätzlichen Wortlaut
+            Dient als Steuerbeleg für ihr Finanzamt.
+            Wichtig: Beleg bitte aufbewahren.
+            Diese Rechnung ist nur in Verbindung
+            Mit dem angehefteten Kassenbon gültig.
+            >> Datum = Liefer- und Rechnungsdatum <<
 
 erledigt    Netto Preiseingabe ermöglichen          (VERSION 0.16.0112)
 erledigt    Bon zu Beleg einzeln in Tagesabschluss  (VERSION 0.16.0106)
@@ -34,8 +45,10 @@ offen       Kundentext bei Dokumenten anzeigen
 offen       Gruppen und Artikel auf Button legen
 offen       Gruppen und Artikel Manager
 offen       Mehrzeilige Produktzeile bei der Eingabe
-offen       Grössere Buttons für Touch
+offen       Grössere Buttons für Touch (bitte nur wahlweise wegen kleinem Bildschirm)
 offen       QR-Code für 2017
 offen       AES256 für 2017
 offen       Cardreader Support
 offen       DEP Export (JSONFormat)
+offen       Backup bei jedem Tagesabschluss
+offen       Serverbetrieb mit automatischen Import (JSon)
