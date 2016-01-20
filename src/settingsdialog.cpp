@@ -82,10 +82,12 @@ void SettingsDialog::accept()
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='currency'").arg(master->getShopCurrency()));
   query.exec(QString("UPDATE globals SET strValue='%1' WHERE name='taxlocation'").arg(master->getShopTaxes()));
 
+  settings.setValue("useLogo", general->getUseLogo());
   settings.setValue("logo", general->getLogo());
   settings.setValue("dataDirectory", general->getDataDirectory());
   settings.setValue("backupDirectory", general->getBackupDirectory());
   settings.setValue("useInputNetPrice", extra->getInputNetPrice());
+  settings.setValue("useMaximumItemSold", extra->getMaximumItemSold());
 
   settings.setValue("reportPrinter", printer->getReportPrinter());
   settings.setValue("paperFormat", printer->getPaperFormat());
@@ -119,11 +121,16 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   useInputNetPriceCheck = new QCheckBox;
   useInputNetPriceCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
 
+  useMaximumItemSoldCheck = new QCheckBox;
+  useMaximumItemSoldCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+
+
   QGroupBox *registerGroup = new QGroupBox();
   registerGroup->setTitle(tr("Kasse"));
   QFormLayout *extraLayout = new QFormLayout;
   extraLayout->setAlignment(Qt::AlignLeft);
   extraLayout->addRow(tr("Netto Eingabe ermöglichen:"),useInputNetPriceCheck);
+  extraLayout->addRow(tr("Meistverkauften Artikel als Standard Artikel verwenden:"),useMaximumItemSoldCheck);
   registerGroup->setLayout(extraLayout);
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -133,12 +140,18 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   setLayout(mainLayout);
 
   useInputNetPriceCheck->setChecked(settings.value("useInputNetPrice", false).toBool());
+  useMaximumItemSoldCheck->setChecked(settings.value("useMaximumItemSold", false).toBool());
 
 }
 
 bool ExtraTab::getInputNetPrice()
 {
   return useInputNetPriceCheck->isChecked();
+}
+
+bool ExtraTab::getMaximumItemSold()
+{
+    return useMaximumItemSoldCheck->isChecked();
 }
 
 GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
@@ -150,10 +163,12 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   QLabel *printFooterLabel = new QLabel(tr("BON Fußzeilen:"));
   printFooterEdit = new QTextEdit();
 
+
   QLabel *logoLabel = new QLabel(tr("Logo:"));
   QLabel *dataDirectoryLabel = new QLabel(tr("Daten Verzeichnis:"));
   QLabel *backupDirectoryLabel = new QLabel(tr("Backup Verzeichnis:"));
 
+  useLogo = new QCheckBox(tr("Logo verwenden"));
   logoEdit = new QLineEdit();
   logoEdit->setEnabled(false);
   backupDirectoryEdit = new QLineEdit();
@@ -161,7 +176,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   dataDirectoryEdit = new QLineEdit();
   dataDirectoryEdit->setEnabled(false);
 
-  QPushButton *logoButton = new QPushButton;
+  logoButton = new QPushButton;
   QPushButton *backupDirectoryButton = new QPushButton;
   QPushButton *dataDirectoryButton = new QPushButton;
 
@@ -169,6 +184,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   QHBoxLayout *backupDirectoryLayout = new QHBoxLayout;
   QHBoxLayout *dataDirectoryLayout = new QHBoxLayout;
 
+  logoLayout->addWidget(useLogo);
   logoLayout->addWidget(logoEdit);
   logoLayout->addWidget(logoButton);
   dataDirectoryLayout->addWidget(dataDirectoryEdit);
@@ -193,6 +209,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   connect(logoButton, SIGNAL(clicked(bool)), this, SLOT(logoButton_clicked()));
   connect(backupDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(backupDirectoryButton_clicked()));
   connect(dataDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(dataDirectoryButton_clicked()));
+  connect(useLogo, SIGNAL(toggled(bool)) , this, SLOT(useLogoCheck_toggled(bool)));
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
   mainLayout->addWidget(printHeaderLabel);
@@ -226,11 +243,21 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   else
     query.exec("INSERT INTO globals (name, strValue) VALUES('printFooter', '')");
 
-
+  useLogo->setChecked(settings.value("useLogo", false).toBool());
   logoEdit->setText(settings.value("logo", "./logo.png").toString());
   dataDirectoryEdit->setText(settings.value("dataDirectory", "./").toString());
   backupDirectoryEdit->setText(settings.value("backupDirectory", "./").toString());
 
+}
+
+void GeneralTab::useLogoCheck_toggled(bool toggled)
+{
+    logoButton->setEnabled(toggled);
+}
+
+bool GeneralTab::getUseLogo()
+{
+    return useLogo->isChecked();
 }
 
 void GeneralTab::logoButton_clicked()

@@ -29,6 +29,7 @@
 #include <QLibraryInfo>
 #include <QApplication>
 #include <QMessageBox>
+#include <QSharedMemory>
 
 //--------------------------------------------------------------------------------
 
@@ -51,6 +52,15 @@ void sighandler(int /*sig*/)
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
+
+/*
+  QSharedMemory mem("QRK");
+  if(!mem.create(1))
+  {
+    QMessageBox::critical(0,"Instanz erkannt!","QRK wird bereits ausgeführt!\nQRK wird geschlossen...","Ok");
+    exit(0);
+  }
+*/
 
   QString locale = QLocale::system().name();
 

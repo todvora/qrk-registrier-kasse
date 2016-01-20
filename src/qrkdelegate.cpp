@@ -69,6 +69,7 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
 
   } else if (this->type == PRODUCTS) {
     QLineEdit *editor = new QLineEdit( parent );
+    editor->setPlaceholderText(tr("Artikelname"));
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
     query.prepare("SELECT name FROM products WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'");
@@ -111,7 +112,7 @@ QString QrkDelegate::displayText(const QVariant &value, const QLocale &locale) c
     int x = QString::number(value.toDouble()).length() - QString::number(value.toDouble()).indexOf(".");
     QString formattedNum;
     if (x > 3 && QString::number(value.toDouble()).indexOf(".") > 0) {
-      formattedNum = QString("%1").arg(locale.toString(value.toDouble(), 'f', 3)).arg(shortcurrency);
+      formattedNum = QString("%1").arg(locale.toString(value.toDouble(), 'f', 3));
       formattedNum = QString("%1.. %2").arg(formattedNum.left(formattedNum.length() - 1)).arg(shortcurrency);
     } else {
       formattedNum = QString("%1 %2").arg(locale.toString(value.toDouble(), 'f', 2)).arg(shortcurrency);
@@ -153,7 +154,6 @@ void QrkDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
   } else if(this->type == PRODUCTS){
     QLineEdit *edit = qobject_cast<QLineEdit*>( editor ) ;
     edit->setText( index.data(Qt::EditRole).toString());
-
   } else if (this->type == NUMBERFORMAT_DOUBLE) {
     QString v = index.model()->data(index,Qt::EditRole).toString();
     v.replace(",",".");
@@ -235,7 +235,7 @@ void QrkDelegate::commitAndCloseEditor()
     QSpinBox *spinbox= qobject_cast<QSpinBox *>(sender());
     emit commitData(spinbox);
   } else if (this->type == PRODUCTS) {
-    QLineEdit *editor = qobject_cast<QLineEdit *>(sender()) ;
+    QLineEdit *editor = qobject_cast<QLineEdit *>(sender());
     emit commitData( editor ) ;
   }
 }

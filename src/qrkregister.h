@@ -75,6 +75,8 @@ class QRKRegister : public QWidget
   private:
     Ui::QRKRegister *ui;
 
+    void setButtonGroupEnabled(bool enabled);
+
     int currentReceipt;
     QProgressBar *progressBar;
     QDate lastEOD;
@@ -82,6 +84,7 @@ class QRKRegister : public QWidget
     bool totallyup;
     bool noPrinter;
     bool useInputNetPrice;
+    bool useMaximumItemSold;
     QString currency;
     QString taxlocation;
 

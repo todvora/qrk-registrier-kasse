@@ -67,12 +67,10 @@ QString Database::getMonthCounter()
   QDateTime dateFrom;
   QDateTime dateTo;
 
-  dateFrom.setDate(QDate::fromString(
-                     QString("%1.%2.01 00:00:00")
-                     .arg(QDate::currentDate().year())
-                     .arg(QDate::currentDate().month())
-                     , "yyyy.MM.dd HH::mm:ss")
-                     );
+  dateFrom.setDate(QDate::fromString(QString("%1-%2-1")
+                                     .arg(QDate::currentDate().year())
+                                     .arg(QDate::currentDate().month())
+                                     , "yyyy-M-d"));
   dateTo.setDate(QDate::currentDate());
   dateTo.setTime(QTime::currentTime());
 
@@ -95,9 +93,9 @@ QString Database::getYearCounter()
   QDateTime dateTo;
 
   dateFrom.setDate(QDate::fromString(
-                     QString("%1-01-01 00:00:00")
+                     QString("%1-1-1")
                      .arg(QDate::currentDate().year())
-                     , "yyyy-MM-dd HH::mm:ss")
+                     , "yyyy-M-d")
                    );
 
   dateTo.setDate(QDate::currentDate());
@@ -112,6 +110,18 @@ QString Database::getYearCounter()
   query.next();
 
   return QString::number(query.value(0).toDouble(), 'f', 2);
+
+}
+
+//--------------------------------------------------------------------------------
+
+void Database::updateProductSold(int count, QString product)
+{
+    QSqlDatabase dbc = QSqlDatabase::database("CN");
+    QSqlQuery query(dbc);
+
+    query.prepare(QString("UPDATE products SET sold=%1 WHERE name='%2'").arg(count).arg(product));
+    query.exec();
 
 }
 
@@ -190,6 +200,26 @@ QString Database::getCashRegisterId()
 
 //--------------------------------------------------------------------------------
 
+QStringList Database::getMaximumItemSold()
+{
+    QStringList list;
+    QSqlDatabase dbc = QSqlDatabase::database("CN");
+    QSqlQuery query(dbc);
+    query.prepare("SELECT max(sold), name, gross FROM products LIMIT 1;");
+    query.exec();
+    if (query.next()) {
+        list << query.value("name").toString()
+             << query.value("gross").toString();
+        return list;
+    }
+
+    list << "" << "0,00";
+    return list;
+
+}
+
+//--------------------------------------------------------------------------------
+
 bool Database::addProduct(const QList<QVariant> &data)
 {
   if (Database::exists("products", data.at(0).toString()))
@@ -197,10 +227,11 @@ bool Database::addProduct(const QList<QVariant> &data)
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
-  bool ok = query.prepare(QString("INSERT INTO products (name, tax, gross) VALUES ('%1', %2, %3)")
+  bool ok = query.prepare(QString("INSERT INTO products (name, tax, net, gross) VALUES ('%1', %2, %3, %4)")
                           .arg(data.at(0).toString())
                           .arg(data.at(1).toInt())
-                          .arg(data.at(2).toDouble()));
+                          .arg(data.at(2).toDouble())
+                          .arg(data.at(3).toDouble()));
 
   if (!ok)
     qDebug() << "Error: " << query.lastError().text();
@@ -338,7 +369,7 @@ QString Database::getShopName()
 
 bool Database::open(bool dbSelect)
 {
-  const int CURRENT_SCHEMA_VERSION = 4;
+  const int CURRENT_SCHEMA_VERSION = 5;
   // read global defintions (DB, ...)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 

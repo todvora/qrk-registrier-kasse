@@ -42,26 +42,33 @@ CREATE TABLE  `globals` (
 CREATE TABLE  `groups` (
     `id`        	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `name`      	text NOT NULL,
-    `visible`   	tinyint(1) NOT NULL DEFAULT '1'
+    `color`      	text DEFAULT '',
+    `button`     	text DEFAULT '',
+    `image`     	text DEFAULT '',
+    `visible`   	tinyint(1) NOT NULL DEFAULT 1
 );
+INSERT INTO `groups`(`name`) VALUES ('Standard');
 
 CREATE TABLE `products` (
-    `id`		INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    `name`		text NOT NULL,
-    `gross`		double NOT NULL,
-    `group`		int(11) NOT NULL DEFAULT 0,
-    `visible`		tinyint(1) NOT NULL DEFAULT 1,
-    `tax`		int(11) NOT NULL DEFAULT '20'
+    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `name`	text NOT NULL,
+    `sold`	INTEGER NOT NULL DEFAULT 0,
+    `net`	double NOT NULL,
+    `gross`	double NOT NULL,
+    `group`	INTEGER NOT NULL DEFAULT 0,
+    `visible`	tinyint(1) NOT NULL DEFAULT 1,
+    `tax`	INTEGER NOT NULL DEFAULT '20'
 );
 
 CREATE TABLE `orders` (
-    `id`		INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    `receiptId`		int(11) NOT NULL,
-    `product`		int(11) NOT NULL,
-    `count`		int(11) NOT NULL DEFAULT '1',
-    `gross`		double NOT NULL,
-    `tax`		double NOT NULL DEFAULT '0',
-    FOREIGN KEY(product) REFERENCES products(id)
+    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `receiptId`	INTEGER NOT NULL,
+    `product`	INTEGER NOT NULL,
+    `count`	INTEGER NOT NULL DEFAULT '1',
+    `net`	double NOT NULL,
+    `gross`	double NOT NULL,
+    `tax`	double NOT NULL DEFAULT '0.0',
+    FOREIGN KEY(`product`) REFERENCES products ( id )
 );
 
 CREATE INDEX `orders_receiptId_index` ON `orders` (`receiptId`);

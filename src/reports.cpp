@@ -350,8 +350,9 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     data["receiptNum"] = id;
     data["receiptTime"] = to.toString(Qt::ISODate);
 
-//    QString signature = Utils::getSignature(to, q.value(0).toDouble(), 0.0, id);
-    QString signature = Utils::getSignature(data);
+    // in arbeit ...
+    //    QString signature = Utils::getSignature(data);
+    QString signature = "";
 
     query = QString("UPDATE receipts SET gross=%1, timestamp='%2', signature='%3' WHERE receiptNum=%4")
         .arg(QString::number(q.value(0).toDouble(),'f',2))

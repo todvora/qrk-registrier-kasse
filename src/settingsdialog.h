@@ -38,11 +38,13 @@ class ExtraTab : public QWidget
   public:
     explicit ExtraTab(QSettings &s, QWidget *parent = 0);
     bool getInputNetPrice();
+    bool getMaximumItemSold();
 
   private slots:
 
   private:
     QCheckBox *useInputNetPriceCheck;
+    QCheckBox *useMaximumItemSoldCheck;
 
 };
 
@@ -57,11 +59,13 @@ class GeneralTab : public QWidget
     QString getBackupDirectory();
     QString getDataDirectory();
     QString getLogo();
+    bool getUseLogo();
 
   private slots:
     void backupDirectoryButton_clicked();
     void dataDirectoryButton_clicked();
     void logoButton_clicked();
+    void useLogoCheck_toggled(bool);
 
   private:
     QTextEdit *printHeaderEdit;
@@ -69,6 +73,8 @@ class GeneralTab : public QWidget
     QLineEdit *backupDirectoryEdit;
     QLineEdit *dataDirectoryEdit;
     QLineEdit *logoEdit;
+    QCheckBox *useLogo;
+    QPushButton *logoButton;
 
 };
 

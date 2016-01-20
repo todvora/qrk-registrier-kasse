@@ -62,7 +62,6 @@ void QRKDocument::documentList()
   documentListModel = new QSortFilterSqlQueryModel;
   documentListModel->setQuery("SELECT receipts.receiptNum, actionTypes.actionText, receipts.gross, receipts.timestamp FROM receipts INNER JOIN actionTypes ON receipts.payedBy=actionTypes.actionId", dbc);
 
-
   documentListModel->setFilterColumn("receiptNum");
   documentListModel->setFilterFlags(Qt::MatchStartsWith);
   documentListModel->setFilter("");
@@ -129,17 +128,20 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     int id = ui->documentList->model()->data(documentListModel->index(row, REGISTER_COL_COUNT, QModelIndex())).toInt();
 
-    documentContentModel->setQuery(QString("SELECT orders.count, products.name, orders.tax, orders.gross, orders.count * orders.gross AS Price FROM orders INNER JOIN products ON products.id=orders.product WHERE orders.receiptId=%1").arg(id), dbc);
+    documentContentModel->setQuery(QString("SELECT orders.count, products.name, orders.tax, orders.net, orders.gross, orders.count * orders.gross AS Price FROM orders INNER JOIN products ON products.id=orders.product WHERE orders.receiptId=%1").arg(id), dbc);
     documentContentModel->setHeaderData(REGISTER_COL_COUNT, Qt::Horizontal, tr("Anz."));
     documentContentModel->setHeaderData(REGISTER_COL_PRODUCT, Qt::Horizontal, tr("Artikel"));
     documentContentModel->setHeaderData(REGISTER_COL_TAX, Qt::Horizontal, tr("MwSt."));
+    documentContentModel->setHeaderData(REGISTER_COL_NET, Qt::Horizontal, tr("E-Netto"));
     documentContentModel->setHeaderData(REGISTER_COL_SINGLE, Qt::Horizontal, tr("E-Preis"));
     documentContentModel->setHeaderData(REGISTER_COL_TOTAL, Qt::Horizontal, tr("Preis"));
+    ui->documentContent->setItemDelegateForColumn(REGISTER_COL_NET, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
     ui->documentContent->setItemDelegateForColumn(REGISTER_COL_SINGLE, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
     ui->documentContent->setItemDelegateForColumn(REGISTER_COL_TOTAL, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
 
     ui->documentContent->resizeColumnsToContents();
     ui->documentContent->horizontalHeader()->setSectionResizeMode(REGISTER_COL_PRODUCT, QHeaderView::Stretch);
+    //ui->documentContent->setColumnHidden(REGISTER_COL_NET, true);
 
   }
 }
@@ -171,15 +173,16 @@ void QRKDocument::onCancellationButton_clicked()
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQueryModel *model = new QSqlQueryModel;
-  model->setQuery(QString("SELECT orders.count, products.name, orders.tax, orders.gross FROM orders INNER JOIN products ON products.id=orders.product WHERE orders.receiptId=%1").arg(id), dbc);
+  model->setQuery(QString("SELECT orders.count, products.name, orders.tax, orders.net, orders.gross FROM orders INNER JOIN products ON products.id=orders.product WHERE orders.receiptId=%1").arg(id), dbc);
 
   int payedBy = Database::getPayedBy(id);
 
   QRKRegister *reg = new QRKRegister(progressBar);
   reg->setItemModel(model);
-  if (! reg->checkEOAny())
+  if (! reg->checkEOAny()) {
     emit documentButton_clicked();
-
+//    return;
+  }
   currentReceipt = reg->createReceipts();
   if ( currentReceipt )
   {

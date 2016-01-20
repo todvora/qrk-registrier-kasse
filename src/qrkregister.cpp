@@ -106,7 +106,7 @@ void QRKRegister::init()
   taxlocation = Database::getTaxLocation();
 
   useInputNetPrice = settings.value("useInputNetPrice", false).toBool();
-
+  useMaximumItemSold = settings.value("useMaximumItemSold", false).toBool();
 }
 
 //--------------------------------------------------------------------------------
@@ -114,17 +114,28 @@ void QRKRegister::init()
 void QRKRegister::updateOrderSum()
 {
   double sum = 0;
+  bool enabled = true;
+  int rows = orderListModel->rowCount();
+  if (rows == 0)
+      setButtonGroupEnabled(false);
 
-  for (int row = 0; row < orderListModel->rowCount(); row++)
+
+  for (int row = 0; row < rows; row++)
   {
-    QStringList temp = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TOTAL, QModelIndex())).toString().split(" ");
+    QStringList dTemp = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TOTAL, QModelIndex())).toString().split(" ");
+    QString sTemp = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString();
+    if (sTemp.isEmpty())
+        enabled = false;
 
-    double d4 = temp[0].toDouble();
+    double d4 = dTemp[0].toDouble();
 
     sum += d4;
   }
 
-  //  sum = (long)(sum*100+0.5)/100.0;
+  if (rows > 0)
+      setButtonGroupEnabled(enabled);
+
+      //  sum = (long)(sum*100+0.5)/100.0;
   ui->sumLabel->setText(tr("%1 %2").arg(QString::number(sum, 'f', 2)).arg(currency));
 
 }
@@ -246,12 +257,17 @@ bool QRKRegister::createOrder(bool storno)
     double tax = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_TAX, QModelIndex())).toDouble();
     double egross = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_SINGLE, QModelIndex())).toDouble();
 
+    Database::updateProductSold(count, product);
+
+    double net = egross - (egross * tax / (100 + tax));
+
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc) ;
 
-    QString q = QString("INSERT INTO orders (receiptId, product, count, gross, tax) SELECT %1, id, %2, %3, %4 FROM products WHERE name='%5'")
+    QString q = QString("INSERT INTO orders (receiptId, product, count, net, gross, tax) SELECT %1, id, %2, %3, %4, %5 FROM products WHERE name='%6'")
         .arg(currentReceipt)
         .arg(count)
+        .arg(net)
         .arg(egross)
         .arg(tax)
         .arg(product);
@@ -295,10 +311,19 @@ int QRKRegister::createReceipts()
 
 //--------------------------------------------------------------------------------
 
+void QRKRegister::setButtonGroupEnabled(bool enabled)
+{
+    ui->cashReceipt->setEnabled(enabled);
+    ui->creditcardReceipt->setEnabled(enabled);
+    ui->debitcardReceipt->setEnabled(enabled);
+}
+
+//--------------------------------------------------------------------------------
+
 void QRKRegister::newOrder()
 {
 
-  QStringList list = Database::getLastReceipt();
+    QStringList list = Database::getLastReceipt();
 
   ui->headerText->clear();
 
@@ -429,7 +454,7 @@ QJsonObject QRKRegister::compileData(int id)
   Root["shopName"] = Database::getShopName();
   Root["headerText"] = getHeaderText();
   Root["totallyup"] = (totallyup)? "Nachbonierung":"";
-  Root["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1-%2").arg(QDate::currentDate().year()).arg(id):tr("KASSABON");
+  Root["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):tr("KASSABON");
   Root["receiptNum"] = receiptNum;
   Root["receiptTime"] = receiptTime.toString(Qt::ISODate);
   Root["currentRegisterYear"] = QDate::currentDate().year();
@@ -517,6 +542,7 @@ void QRKRegister::itemChangedSlot( const QModelIndex& i, const QModelIndex&)
       orderListModel->item(row, REGISTER_COL_SINGLE)->setText(query.value(0).toString());
       orderListModel->item(row, REGISTER_COL_TAX)->setText(query.value(1).toString());
     }
+    setButtonGroupEnabled(! s.isEmpty());
   }
 
   switch( col )
@@ -590,6 +616,8 @@ void QRKRegister::itemChangedSlot( const QModelIndex& i, const QModelIndex&)
 void QRKRegister::plusSlot()
 {
 
+  setButtonGroupEnabled(false);
+
   int row;
 
   if (orderListModel->rowCount() > 0)
@@ -604,6 +632,7 @@ void QRKRegister::plusSlot()
 
     list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toString()
+         << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString();
 
     Database::addProduct(list);
@@ -617,7 +646,8 @@ void QRKRegister::plusSlot()
 
   orderListModel->setColumnCount(6);
   orderListModel->setItem(row, REGISTER_COL_COUNT, new QStandardItem(QString("1")));
-  orderListModel->setItem(row, REGISTER_COL_PRODUCT, new QStandardItem(QString(tr("Artikelname"))));
+
+  orderListModel->setItem(row, REGISTER_COL_PRODUCT, new QStandardItem(QString("")));
   orderListModel->setItem(row, REGISTER_COL_TAX, new QStandardItem(defaultTax));
   orderListModel->setItem(row, REGISTER_COL_NET, new QStandardItem(QString("0")));
   orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(QString("0")));
@@ -631,10 +661,16 @@ void QRKRegister::plusSlot()
   ui->orderList->selectionModel()->setCurrentIndex(idx, QItemSelectionModel::NoUpdate);
   ui->orderList->edit(idx);
 
-  ui->orderList->selectRow(row);
-
   ui->orderList->model()->blockSignals(false);
 
+  if (useMaximumItemSold) {
+      QStringList list;
+      list = Database::getMaximumItemSold();
+      orderListModel->setItem(row, REGISTER_COL_PRODUCT, new QStandardItem(list.at(0)));
+      orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(list.at(1)));
+  }
+
+  ui->orderList->selectRow(row);
   ui->orderList->setSelectionMode(QAbstractItemView::SingleSelection);
   ui->orderList->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -709,6 +745,7 @@ void QRKRegister::onButtonGroup_payNow_clicked(int payedBy)
 
     list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toString()
+         << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString();
 
     Database::addProduct(list);
@@ -764,8 +801,10 @@ void QRKRegister::receiptToInvoiceSlot()
   if ( r2b.exec() == QDialog::Accepted )
   {
     int rc = orderListModel->rowCount();
-    if (rc == 0)
+    if (rc == 0) {
       plusSlot();
+      rc++;
+    }
 
     if (rc == 1) {
       orderListModel->item(0, REGISTER_COL_COUNT)->setText( "1" );
@@ -872,12 +911,27 @@ bool QRKRegister::checkEOAny()
       return false;
     }
   } else if (needMonth && checkDate != date) {
-    DEP *dep = new DEP();
-    Reports *rep = new Reports(dep, progressBar);
-    if (! rep->endOfMonth()) {
-      QApplication::setOverrideCursor(Qt::ArrowCursor);
-      return false;
-    }
+      QMessageBox msgBox;
+      msgBox.setWindowTitle(tr("Monatsabschluss"));
+
+      msgBox.setIcon(QMessageBox::Information);
+      msgBox.setText(tr("Monatsabschluss für %1 muß erstellt werden.").arg(date.toString("MMMM yyyy")));
+      msgBox.setStandardButtons(QMessageBox::Yes);
+      msgBox.addButton(QMessageBox::No);
+      msgBox.setButtonText(QMessageBox::Yes, tr("Erstellen"));
+      msgBox.setButtonText(QMessageBox::No, tr("Abbrechen"));
+      msgBox.setDefaultButton(QMessageBox::No);
+
+      if(msgBox.exec() == QMessageBox::Yes){
+          DEP *dep = new DEP();
+          Reports *rep = new Reports(dep, progressBar);
+          if (! rep->endOfMonth()) {
+              QApplication::setOverrideCursor(Qt::ArrowCursor);
+              return true;
+          }
+      } else {
+          return false;
+      }
   }
 
   return true;
