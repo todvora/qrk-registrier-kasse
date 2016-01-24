@@ -59,11 +59,11 @@ QString Utils::getSignature(QJsonObject data)
 
   QString concatenatedValue = sign["Kassen-ID"].toString() + sign["Belegnummer"].toString();
 
-  double turnOverValue = getYearlyTotal(QDate::currentDate().year());
-  QString encrypted = AESUtil::encrypt(concatenatedValue, turnOverValue, AESUtil::getPrivateKey());
-  // double decrypted = AESUtil::decrypt(concatenatedValue, encrypted, AESUtil::getPrivateKey()).toDouble();
+  qlonglong turnOverValue = getYearlyTotal(QDate::currentDate().year()) * 100;
+  QString base64encryptedTurnOverCounter = AESUtil::encryptTurnoverCounter(concatenatedValue, turnOverValue, AESUtil::getPrivateKey());
+  // qlonglong decryptedTurnoverCounter = AESUtil::decryptTurnoverCounter(concatenatedValue, encrypted, AESUtil::getPrivateKey());
 
-  sign["Stand-Umsatz-Zaehler-AES256-ICM"] = encrypted;
+  sign["Stand-Umsatz-Zaehler-AES256-ICM"] = base64encryptedTurnOverCounter;
 
   QString ls = getLastReceiptSignature();
 

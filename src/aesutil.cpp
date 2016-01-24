@@ -36,192 +36,6 @@
 
 using namespace std;
 using namespace CryptoPP;
-using Name::Pad;
-using Name::InsertLineBreaks;
-
-AESUtil::AESUtil()
-{
-
-}
-
-///
-/// \brief AESUtil::HashValue
-/// \param value
-/// \param hashValueLen
-/// \return
-///
-std::string AESUtil::HashValue(QString value, int hashValueLen)
-{
-  string source = value.toStdString();
-  byte hashValue[ hashValueLen ];
-  SHA256 hash;
-
-  memset( hashValue, 0x00, hashValueLen );
-
-  StringSource ( source, true, new HashFilter( hash, new HexEncoder( new ArraySink( hashValue, hashValueLen ))));
-
-  return std::string(reinterpret_cast<char const*>(hashValue), hashValueLen);
-}
-
-///
-/// \brief AESUtil::Base64Encode
-/// \param decoded
-/// \return
-///
-std::string AESUtil::Base64Encode(std::string decoded)
-{
-
-  std::string encoded;
-  StringSource (decoded, true, new Base64Encoder( new StringSink(encoded) ));
-
-  return encoded;
-}
-
-///
-/// \brief AESUtil::Base64Decode
-/// \param raw
-/// \return
-///
-std::string AESUtil::Base64Decode(std::string raw)
-{
-  string encoded, decoded;
-  Base64Encoder encoder;
-
-  AlgorithmParameters params = MakeParameters(Pad(), false)(InsertLineBreaks(), false);
-  encoder.IsolatedInitialize(params);
-  encoder.Attach(new StringSink( encoded ));
-
-  StringSource (raw, true, new Redirector(encoder));
-  StringSource (encoded, true, new Base64Decoder(new StringSink(decoded)));
-
-  return decoded;
-}
-
-///
-/// \brief AESUtil::encryptCTR
-/// \param concatenatedHashValue
-/// \param in
-/// \param symmetricKey
-/// \return
-///
-QString AESUtil::encryptCTR(std::string concatenatedHashValue, std::string in, std::string symmetricKey)
-{
-  string out, encoded;
-
-  HexDecoder decoder;
-  decoder.Put( (byte *)symmetricKey.data(), symmetricKey.size() );
-  decoder.MessageEnd();
-  word64 keysize = decoder.MaxRetrievable();
-  char *decodedKey = new char[keysize];
-  decoder.Get((byte *)decodedKey, keysize);
-
-  byte key[ AES::MAX_KEYLENGTH ];
-  byte iv[ AES::BLOCKSIZE ];
-  StringSource( reinterpret_cast<const char *>(decodedKey), true,
-                new HashFilter(*(new SHA256), new ArraySink(key, AES::MAX_KEYLENGTH)) );
-
-  memset( iv, 0x00, AES::BLOCKSIZE );
-  try {
-    CTR_Mode<AES>::Encryption Encryptor(key,sizeof(key),(byte*)concatenatedHashValue.data());
-    StringSource(in, true, new StreamTransformationFilter(Encryptor, new StringSink(out)));
-    StringSource(out, true, new HexEncoder( new StringSink(encoded)));
-
-  } catch (Exception &e) {
-      cout << e.what() << endl;
-  } catch (...) {
-  }
-
-  return QString::fromStdString(encoded);
-}
-
-///
-/// \brief AESUtil::decryptCTR
-/// \param concatenatedHashValue
-/// \param encryptedTurnoverCounter
-/// \param symmetricKey
-/// \return
-///
-QString AESUtil::decryptCTR(std::string concatenatedHashValue, QString encryptedTurnoverCounter, std::string symmetricKey)
-{
-  string out, in, decoded;
-  in = encryptedTurnoverCounter.toStdString();
-
-  HexDecoder decoder;
-  decoder.Put( (byte *)symmetricKey.data(), symmetricKey.size() );
-  decoder.MessageEnd();
-  word64 keysize = decoder.MaxRetrievable();
-  char *decodedKey = new char[keysize];
-  decoder.Get((byte *)decodedKey, keysize);
-
-  byte key[ AES::MAX_KEYLENGTH ];
-  byte iv[ AES::BLOCKSIZE ];
-  StringSource( reinterpret_cast<const char *>(decodedKey), true,
-                new HashFilter(*(new SHA256), new ArraySink(key, AES::MAX_KEYLENGTH)) );
-
-  memset( iv, 0x00, AES::BLOCKSIZE );
-  try {
-    CTR_Mode<AES>::Decryption Decryptor(key,sizeof(key),(byte*)concatenatedHashValue.data());
-    StringSource(in, true, new HexDecoder( new StringSink(out)));
-    StringSource (out, true, new StreamTransformationFilter(Decryptor, new StringSink(decoded)));
-  }
-  catch (Exception &e) {
-    cout << e.what() << endl;
-  }
-  catch (...) {
-  }
-
-  return QString::fromStdString(decoded);
-}
-
-///
-/// \brief AESUtil::sigLastReceipt
-/// \param value
-/// \return
-///
-QString AESUtil::sigLastReceipt(QString value)
-{
-  string hashValue = HashValue(value, 8);
-  string sig = Base64Encode(hashValue);
-
-  return QString::fromStdString(sig);
-}
-
-///
-/// \brief AESUtil::encrypt
-/// \param concatenated
-/// \param turnoverValue
-/// \param key
-/// \return
-///
-QString AESUtil::encrypt( QString concatenated, double turnoverValue, QString key)
-{
-  long turnover = turnoverValue * 100;
-  string turnoverCounter = QString("%1").arg(turnover, 5, 10, QChar('0')).toStdString();
-  string symmetricKey = key.toStdString();
-  string hashValue = HashValue(concatenated);
-  string iv = Base64Encode(hashValue);
-
-  return encryptCTR(iv, turnoverCounter, symmetricKey);
-
-}
-
-///
-/// \brief AESUtil::decrypt
-/// \param concatenated
-/// \param encodedTurnoverValue
-/// \param key
-/// \return
-///
-QString AESUtil::decrypt( QString concatenated, QString encodedTurnoverValue, QString key)
-{
-
-  string symmetricKey = key.toStdString();
-  string concatenatedHashValue = HashValue(concatenated);
-  string iv = Base64Encode(concatenatedHashValue);
-
-  return decryptCTR(iv, encodedTurnoverValue, symmetricKey);
-
-}
 
 ///
 /// \brief AESUtil::getPrivateKey
@@ -231,13 +45,20 @@ QString AESUtil::getPrivateKey()
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
-  query.prepare("SELECT strValue FROM globals WHERE name='privateKey'");
+  query.prepare("SELECT value, strValue FROM globals WHERE name='privateKey'");
   query.exec();
-  if (query.next())
-    return query.value(0).toString();
+  if (query.next()) {
+    int val = query.value(0).toInt();
+    /* increment manual for keyversions check */
+    if (val == 1)
+      return query.value(0).toString();
 
+    /* remove this in future before 2017 */
+    query.prepare("DELETE from globals WHERE name='privateKey'");
+    query.exec();
+  }
   QString key = generateKey();
-  query.prepare(QString("INSERT INTO globals (name, strValue) VALUES('privateKey', '%1')").arg(key));
+  query.prepare(QString("INSERT INTO globals (name, value, strValue) VALUES('privateKey', 1, '%1')").arg(key));
 
   query.exec();
 
@@ -245,55 +66,184 @@ QString AESUtil::getPrivateKey()
 
 }
 
-///
-/// \brief AESUtil::generateKey
-/// \return
-///
-QString AESUtil::generateKey()
+#include "aesutil.h"
+
+#include <string>       // std::string
+
+#include <QByteArray>
+#include <QString>
+#include <QDebug>
+
+#include <cryptopp/aes.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/hex.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/base64.h>
+#include <cryptopp/rsa.h>
+#include <cryptopp/osrng.h>
+
+using namespace std;
+using namespace CryptoPP;
+
+QString AESUtil::encryptTurnoverCounter( QString concatenated, qlonglong turnoverCounter, QString symmetricKey)
 {
-  // Generate keys
-  AutoSeededRandomPool rng;
-
-  InvertibleRSAFunction params;
-  params.GenerateRandomWithKeySize(rng, 1024);
-
-  RSA::PrivateKey privateKey(params);
-
-  ByteQueue queue;
-  privateKey.DEREncodePublicKey(queue);
-
-  std::string key;
-  CryptoPP::StringSink ss1(key);
-  queue.TransferTo(ss1);
-
-  QByteArray ba;
-  ba.append(key.data(), key.size());
-
-  return QString::fromStdString(ba.toHex().toStdString());
-
+  QString hashValue = HashValue(concatenated);
+  return encryptCTR(hashValue.toStdString(), turnoverCounter, symmetricKey.toStdString());
 }
 
-///
-/// \brief AESUtil::test
-///
-void AESUtil::test()
+QString AESUtil::decryptTurnoverCounter( QString concatenated, QString encodedTurnoverCounter, QString symmetricKey)
 {
-  QString source("CK-124");
-  string hashValue = HashValue(source);
-  string iv = Base64Encode(hashValue);
-  string decoded = Base64Decode(hashValue);
+  QString hashValue = HashValue(concatenated);
+  return decryptCTR(hashValue.toStdString(), encodedTurnoverCounter, symmetricKey.toStdString());
+}
 
-  string turnoverCounter = "00123";
-  string symmetricKey = "729308A8E815F6A46EB3A8AE6D5463CA7B64A0E2E11BC26A68106FC7697E727E37011";
+QString AESUtil::sigLastReceipt(QString value)
+{
+  QString hashValue = HashValue(value);
+  QString sig = base64_encode(hashValue);
 
-  QString aes256encrypted = encryptCTR(iv, turnoverCounter, symmetricKey);
-  QString aes256decrypted = decryptCTR(iv, aes256encrypted, symmetricKey);
+  return sig;
+}
 
-  cout << source.toStdString() << endl;
-  cout << hashValue << endl;
-  cout << iv << endl;
-  cout << decoded << endl;
-  cout << aes256encrypted.toStdString() << endl;
-  cout << aes256decrypted.toStdString() << endl;
+QString AESUtil::generateKey()
+{
 
+  AutoSeededRandomPool prng;
+
+  /* generate key for encrypt */
+  unsigned char key[AES::MAX_KEYLENGTH];
+  prng.GenerateBlock(key, sizeof(key));
+
+  string encoded;
+  encoded.clear();
+
+  StringSource ssk(key, sizeof(key), true, new HexEncoder( new StringSink(encoded)));
+
+  return QString::fromStdString(encoded);
+}
+
+// private
+
+QString AESUtil::HashValue(QString value)
+{
+  string source = value.toStdString();
+  byte hashValue[AES::MAX_KEYLENGTH];
+  SHA256 hash;
+
+  memset( hashValue, 0x00, AES::MAX_KEYLENGTH );
+
+  StringSource ss( source, true, new HashFilter( hash, new HexEncoder(new ArraySink( hashValue, sizeof(hashValue)))));
+  return QString::fromStdString(std::string(reinterpret_cast<char const*>(hashValue), sizeof(hashValue)));
+}
+
+QString AESUtil::encryptCTR(std::string concatenatedHashValue, qlonglong turnoverCounter, std::string symmetricKey)
+{
+  byte data[AES::BLOCKSIZE];
+  memset( data, 0x00, AES::BLOCKSIZE );
+
+  union {
+      qlonglong source;
+      byte data[8];
+  } Union;
+
+  Union.source = turnoverCounter;
+
+  for (int i = 0; i < 8; i++)
+    data[7 - i] = Union.data[i];
+
+  byte key[ AES::MAX_KEYLENGTH ], iv[ AES::BLOCKSIZE ];
+  StringSource ssk(symmetricKey , true, new HexDecoder( new ArraySink(key, AES::MAX_KEYLENGTH)));
+  StringSource ssv(concatenatedHashValue, true, new HexDecoder( new ArraySink(iv, AES::BLOCKSIZE)));
+
+  byte out[AES::BLOCKSIZE/2];
+  memset( out, 0x00, AES::BLOCKSIZE/2 );
+
+  try {
+    CTR_Mode<AES>::Encryption encryption(key,sizeof(key),iv, sizeof(iv));
+    encryption.ProcessData(out,data,sizeof(data));
+  } catch (Exception &e) {
+    qDebug() << "Error: " << e.what();
+  }
+
+  QByteArray ba;
+  ba.append(reinterpret_cast<const char *>(out), sizeof(out));
+  return ba.toBase64();
+}
+
+QString AESUtil::decryptCTR(std::string concatenatedHashValue, QString encryptedTurnoverCounter, std::string symmetricKey)
+{
+  QByteArray baBase64;
+  baBase64.append(encryptedTurnoverCounter);
+  string encryptedTurnoverCounterHex = QByteArray::fromBase64(baBase64).toHex().toStdString();
+
+  byte data[AES::BLOCKSIZE];
+  memset( data, 0x00, AES::BLOCKSIZE );
+
+  byte recovered[AES::BLOCKSIZE/2];
+  memset( recovered, 0x00, AES::BLOCKSIZE/2 );
+
+  byte key[ AES::MAX_KEYLENGTH ], iv[ AES::BLOCKSIZE ];
+  StringSource ssk(symmetricKey , true, new HexDecoder( new ArraySink(key, AES::MAX_KEYLENGTH)));
+  StringSource ssv(concatenatedHashValue, true, new HexDecoder( new ArraySink(iv, AES::BLOCKSIZE)));
+  StringSource ssd(encryptedTurnoverCounterHex, true, new HexDecoder( new ArraySink(data, AES::BLOCKSIZE)));
+
+  try {
+    CTR_Mode<AES>::Decryption decryption(key,sizeof(key),iv, sizeof(iv));
+    decryption.ProcessData(recovered,data,AES::BLOCKSIZE);
+  } catch (Exception &e) {
+    qDebug() << "Error: " << e.what();
+  }
+
+  /* we need only 8 Bytes for Turnover minimum is 5 Byte */
+  union {
+      qlonglong source;
+      byte data[AES::BLOCKSIZE/2];
+  } Union;
+  memset( Union.data, 0x00, AES::BLOCKSIZE/2 );
+
+  /* reconstruct reverse */
+  for (int i=0; i < 8;i++)
+    Union.data[i] = recovered[7 - i];
+
+  return QString::number(Union.source);
+}
+
+QString AESUtil::toHex(QString str)
+{
+  string encoded;
+  StringSource ss(str.toStdString(), true, new HexEncoder( new StringSink(encoded)));
+
+  return QString::fromStdString(encoded);
+}
+
+QString AESUtil::base32_encode(QString str)
+{
+  return "";
+}
+
+QString AESUtil::base64_encode(QString str)
+{
+  string decoded = str.toStdString();
+  string encoded;
+
+  StringSource ss(decoded, true, new Base64Encoder(new StringSink(encoded)));
+
+  return QString::fromStdString(encoded);
+}
+
+QString AESUtil::base32_decode(QString str)
+{
+  return "";
+}
+
+QString AESUtil::base64_decode(QString str, bool hex)
+{
+  QByteArray ba;
+  ba.clear();
+  ba.append(str);
+  if (hex)
+    return QByteArray::fromBase64(ba).toHex();
+
+  return QByteArray::fromBase64(ba);
 }

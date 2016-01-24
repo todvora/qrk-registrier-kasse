@@ -21,30 +21,33 @@
 #define AESUTIL_H
 
 #include <iostream>
+#include <QVariant>
 
-class QVariant;
 class QString;
 
 class AESUtil
 {
   public:
-    AESUtil();
-
-    static QString encrypt(QString, double, QString);
-    static QString decrypt(QString, QString, QString);
-    static QString sigLastReceipt(QString);
     static QString getPrivateKey();
+
+    static QString encryptTurnoverCounter(QString concatenated, qlonglong turnoverCounter, QString symmetricKey);
+    static QString decryptTurnoverCounter(QString concatenated, QString encryptedTurnoverCounter, QString symmetricKey);
+    static QString sigLastReceipt(QString);
     static QString generateKey();
 
     static void test();
 
   private:
-    static QString encryptCTR(std::string, std::string, std::string);
+    static QString encryptCTR(std::string, qlonglong, std::string);
     static QString decryptCTR(std::string, QString, std::string);
+    static QString HashValue(QString);
 
-    static std::string HashValue(QString, int = 16);
-    static std::string Base64Encode(std::string);
-    static std::string Base64Decode(std::string);
+    static QString base64_encode(QString string);
+    static QString base64_decode(QString string, bool hex = false);
+    static QString base32_encode(QString str);
+    static QString base32_decode(QString str);
+
+    static QString toHex(QString str);
 
 };
 
