@@ -51,7 +51,7 @@ QString AESUtil::getPrivateKey()
     int val = query.value(0).toInt();
     /* increment manual for keyversions check */
     if (val == 1)
-      return query.value(0).toString();
+      return query.value(1).toString();
 
     /* remove this in future before 2017 */
     query.prepare("DELETE from globals WHERE name='privateKey'");

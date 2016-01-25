@@ -67,7 +67,8 @@ QString Utils::getSignature(QJsonObject data)
   qlonglong turnOverCounter = getTurnOverCounter();
   turnOverCounter += counter * 100;
   updateTurnOverCounter(turnOverCounter);
-  QString base64encryptedTurnOverCounter = AESUtil::encryptTurnoverCounter(concatenatedValue, turnOverCounter, AESUtil::getPrivateKey());
+  QString symmetricKey = AESUtil::getPrivateKey();
+  QString base64encryptedTurnOverCounter = AESUtil::encryptTurnoverCounter(concatenatedValue, turnOverCounter, symmetricKey);
   // qlonglong decryptedTurnoverCounter = AESUtil::decryptTurnoverCounter(concatenatedValue, encrypted, AESUtil::getPrivateKey());
 
   sign["Stand-Umsatz-Zaehler-AES256-ICM"] = base64encryptedTurnOverCounter;
