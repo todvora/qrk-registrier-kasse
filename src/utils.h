@@ -30,6 +30,8 @@ class Utils
 
     static QString getSignature(QJsonObject data);
     static double getYearlyTotal(int year);
+    static qlonglong getTurnOverCounter();
+    static void updateTurnOverCounter(qlonglong);
 
   private:
     static QString getLastReceiptSignature();

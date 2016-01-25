@@ -53,14 +53,21 @@ QString Utils::getSignature(QJsonObject data)
     qDebug() << "Utils select tax error: " << q.lastError().text();
 
   q.exec();
+  double counter = 0.00;
   while(q.next()){
-    sign[Database::getTaxType( q.value(0).toInt() )] = QString::number( data.value(Database::getTaxType(q.value(0).toInt())).toDouble(), 'f', 2);
+    double gross = data.value(Database::getTaxType(q.value(0).toDouble())).toDouble();
+    double tax = q.value(0).toDouble();
+    double net = gross / (1.0 + tax / 100.0);
+    sign[Database::getTaxType( tax )] = QString::number( net , 'f', 2);
+    counter += net;
   }
 
   QString concatenatedValue = sign["Kassen-ID"].toString() + sign["Belegnummer"].toString();
 
-  qlonglong turnOverValue = getYearlyTotal(QDate::currentDate().year()) * 100;
-  QString base64encryptedTurnOverCounter = AESUtil::encryptTurnoverCounter(concatenatedValue, turnOverValue, AESUtil::getPrivateKey());
+  qlonglong turnOverCounter = getTurnOverCounter();
+  turnOverCounter += counter * 100;
+  updateTurnOverCounter(turnOverCounter);
+  QString base64encryptedTurnOverCounter = AESUtil::encryptTurnoverCounter(concatenatedValue, turnOverCounter, AESUtil::getPrivateKey());
   // qlonglong decryptedTurnoverCounter = AESUtil::decryptTurnoverCounter(concatenatedValue, encrypted, AESUtil::getPrivateKey());
 
   sign["Stand-Umsatz-Zaehler-AES256-ICM"] = base64encryptedTurnOverCounter;
@@ -141,6 +148,43 @@ QString Utils::getLastReceiptSignature()
 
   return AESUtil::sigLastReceipt(Database::getCashRegisterId());
 
+}
+
+qlonglong Utils::getTurnOverCounter()
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  q.prepare(QString("SELECT value FROM globals WHERE name='turnovercounter'"));
+  q.exec();
+
+  if (q.next())
+    return q.value(0).toLongLong();
+
+  q.prepare(QString("SELECT sum(net) FROM receipts WHERE payedBy < 3"));
+  q.exec();
+  q.next();
+
+  qlonglong net = q.value(0).toDouble() * 100 ;
+  return net;
+
+}
+
+void Utils::updateTurnOverCounter(qlonglong toc)
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  q.prepare("SELECT value FROM globals WHERE name='turnovercounter'");
+  q.exec();
+
+  if (q.next()) {
+    q.prepare(QString("UPDATE globals set value=%1 WHERE name='turnovercounter'").arg(toc));
+    q.exec();
+  } else {
+    q.prepare(QString("INSERT INTO globals (name, value) VALUES('turnovercounter', %1)").arg(toc));
+    q.exec();
+  }
 }
 
 double Utils::getYearlyTotal(int year)
