@@ -42,12 +42,12 @@ class AESUtil
     static QString decryptCTR(std::string, QString, std::string);
     static QString HashValue(QString);
 
-    static QString base64_encode(QString string);
+    static QByteArray base64_encode(QString string);
     static QByteArray base64_decode(QString string, bool hex = false);
-    static QString base32_encode(QString str);
+    static QByteArray base32_encode(QString str);
     static QByteArray base32_decode(QString str);
 
-    static QString toHex(QByteArray str);
+    static QString toHex(QByteArray ba);
 
 };
 

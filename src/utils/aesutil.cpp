@@ -18,19 +18,19 @@
  */
 
 #include "aesutil.h"
+#include "base32decode.h"
+#include "base32encode.h"
 
 #include <QString>
 #include <QVariant>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QDebug>
 
 #include <cryptopp/aes.h>
 #include <cryptopp/modes.h>
-//#include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
-//#include <cryptopp/sha.h>
 #include <cryptopp/base64.h>
-#include <cryptopp/base32.h>
 #include <cryptopp/rsa.h>
 #include <cryptopp/osrng.h>
 
@@ -66,38 +66,37 @@ QString AESUtil::getPrivateKey()
 
 }
 
-#include "aesutil.h"
-
-#include <string>       // std::string
-
-#include <QByteArray>
-#include <QString>
-#include <QDebug>
-
-#include <cryptopp/aes.h>
-#include <cryptopp/modes.h>
-#include <cryptopp/filters.h>
-#include <cryptopp/hex.h>
-#include <cryptopp/sha.h>
-#include <cryptopp/base64.h>
-#include <cryptopp/rsa.h>
-#include <cryptopp/osrng.h>
-
-using namespace std;
-using namespace CryptoPP;
-
+///
+/// \brief AESUtil::encryptTurnoverCounter
+/// \param concatenated
+/// \param turnoverCounter
+/// \param symmetricKey
+/// \return
+///
 QString AESUtil::encryptTurnoverCounter( QString concatenated, qlonglong turnoverCounter, QString symmetricKey)
 {
   QString hashValue = HashValue(concatenated);
   return encryptCTR(hashValue.toStdString(), turnoverCounter, symmetricKey.toStdString());
 }
 
+///
+/// \brief AESUtil::decryptTurnoverCounter
+/// \param concatenated
+/// \param encodedTurnoverCounter
+/// \param symmetricKey
+/// \return
+///
 QString AESUtil::decryptTurnoverCounter( QString concatenated, QString encodedTurnoverCounter, QString symmetricKey)
 {
   QString hashValue = HashValue(concatenated);
   return decryptCTR(hashValue.toStdString(), encodedTurnoverCounter, symmetricKey.toStdString());
 }
 
+///
+/// \brief AESUtil::sigLastReceipt
+/// \param value
+/// \return
+///
 QString AESUtil::sigLastReceipt(QString value)
 {
   QString hashValue = HashValue(value);
@@ -106,6 +105,10 @@ QString AESUtil::sigLastReceipt(QString value)
   return sig;
 }
 
+///
+/// \brief AESUtil::generateKey
+/// \return
+///
 QString AESUtil::generateKey()
 {
 
@@ -124,7 +127,11 @@ QString AESUtil::generateKey()
 }
 
 // private
-
+///
+/// \brief AESUtil::HashValue
+/// \param value
+/// \return
+///
 QString AESUtil::HashValue(QString value)
 {
   string source = value.toStdString();
@@ -137,6 +144,13 @@ QString AESUtil::HashValue(QString value)
   return QString::fromStdString(std::string(reinterpret_cast<char const*>(hashValue), sizeof(hashValue)));
 }
 
+///
+/// \brief AESUtil::encryptCTR
+/// \param concatenatedHashValue
+/// \param turnoverCounter
+/// \param symmetricKey
+/// \return
+///
 QString AESUtil::encryptCTR(std::string concatenatedHashValue, qlonglong turnoverCounter, std::string symmetricKey)
 {
   byte data[AES::BLOCKSIZE];
@@ -171,6 +185,13 @@ QString AESUtil::encryptCTR(std::string concatenatedHashValue, qlonglong turnove
   return ba.toBase64();
 }
 
+///
+/// \brief AESUtil::decryptCTR
+/// \param concatenatedHashValue
+/// \param encryptedTurnoverCounter
+/// \param symmetricKey
+/// \return
+///
 QString AESUtil::decryptCTR(std::string concatenatedHashValue, QString encryptedTurnoverCounter, std::string symmetricKey)
 {
   QByteArray baBase64;
@@ -209,6 +230,11 @@ QString AESUtil::decryptCTR(std::string concatenatedHashValue, QString encrypted
   return QString::number(Union.source);
 }
 
+///
+/// \brief AESUtil::toHex
+/// \param ba
+/// \return
+///
 QString AESUtil::toHex(QByteArray ba)
 {
   string encoded;
@@ -217,26 +243,65 @@ QString AESUtil::toHex(QByteArray ba)
   return QString::fromStdString(encoded);
 }
 
-QString AESUtil::base32_encode(QString str)
+///
+/// \brief AESUtil::base32_encode
+/// \param str
+/// \return
+///
+QByteArray AESUtil::base32_encode(QString str)
 {
-  return "";
+  string decoded = str.toUtf8().toStdString();
+
+  size_t req = Base32Encode::GetLength(decoded.size());
+  char encoded[req];
+
+  memset( encoded, 0x00, req);
+  size_t size = Base32Encode::Encode(encoded, decoded.data(),decoded.size());
+
+  return  QByteArray::fromStdString(std::string(encoded, size)).simplified();
 }
 
-QString AESUtil::base64_encode(QString str)
+///
+/// \brief AESUtil::base64_encode
+/// \param str
+/// \return
+///
+QByteArray AESUtil::base64_encode(QString str)
 {
   string decoded = str.toStdString();
   string encoded;
 
   StringSource ss(decoded, true, new Base64Encoder(new StringSink(encoded)));
 
-  return QString::fromStdString(encoded);
+  return QByteArray::fromStdString(encoded).simplified();
 }
 
+///
+/// \brief AESUtil::base32_decode
+/// \param str
+/// \return
+///
 QByteArray AESUtil::base32_decode(QString str)
 {
-  return "";
+
+  string encoded = str.toUtf8().toStdString();
+
+  size_t req = Base32Decode::GetLength(encoded.size());
+  char decoded[req];
+
+  memset( decoded, 0x00, req);
+  size_t size = Base32Decode::Decode(decoded, encoded.data(),encoded.size());
+
+  return  QByteArray::fromStdString(std::string(decoded, size));
+
 }
 
+///
+/// \brief AESUtil::base64_decode
+/// \param str
+/// \param hex
+/// \return
+///
 QByteArray AESUtil::base64_decode(QString str, bool hex)
 {
   QByteArray ba;
