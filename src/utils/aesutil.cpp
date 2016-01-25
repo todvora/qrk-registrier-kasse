@@ -209,10 +209,10 @@ QString AESUtil::decryptCTR(std::string concatenatedHashValue, QString encrypted
   return QString::number(Union.source);
 }
 
-QString AESUtil::toHex(QString str)
+QString AESUtil::toHex(QByteArray ba)
 {
   string encoded;
-  StringSource ss(str.toStdString(), true, new HexEncoder( new StringSink(encoded)));
+  StringSource ss(ba.toStdString(), true, new HexEncoder( new StringSink(encoded)));
 
   return QString::fromStdString(encoded);
 }
@@ -232,12 +232,12 @@ QString AESUtil::base64_encode(QString str)
   return QString::fromStdString(encoded);
 }
 
-QString AESUtil::base32_decode(QString str)
+QByteArray AESUtil::base32_decode(QString str)
 {
   return "";
 }
 
-QString AESUtil::base64_decode(QString str, bool hex)
+QByteArray AESUtil::base64_decode(QString str, bool hex)
 {
   QByteArray ba;
   ba.clear();

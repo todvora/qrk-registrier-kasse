@@ -19,7 +19,7 @@
 
 #include "utils.h"
 #include "database.h"
-#include "aesutil.h"
+#include "utils/aesutil.h"
 
 #include <QDateTime>
 #include <QSqlDatabase>

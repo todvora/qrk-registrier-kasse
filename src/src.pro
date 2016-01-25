@@ -33,7 +33,9 @@ SOURCES += main.cpp\
     qrkdocument.cpp \
     qrkregister.cpp \
     aboutdlg.cpp \
-    aesutil.cpp
+    utils/base32decode.cpp \
+    utils/base32encode.cpp \
+    utils/aesutil.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -54,7 +56,9 @@ HEADERS  += \
     qrkregister.h \
     defines.h \
     aboutdlg.h \
-    aesutil.h
+    utils/base32decode.h \
+    utils/base32encode.h \
+    utils/aesutil.h
 
 FORMS += \
     ui/qrk.ui \
