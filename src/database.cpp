@@ -120,7 +120,7 @@ void Database::updateProductSold(int count, QString product)
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
 
-    query.prepare(QString("UPDATE products SET sold=%1 WHERE name='%2'").arg(count).arg(product));
+    query.prepare(QString("UPDATE products SET sold=sold+%1 WHERE name='%2'").arg(count).arg(product));
     query.exec();
 
 }
