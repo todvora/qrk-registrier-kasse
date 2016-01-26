@@ -205,10 +205,11 @@ QStringList Database::getMaximumItemSold()
     QStringList list;
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
-    query.prepare("SELECT max(sold), name, gross FROM products LIMIT 1;");
+    query.prepare("SELECT max(sold), name, tax, gross FROM products LIMIT 1;");
     query.exec();
     if (query.next()) {
         list << query.value("name").toString()
+             << query.value("tax").toString()
              << query.value("gross").toString();
         return list;
     }

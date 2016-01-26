@@ -21,12 +21,13 @@
 #include "database.h"
 
 #include <QSpinBox>
+#include <QCheckBox>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QCompleter>
-
+#include <QPainter>
 #include <QDebug>
 
 
@@ -41,8 +42,8 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
 {
   if (this->type == SPINBOX) {
     QSpinBox *spinbox = new QSpinBox(parent);
-    spinbox->setMinimum(-1000);
-    spinbox->setMaximum(1000);
+    spinbox->setMinimum(-99999);
+    spinbox->setMaximum(99999);
     spinbox->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 
     // connect( spinbox , SIGNAL( valueChanged(int) ), this , SLOT( commitAndCloseEditor() ) ) ;
@@ -63,8 +64,7 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     while(q.next()){
       combo->addItem(q.value(0).toString());
     }
-    QString v= index.data().value<QString>();
-    combo->setCurrentIndex(combo->findText(v));
+    combo->setCurrentIndex(combo->findText(index.data().value<QString>()));
     return combo;
 
   } else if (this->type == PRODUCTS) {
@@ -98,7 +98,6 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     editor->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
     return editor;
   }
-
   // qDebug() << "QrkDelegate::Editor";
 
   return QStyledItemDelegate::createEditor(parent, item, index);
@@ -164,7 +163,6 @@ void QrkDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
     QLineEdit* line = static_cast<QLineEdit*>(editor);
     line->setText(QString().setNum(value));
   }
-
   // qDebug() << "QrkDelegate::setEditorData";
 
 }
@@ -193,7 +191,6 @@ void QrkDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
     QString value = line->text();
     model->setData(index,value);
   }
-
   // qDebug() << "QrkDelegate::setModelData";
   QStyledItemDelegate::setModelData(editor, model, index);
 

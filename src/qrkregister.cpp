@@ -346,13 +346,14 @@ void QRKRegister::newOrder()
 
   currentReceipt = 0;  // a new receipt not yet in the DB
 
-  orderListModel->setColumnCount(6);
+  orderListModel->setColumnCount(7);
   orderListModel->setHeaderData(REGISTER_COL_COUNT, Qt::Horizontal, QObject::tr("Anzahl"));
   orderListModel->setHeaderData(REGISTER_COL_PRODUCT, Qt::Horizontal, QObject::tr("Produkt"));
   orderListModel->setHeaderData(REGISTER_COL_TAX, Qt::Horizontal, QObject::tr("MwSt."));
   orderListModel->setHeaderData(REGISTER_COL_NET, Qt::Horizontal, QObject::tr("E-Netto"));
   orderListModel->setHeaderData(REGISTER_COL_SINGLE, Qt::Horizontal, QObject::tr("E-Preis"));
   orderListModel->setHeaderData(REGISTER_COL_TOTAL, Qt::Horizontal, QObject::tr("Preis"));
+  orderListModel->setHeaderData(REGISTER_COL_SAVE, Qt::Horizontal, QObject::tr(" "));
 
   //  ui->orderList->horizontalHeader()->saveGeometry();
   //    ui->orderList->setColumnWidth(1, 350);
@@ -367,9 +368,11 @@ void QRKRegister::newOrder()
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_NET, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_SINGLE, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_TOTAL, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
+//  ui->orderList->setItemDelegateForColumn(REGISTER_COL_SAVE, new QrkDelegate (QrkDelegate::CHECK_SAVE, this));
 
   ui->orderList->horizontalHeader()->setSectionResizeMode(REGISTER_COL_PRODUCT, QHeaderView::Stretch);
   ui->orderList->setColumnHidden(REGISTER_COL_NET, !useInputNetPrice);
+  ui->orderList->setColumnHidden(REGISTER_COL_SAVE, false);
 
   updateOrderSum();
   plusSlot();
@@ -556,7 +559,7 @@ void QRKRegister::itemChangedSlot( const QModelIndex& i, const QModelIndex&)
       break ;
     case REGISTER_COL_TAX:
       net = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toDouble();
-      sum = net * (1.0 + s.toDouble() / 100.0);
+      sum = net * (1.0 + s.replace(" %", "").toDouble() / 100.0);
 
       orderListModel->item(row, REGISTER_COL_SINGLE)->setText( QString("%1").arg(sum) );
       break;
@@ -644,14 +647,20 @@ void QRKRegister::plusSlot()
 
   QString defaultTax = Database::getDefaultTax();
 
-  orderListModel->setColumnCount(6);
+  orderListModel->setColumnCount(7);
   orderListModel->setItem(row, REGISTER_COL_COUNT, new QStandardItem(QString("1")));
-
   orderListModel->setItem(row, REGISTER_COL_PRODUCT, new QStandardItem(QString("")));
   orderListModel->setItem(row, REGISTER_COL_TAX, new QStandardItem(defaultTax));
   orderListModel->setItem(row, REGISTER_COL_NET, new QStandardItem(QString("0")));
   orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(QString("0")));
   orderListModel->setItem(row, REGISTER_COL_TOTAL, new QStandardItem(QString("0")));
+
+  QStandardItem* itemSave = new QStandardItem(true);
+  itemSave->setCheckable(true);
+  itemSave->setCheckState(Qt::Checked);
+  itemSave->setText("Speichern");
+
+  orderListModel->setItem(row, REGISTER_COL_SAVE, itemSave);
 
   orderListModel->item(row ,REGISTER_COL_COUNT)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
   orderListModel->item(row ,REGISTER_COL_TAX)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
@@ -667,7 +676,8 @@ void QRKRegister::plusSlot()
       QStringList list;
       list = Database::getMaximumItemSold();
       orderListModel->setItem(row, REGISTER_COL_PRODUCT, new QStandardItem(list.at(0)));
-      orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(list.at(1)));
+      orderListModel->setItem(row, REGISTER_COL_TAX, new QStandardItem(list.at(1)));
+      orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(list.at(2)));
   }
 
   ui->orderList->selectRow(row);
