@@ -34,7 +34,7 @@ class DocumentPrinter : public QObject
     ~DocumentPrinter();
 
     void printReceipt(QJsonObject data);
-    void printDocument(QTextDocument *document);
+    void printDocument(QTextDocument *document, QString title);
 
   private:
     QString wordWrap(QString text, int width, QFont font);
@@ -51,6 +51,7 @@ class DocumentPrinter : public QObject
     bool useReportPrinter;
     QString currency;
     QString logoFileName;
+    bool printCompanyNameBold;
 
   signals:
 

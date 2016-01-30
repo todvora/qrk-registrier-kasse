@@ -17,6 +17,14 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0130
+ + Report kann statt gedruckt jetzt als PDF gespeichert werden (Einstellungen Drucker)
+ + Firmenname kann jetzt FETT gedruckt werden
+ * Maximale Anzahl der Produkte auf 99999 erhöht.
+ * BON Überschrift kann jetzt zwischen KASSABON, KASSENBON und Zahlungsbestätigung gewählt werden
+ * fix Meistverkaufter Artikel (wurde nicht gespeichert)
+ * fix BonKopie wurde ebenfalls zweimal gedruckt.
+
 VERSION 0.16.0120
  + Meistverkaufter Artikel kann als Standard Artikel verwendet werden. (Einstellungen->Extras)
  + Abfrage bei Monatsabschluß

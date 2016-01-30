@@ -355,8 +355,6 @@ void QRKRegister::newOrder()
   orderListModel->setHeaderData(REGISTER_COL_TOTAL, Qt::Horizontal, QObject::tr("Preis"));
   orderListModel->setHeaderData(REGISTER_COL_SAVE, Qt::Horizontal, QObject::tr(" "));
 
-  //  ui->orderList->horizontalHeader()->saveGeometry();
-  //    ui->orderList->setColumnWidth(1, 350);
   ui->orderList->setAutoScroll(true);
   ui->orderList->setWordWrap(true);
   ui->orderList->setSelectionMode(QAbstractItemView::MultiSelection);
@@ -368,11 +366,10 @@ void QRKRegister::newOrder()
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_NET, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_SINGLE, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_TOTAL, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
-//  ui->orderList->setItemDelegateForColumn(REGISTER_COL_SAVE, new QrkDelegate (QrkDelegate::CHECK_SAVE, this));
 
   ui->orderList->horizontalHeader()->setSectionResizeMode(REGISTER_COL_PRODUCT, QHeaderView::Stretch);
   ui->orderList->setColumnHidden(REGISTER_COL_NET, !useInputNetPrice);
-  ui->orderList->setColumnHidden(REGISTER_COL_SAVE, false);
+  ui->orderList->setColumnHidden(REGISTER_COL_SAVE, true); /* TODO: Make usable and add code to Settings */
 
   updateOrderSum();
   plusSlot();
@@ -445,6 +442,8 @@ QJsonObject QRKRegister::compileData(int id)
 
   orders.exec();
 
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+
   // ZNr Programmversion Kassen-Id Beleg Belegtyp Bemerkung Nachbonierung
   // Belegnummer Datum Umsatz_Normal Umsatz_Ermaessigt1 Umsatz_Ermaessigt2
   // Umsatz_Null Umsatz_Besonders Jahresumsatz_bisher Erstellungsdatum
@@ -455,9 +454,10 @@ QJsonObject QRKRegister::compileData(int id)
   Root["actionText"] = tr("Beleg");
   Root["typeText"] = Database::getActionType(payedBy);
   Root["shopName"] = Database::getShopName();
+  Root["shopMasterData"] = Database::getShopMasterData();
   Root["headerText"] = getHeaderText();
-  Root["totallyup"] = (totallyup)? "Nachbonierung":"";
-  Root["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):tr("KASSABON");
+  Root["totallyup"] = (totallyup)? "Nachbonierung":"";  
+  Root["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):settings.value("receiptPrinterHeading", "KASSABON").toString();
   Root["receiptNum"] = receiptNum;
   Root["receiptTime"] = receiptTime.toString(Qt::ISODate);
   Root["currentRegisterYear"] = QDate::currentDate().year();
@@ -631,6 +631,9 @@ void QRKRegister::plusSlot()
 
     row = orderListModel->rowCount() -1;
 
+    /* TODO: check for Autosave */
+    bool checked = orderListModel->item(row ,REGISTER_COL_SAVE)->checkState();
+
     QList<QVariant> list;
 
     list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
@@ -655,10 +658,11 @@ void QRKRegister::plusSlot()
   orderListModel->setItem(row, REGISTER_COL_SINGLE, new QStandardItem(QString("0")));
   orderListModel->setItem(row, REGISTER_COL_TOTAL, new QStandardItem(QString("0")));
 
-  QStandardItem* itemSave = new QStandardItem(true);
+  QStandardItem* itemSave = new QStandardItem(false);
   itemSave->setCheckable(true);
-  itemSave->setCheckState(Qt::Checked);
-  itemSave->setText("Speichern");
+  itemSave->setCheckState(Qt::Unchecked);
+  itemSave->setEditable(false);
+  itemSave->setText(tr("Speichern"));
 
   orderListModel->setItem(row, REGISTER_COL_SAVE, itemSave);
 

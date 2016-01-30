@@ -73,6 +73,9 @@ FORMS += \
 RESOURCES += \
     qrk.qrc
 
+TRANSLATIONS += tr/QRK_en.ts \
+    tr/QRK_de.ts
+
 DISTFILES +=
 
 # LIBS += -lqrencode

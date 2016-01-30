@@ -85,6 +85,7 @@ class PrinterTab : public QWidget
   public:
     explicit PrinterTab(QSettings &s, QWidget *parent = 0);
 
+    bool getReportPrinterPDF();
     QString getReportPrinter();
     QString getPaperFormat();
     QString getInvoiceCompanyPrinter();
@@ -94,8 +95,12 @@ class PrinterTab : public QWidget
     int getInvoiceCompanyMarginTop();
     int getInvoiceCompanyMarginBottom();
 
+  private slots:
+    void reportPrinterCheck_toggled(bool);
+
   private:
 
+    QCheckBox *reportPrinterCheck;
     QComboBox *reportPrinterCombo;
     QComboBox *paperFormatCombo;
     QComboBox *invoiceCompanyPrinterCombo;
@@ -114,6 +119,8 @@ class ReceiptPrinterTab : public QWidget
     explicit ReceiptPrinterTab(QSettings &s, QWidget *parent = 0);
 
     QString getReceiptPrinter();
+    QString getReceiptPrinterHeading();
+    bool getPrintCompanyNameBold();
     bool getUseReportPrinter();
     bool getIsLogoRight();
     int getNumberCopies();
@@ -126,7 +133,9 @@ class ReceiptPrinterTab : public QWidget
 
   private:
     QComboBox *paperFormatCombo;
+    QComboBox *receiptPrinterHeading;
     QComboBox *receiptPrinterCombo;
+    QCheckBox *printCompanyNameBoldCheck;
     QCheckBox *useReportPrinterCheck;
     QCheckBox *useLogoRightCheck;
     QSpinBox *numberCopiesSpin;

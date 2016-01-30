@@ -18,6 +18,7 @@
  */
 
 To Do Liste:
+erledigt    Firmenname Fett drucken (VERSION 0.16.0130)
 erledigt    Datenverzeichnis Pfadangabe im Settings Dialog (VERSION 0.16.0115)
 erledigt    Logoauswahl im Settings Dialog (VERSION 0.16.0115)
 erledigt    (VERSION 0.16.0115)

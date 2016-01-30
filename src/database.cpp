@@ -341,12 +341,23 @@ QString Database::getShopName()
 
   name = query.value(0).toString();
 
+  return name;
+
+}
+
+QString Database::getShopMasterData()
+{
+  QString name;
+  QString tmp;
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+
   query.prepare("SELECT strValue FROM globals WHERE name='shopOwner'");
   query.exec();
   query.next();
   tmp = query.value(0).toString();
 
-  name += (tmp.isEmpty())? "": "\n" + tmp;
+  name = (tmp.isEmpty())? "": "\n" + tmp;
 
   query.prepare("SELECT strValue FROM globals WHERE name='shopAddress'");
   query.exec();

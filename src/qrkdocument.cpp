@@ -222,12 +222,13 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
   int type = Database::getActionTypeByName(payedByText);
 
   if (type == PAYED_BY_REPORT_EOD || type == PAYED_BY_REPORT_EOM) { /* actionType Tagesbeleg*/
+    QString DocumentTitle = QString("BON_%1_%2").arg(id).arg(payedByText);
     QTextDocument doc;
     doc.setHtml(Reports::getReport(id));
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     DocumentPrinter *p = new DocumentPrinter(this, progressBar);
-    p->printDocument(&doc);
+    p->printDocument(&doc, DocumentTitle);
     delete p;
     QApplication::setOverrideCursor(Qt::ArrowCursor);
 
@@ -236,6 +237,7 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
   } else {
 
     currentReceipt = id;
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
     QRKRegister *reg = new QRKRegister(progressBar);
     reg->setCurrentReceiptNum(id);
@@ -246,7 +248,7 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
     int storno = Database::getStorno(id);
     if (storno == 2) {
       id = Database::getStornoId(id);
-      data["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):tr("KASSABON");
+      data["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):settings.value("receiptPrinterHeading", "KASSABON").toString();
     }
 
     data["isInvoiceCompany"] = isInvoiceCompany;

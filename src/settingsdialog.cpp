@@ -89,6 +89,7 @@ void SettingsDialog::accept()
   settings.setValue("useInputNetPrice", extra->getInputNetPrice());
   settings.setValue("useMaximumItemSold", extra->getMaximumItemSold());
 
+  settings.setValue("reportPrinterPDF", printer->getReportPrinterPDF());
   settings.setValue("reportPrinter", printer->getReportPrinter());
   settings.setValue("paperFormat", printer->getPaperFormat());
 
@@ -99,7 +100,9 @@ void SettingsDialog::accept()
   settings.setValue("invoiceCompanyMarginRight", printer->getInvoiceCompanyMarginRight());
   settings.setValue("invoiceCompanyMarginBottom", printer->getInvoiceCompanyMarginBottom());
 
+  settings.setValue("receiptPrinterHeading", receiptprinter->getReceiptPrinterHeading());
   settings.setValue("receiptPrinter", receiptprinter->getReceiptPrinter());
+  settings.setValue("printCompanyNameBold", receiptprinter->getPrintCompanyNameBold());
   settings.setValue("useReportPrinter", receiptprinter->getUseReportPrinter());
   settings.setValue("logoRight", receiptprinter->getIsLogoRight());
   settings.setValue("numberCopies", receiptprinter->getNumberCopies());
@@ -456,6 +459,7 @@ QString MasterDataTab::getShopCashRegisterId()
 PrinterTab::PrinterTab(QSettings &settings, QWidget *parent)
   : QWidget(parent)
 {
+  reportPrinterCheck = new QCheckBox();
   reportPrinterCombo = new QComboBox();
   paperFormatCombo = new QComboBox();
 
@@ -476,6 +480,7 @@ PrinterTab::PrinterTab(QSettings &settings, QWidget *parent)
 
   QGroupBox *reportPrinterGroup = new QGroupBox();
   QFormLayout *reportPrinterLayout = new QFormLayout();
+  reportPrinterLayout->addRow(tr("PDF erstellen:"), reportPrinterCheck);
   reportPrinterLayout->addRow(tr("Bericht Drucker:"), reportPrinterCombo);
   reportPrinterLayout->addRow(tr("Papierformat:"), paperFormatCombo);
   reportPrinterGroup->setLayout(reportPrinterLayout);
@@ -514,6 +519,12 @@ PrinterTab::PrinterTab(QSettings &settings, QWidget *parent)
       invoiceCompanyPrinterCombo->setCurrentIndex(i);
 
   }
+
+  reportPrinterCheck->setChecked(settings.value("reportPrinterPDF", false).toBool());
+  connect(reportPrinterCheck, SIGNAL(toggled(bool)),this, SLOT(reportPrinterCheck_toggled(bool)));
+
+  reportPrinterCombo->setEnabled(!reportPrinterCheck->isChecked());
+
   QString x = settings.value("paperFormat", "A4").toString();
   paperFormatCombo->addItem("A4");
   paperFormatCombo->addItem("A5");
@@ -528,6 +539,16 @@ PrinterTab::PrinterTab(QSettings &settings, QWidget *parent)
   invoiceCompanyMarginRightSpin->setValue(settings.value("invoiceCompanyMarginRight", 5).toInt());
   invoiceCompanyMarginBottomSpin->setValue(settings.value("invoiceCompanyMarginBottom", 0).toInt());
 
+}
+
+void PrinterTab::reportPrinterCheck_toggled(bool checkState)
+{
+  reportPrinterCombo->setEnabled(!checkState);
+}
+
+bool PrinterTab::getReportPrinterPDF()
+{
+  return reportPrinterCheck->isChecked();
 }
 
 QString PrinterTab::getReportPrinter()
@@ -577,7 +598,9 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
 
 
   receiptPrinterCombo = new QComboBox();
+  receiptPrinterHeading = new QComboBox();
 
+  printCompanyNameBoldCheck = new QCheckBox();
   useReportPrinterCheck = new QCheckBox();
   useLogoRightCheck = new QCheckBox();
 
@@ -610,7 +633,9 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
 
   QFormLayout *receiptPrinterLayout = new QFormLayout;
   receiptPrinterLayout->setAlignment(Qt::AlignLeft);
+  receiptPrinterLayout->addRow(tr("Überschrift:"), receiptPrinterHeading);
   receiptPrinterLayout->addRow(tr("Drucker:"), receiptPrinterCombo);
+  receiptPrinterLayout->addRow(tr("Firmenname Fett drucken:"), printCompanyNameBoldCheck);
   receiptPrinterLayout->addRow("Berichtdrucker für den zweiten Ausdruck verwenden", useReportPrinterCheck);
   receiptPrinterLayout->addRow("Logo auf der rechten Seite Drucken", useLogoRightCheck);
 
@@ -629,6 +654,11 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
   mainLayout->addStretch(1);
   setLayout(mainLayout);
 
+  receiptPrinterHeading->addItem("KASSABON");
+  receiptPrinterHeading->addItem("KASSENBON");
+  receiptPrinterHeading->addItem("Zahlungsbestätigung");
+  receiptPrinterHeading->setCurrentText(settings.value("receiptPrinterHeading", "KASSABON").toString());
+
   QString receiptPrinter = settings.value("receiptPrinter").toString();
   QList<QPrinterInfo> availablePrinters = QPrinterInfo::availablePrinters();
   for (int i = 0; i < availablePrinters.count(); i++)
@@ -639,6 +669,7 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
   }
 
 
+  printCompanyNameBoldCheck->setChecked(settings.value("printCompanyNameBold", true).toBool());
   useReportPrinterCheck->setChecked(settings.value("useReportPrinter", true).toBool());
   useLogoRightCheck->setChecked(settings.value("logoRight", false).toBool());
   numberCopiesSpin->setValue(settings.value("numberCopies", 1).toInt());
@@ -650,6 +681,16 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
   marginRightSpin->setValue(settings.value("marginRight", 5).toInt());
   marginBottomSpin->setValue(settings.value("marginBottom", 0).toInt());
 
+}
+
+bool ReceiptPrinterTab::getPrintCompanyNameBold()
+{
+  return printCompanyNameBoldCheck->isChecked();
+}
+
+QString ReceiptPrinterTab::getReceiptPrinterHeading()
+{
+  return receiptPrinterHeading->currentText();
 }
 
 QString ReceiptPrinterTab::getReceiptPrinter()
