@@ -606,11 +606,18 @@ bool Reports::endOfMonth()
     QMessageBox msgBox;
     msgBox.setWindowTitle(tr("Monatsabschluss"));
     QDateTime checkdate = QDateTime::currentDateTime();
-    if (QDate::currentDate().month() > 1)
-      checkdate.setDate(QDate::fromString(QString("%1-%2-31").arg(QDate::currentDate().year()).arg(QDate::currentDate().month()),"yyyy-MM-dd").addMonths(-1));
-    else
-      checkdate.setDate(QDate::fromString(QString("%1-12-31").arg(QDate::currentDate().year()),"yyyy-MM-dd").addYears(-1));
 
+    if (QDate::currentDate().month() > 1) {
+      checkdate.setDate(QDate::fromString(QString("%1-%2-1")
+                                          .arg(QDate::currentDate().year())
+                                          .arg(QDate::currentDate().month())
+                                          , "yyyy-M-d")
+                        .addDays(-1));
+    } else {
+      checkdate.setDate(QDate::fromString(QString("%1-12-31")
+                                          .arg(QDate::currentDate().year()),"yyyy-M-d")
+                        .addYears(-1));
+    }
     checkdate.setTime(QTime::fromString("23:59:59"));
 
     QDateTime dateTime = Database::getLastReceiptDateTime();

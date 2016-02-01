@@ -14,6 +14,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ../bin/QRK
 # TEMPLATE = app
 
+VERSION = 0.16.0130
 
 SOURCES += main.cpp\
     databasedefinition.cpp \
@@ -78,6 +79,18 @@ TRANSLATIONS += tr/QRK_en.ts \
 
 DISTFILES +=
 
+# quazip
+!include("3rdparty/quazip/quazip.pri") {
+<------>error("Unable to include quazip.")
+}
+
+# Fervor autoupdater
+# (set TARGET and VERSION of your app before including Fervor.pri)
+!include("3rdparty/fervor-autoupdate/Fervor.pri") {
+<------>error("Unable to include Fervor autoupdater.")
+}
+
 # LIBS += -lqrencode
 # LIBS += -lpthread
 LIBS += -lcryptopp
+LIBS += -lz

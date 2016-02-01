@@ -17,6 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0201
+ * fix Monatsaschluß (0)
+ + Autoupdatefunktion
+
 VERSION 0.16.0130
  + Report kann statt gedruckt jetzt als PDF gespeichert werden (Einstellungen Drucker)
  + Firmenname kann jetzt FETT gedruckt werden
