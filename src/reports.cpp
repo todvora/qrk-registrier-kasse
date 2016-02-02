@@ -321,7 +321,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   q.exec();
   q.next();
 
-  int sumProducts = q.value(0).toInt();
+  double sumProducts = q.value(0).toDouble();
 
   QStringList stat;
   stat.append(QString("Anzahl verkaufter Produkte oder Leistungen: %1").arg(sumProducts));
@@ -445,7 +445,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
                 .arg(q.value(1).toString())
                 .arg(QString::number(q.value(2).toDouble(),'f',2))
                 .arg(QString::number(q.value(3).toDouble(),'f',2))
-                .arg(q.value(4).toInt()));
+                .arg(q.value(4).toDouble()));
   }
 
   qDebug() << "Reports::createStat(" << type << ") elapsed Time: " << timer.elapsed() << "milliseconds";

@@ -326,7 +326,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
     const QJsonObject& order = item.toObject();
 
-    int count = order.value("count").toInt();
+    double count = order.value("count").toDouble();
     QString grossText = QString("%1").arg(QString::number(order.value("gross").toDouble(), 'f', 2));
     QString singleGrossText = QString("%1 x %2").arg(QString::number(count)).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2));
     int grossWidth = grossMetrics.boundingRect(grossText).width();

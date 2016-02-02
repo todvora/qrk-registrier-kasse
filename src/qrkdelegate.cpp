@@ -21,6 +21,7 @@
 #include "database.h"
 
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QCheckBox>
 #include <QLineEdit>
 #include <QComboBox>
@@ -49,6 +50,16 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     // connect( spinbox , SIGNAL( valueChanged(int) ), this , SLOT( commitAndCloseEditor() ) ) ;
 
     return spinbox;
+
+  } else if (this->type == DOUBLE_SPINBOX) {
+      QDoubleSpinBox *spinbox = new QDoubleSpinBox(parent);
+      spinbox->setMinimum(-99999);
+      spinbox->setMaximum(99999);
+      spinbox->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+
+      // connect( spinbox , SIGNAL( valueChanged(int) ), this , SLOT( commitAndCloseEditor() ) ) ;
+
+      return spinbox;
 
   } else if (this->type == COMBO_TAX) {
     QComboBox *combo = new QComboBox(parent);
@@ -142,6 +153,13 @@ void QrkDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
     // Put the value into the SpinBox
     QSpinBox *spinbox = static_cast<QSpinBox*>(editor);
     spinbox->setValue(value);
+  } else if (this->type == DOUBLE_SPINBOX) {
+      // Get the value via index of the Model
+      double value = index.model()->data(index, Qt::EditRole).toDouble();
+
+      // Put the value into the SpinBox
+      QDoubleSpinBox *spinbox = static_cast<QDoubleSpinBox*>(editor);
+      spinbox->setValue(value);
 
   } else if (this->type == COMBO_TAX) {
     if(index.data().canConvert<QString>()){
@@ -175,6 +193,11 @@ void QrkDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
     spinbox->interpretText();
     int value = spinbox->value();
     model->setData(index, value);
+  } else if (this->type == DOUBLE_SPINBOX) {
+      QDoubleSpinBox *spinbox = static_cast<QDoubleSpinBox*>(editor);
+      spinbox->interpretText();
+      double value = spinbox->value();
+      model->setData(index, value);
 
   } else if (this->type == COMBO_TAX) {
     if (index.data().canConvert(QMetaType::QString)){
@@ -230,6 +253,9 @@ void QrkDelegate::commitAndCloseEditor()
     emit closeEditor(combo);
   } else if (this->type == SPINBOX) {
     QSpinBox *spinbox= qobject_cast<QSpinBox *>(sender());
+    emit commitData(spinbox);
+  } else if (this->type == DOUBLE_SPINBOX) {
+    QDoubleSpinBox *spinbox= qobject_cast<QDoubleSpinBox *>(sender());
     emit commitData(spinbox);
   } else if (this->type == PRODUCTS) {
     QLineEdit *editor = qobject_cast<QLineEdit *>(sender());

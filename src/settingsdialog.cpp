@@ -89,6 +89,9 @@ void SettingsDialog::accept()
   settings.setValue("useInputNetPrice", extra->getInputNetPrice());
   settings.setValue("useMaximumItemSold", extra->getMaximumItemSold());
 
+  settings.setValue("useDecimalQuantity", extra->getDecimalQuantity());
+  settings.setValue("useGivenDialog", extra->getGivenDialog());
+
   settings.setValue("reportPrinterPDF", printer->getReportPrinterPDF());
   settings.setValue("reportPrinter", printer->getReportPrinter());
   settings.setValue("paperFormat", printer->getPaperFormat());
@@ -127,6 +130,11 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   useMaximumItemSoldCheck = new QCheckBox;
   useMaximumItemSoldCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
 
+  useDecimalQuantityCheck = new QCheckBox;
+  useDecimalQuantityCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+
+  useGivenDialogCheck = new QCheckBox;
+  useGivenDialogCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
 
   QGroupBox *registerGroup = new QGroupBox();
   registerGroup->setTitle(tr("Kasse"));
@@ -134,6 +142,8 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   extraLayout->setAlignment(Qt::AlignLeft);
   extraLayout->addRow(tr("Netto Eingabe ermöglichen:"),useInputNetPriceCheck);
   extraLayout->addRow(tr("Meistverkauften Artikel als Standard Artikel verwenden:"),useMaximumItemSoldCheck);
+  extraLayout->addRow(tr("Dezimale Eingabe bei Anzahl Artikel:"),useDecimalQuantityCheck);
+  extraLayout->addRow(tr("Betrag gegeben Dialog:"),useGivenDialogCheck);
   registerGroup->setLayout(extraLayout);
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -144,6 +154,8 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
 
   useInputNetPriceCheck->setChecked(settings.value("useInputNetPrice", false).toBool());
   useMaximumItemSoldCheck->setChecked(settings.value("useMaximumItemSold", false).toBool());
+  useDecimalQuantityCheck->setChecked(settings.value("useDecimalQuantity", false).toBool());
+  useGivenDialogCheck->setChecked(settings.value("useGivenDialog", false).toBool());
 
 }
 
@@ -155,6 +167,16 @@ bool ExtraTab::getInputNetPrice()
 bool ExtraTab::getMaximumItemSold()
 {
     return useMaximumItemSoldCheck->isChecked();
+}
+
+bool ExtraTab::getDecimalQuantity()
+{
+    return useDecimalQuantityCheck->isChecked();
+}
+
+bool ExtraTab::getGivenDialog()
+{
+    return useGivenDialogCheck->isChecked();
 }
 
 GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)

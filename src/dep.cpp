@@ -52,7 +52,7 @@ void DEP::depInsertReceipt(QJsonObject &data)
     QJsonObject o = value.toObject();
     var.append(QString("'Produktposition\t"));
     var.append(QString("%1\t").arg(o["product"].toString()));
-    var.append(QString("%1\t").arg(o["count"].toInt()));
+    var.append(QString("%1\t").arg(QString::number(o["count"].toDouble(),'f', 2)));
     var.append(QString("%1\t").arg(QString::number(o["singleprice"].toDouble(),'f', 2)));
     var.append(QString("%1\t").arg(QString::number(o["gross"].toDouble(),'f', 2)));
     var.append(QString("%1\t").arg(o["tax"].toDouble()));

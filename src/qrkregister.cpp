@@ -18,6 +18,7 @@
  */
 
 #include "qrkregister.h"
+#include "givendialog.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -107,6 +108,8 @@ void QRKRegister::init()
 
   useInputNetPrice = settings.value("useInputNetPrice", false).toBool();
   useMaximumItemSold = settings.value("useMaximumItemSold", false).toBool();
+  useDecimalQuantity = settings.value("useDecimalQuantity", false).toBool();
+  useGivenDialog = settings.value("useGivenDialog", false).toBool();
 }
 
 //--------------------------------------------------------------------------------
@@ -184,7 +187,7 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
 
     while ( orders.next() )
     {
-      int count = orders.value("count").toInt();
+      double count = orders.value("count").toDouble();
       double singlePrice = orders.value("gross").toDouble();
       int tax = orders.value("tax").toDouble();
 
@@ -249,7 +252,7 @@ bool QRKRegister::createOrder(bool storno)
 
   for (int row = 0; row < ui->orderList->model()->rowCount(); row++)
   {
-    int count = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_COUNT, QModelIndex())).toInt();
+    double count = ui->orderList->model()->data(ui->orderList->model()->index(row, REGISTER_COL_COUNT, QModelIndex())).toDouble();
     if (storno)
       count *= -1;
 
@@ -360,7 +363,10 @@ void QRKRegister::newOrder()
   ui->orderList->setSelectionMode(QAbstractItemView::MultiSelection);
   ui->orderList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-  ui->orderList->setItemDelegateForColumn(REGISTER_COL_COUNT, new QrkDelegate (QrkDelegate::SPINBOX, this));
+  if (useDecimalQuantity)
+    ui->orderList->setItemDelegateForColumn(REGISTER_COL_COUNT, new QrkDelegate (QrkDelegate::DOUBLE_SPINBOX, this));
+  else
+      ui->orderList->setItemDelegateForColumn(REGISTER_COL_COUNT, new QrkDelegate (QrkDelegate::SPINBOX, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_PRODUCT, new QrkDelegate (QrkDelegate::PRODUCTS, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_TAX, new QrkDelegate (QrkDelegate::COMBO_TAX, this));
   ui->orderList->setItemDelegateForColumn(REGISTER_COL_NET, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
@@ -469,7 +475,7 @@ QJsonObject QRKRegister::compileData(int id)
 
   while(orders.next())//load all data from the database
   {
-    int count = orders.value(0).toInt();
+    double count = orders.value(0).toDouble();
     double singlePrice = orders.value(2).toDouble();
     double gross = singlePrice * count;
     double tax = orders.value(3).toDouble();
@@ -748,6 +754,13 @@ void QRKRegister::onButtonGroup_payNow_clicked(int payedBy)
 
   if (! checkEOAny())
     return;
+
+  if (useGivenDialog) {
+
+      double sum = ui->sumLabel->text().replace(currency ,"").toDouble();
+      GivenDialog *given = new GivenDialog(sum, this);
+      given->exec();
+  }
 
   int row;
 

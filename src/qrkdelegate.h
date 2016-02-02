@@ -33,8 +33,8 @@ class QrkDelegate : public QStyledItemDelegate
       COMBO_TAX,
       PRODUCTS,
       NUMBERFORMAT_DOUBLE,
-      NUMBERFORMAT_INT
-
+      NUMBERFORMAT_INT,
+      DOUBLE_SPINBOX
     };
 
     explicit QrkDelegate(int type, QObject *parent = 0);

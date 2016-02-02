@@ -39,12 +39,16 @@ class ExtraTab : public QWidget
     explicit ExtraTab(QSettings &s, QWidget *parent = 0);
     bool getInputNetPrice();
     bool getMaximumItemSold();
+    bool getDecimalQuantity();
+    bool getGivenDialog();
 
   private slots:
 
   private:
     QCheckBox *useInputNetPriceCheck;
     QCheckBox *useMaximumItemSoldCheck;
+    QCheckBox *useDecimalQuantityCheck;
+    QCheckBox *useGivenDialogCheck;
 
 };
 

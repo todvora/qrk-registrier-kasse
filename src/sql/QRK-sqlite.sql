@@ -52,19 +52,20 @@ INSERT INTO `groups`(`name`) VALUES ('Standard');
 CREATE TABLE `products` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `name`	text NOT NULL,
-    `sold`	INTEGER NOT NULL DEFAULT 0,
+    `sold`	double NOT NULL DEFAULT 0,
     `net`	double NOT NULL,
     `gross`	double NOT NULL,
     `group`	INTEGER NOT NULL DEFAULT 0,
     `visible`	tinyint(1) NOT NULL DEFAULT 1,
-    `tax`	INTEGER NOT NULL DEFAULT '20'
+    `completer`	tinyint(1) NOT NULL DEFAULT 1,
+    `tax`	double NOT NULL DEFAULT '20'
 );
 
 CREATE TABLE `orders` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `receiptId`	INTEGER NOT NULL,
     `product`	INTEGER NOT NULL,
-    `count`	INTEGER NOT NULL DEFAULT '1',
+    `count`	double NOT NULL DEFAULT '1',
     `net`	double NOT NULL,
     `gross`	double NOT NULL,
     `tax`	double NOT NULL DEFAULT '0.0',

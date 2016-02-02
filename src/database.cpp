@@ -214,7 +214,7 @@ QStringList Database::getMaximumItemSold()
         return list;
     }
 
-    list << "" << "0,00";
+    list << "" << "20" << "0,00";
     return list;
 
 }
@@ -381,7 +381,7 @@ QString Database::getShopMasterData()
 
 bool Database::open(bool dbSelect)
 {
-  const int CURRENT_SCHEMA_VERSION = 5;
+  const int CURRENT_SCHEMA_VERSION = 6;
   // read global defintions (DB, ...)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 

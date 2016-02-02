@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     utils/base32decode.cpp \
     utils/base32encode.cpp \
     utils/aesutil.cpp \
-    backup.cpp
+    backup.cpp \
+    givendialog.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -61,7 +62,8 @@ HEADERS  += \
     utils/base32decode.h \
     utils/base32encode.h \
     utils/aesutil.h \
-    backup.h
+    backup.h \
+    givendialog.h
 
 FORMS += \
     ui/qrk.ui \
@@ -71,15 +73,14 @@ FORMS += \
     ui/qrkdocument.ui \
     ui/qrkhome.ui \
     ui/qrkregister.ui \
-    ui/aboutdlg.ui
+    ui/aboutdlg.ui \
+    ui/givendialog.ui
 
 RESOURCES += \
     qrk.qrc
 
 TRANSLATIONS += tr/QRK_en.ts \
     tr/QRK_de.ts
-
-DISTFILES +=
 
 # quazip
 !include("3rdparty/quazip/quazip.pri") {

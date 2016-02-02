@@ -85,6 +85,8 @@ class QRKRegister : public QWidget
     bool noPrinter;
     bool useInputNetPrice;
     bool useMaximumItemSold;
+    bool useDecimalQuantity;
+    bool useGivenDialog;
     QString currency;
     QString taxlocation;
 
