@@ -17,7 +17,11 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.0201
+VERSION 0.16.xx
+ + Dezimal Eingabe für Anzahl Produkte (in den Einstellungen-Extras)
+ + Gegeben Dialog (in den Einstellungen-Extras)
+
+VERSION 0.16.0202
  + Backup bei jedem Tagesabschluss
  * Bei erneuten Drucken eines defekten Monatsabschlusses wird dieser neu generiert
  * Es wird nur ein PNG Image gedruckt. JPEG und CO wurden ignoriert.
