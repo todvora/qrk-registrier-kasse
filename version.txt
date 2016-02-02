@@ -18,6 +18,12 @@
  */
 
 VERSION 0.16.0201
+ + Backup bei jedem Tagesabschluss
+ * Bei erneuten Drucken eines defekten Monatsabschlusses wird dieser neu generiert
+ * Es wird nur ein PNG Image gedruckt. JPEG und CO wurden ignoriert.
+ * Fehlende DLL's für Windows hinzugefügt
+
+VERSION 0.16.0201
  * fix Monatsaschluß (0)
  + Autoupdatefunktion
 

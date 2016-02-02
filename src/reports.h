@@ -43,6 +43,8 @@ class Reports : public QObject
 
     bool endOfMonth();
     bool endOfDay();
+    void fixMonth(int);
+
 
     static QString getReport(int);
 

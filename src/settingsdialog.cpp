@@ -248,8 +248,8 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
 
   useLogo->setChecked(settings.value("useLogo", false).toBool());
   logoEdit->setText(settings.value("logo", "./logo.png").toString());
-  dataDirectoryEdit->setText(settings.value("dataDirectory", "./").toString());
-  backupDirectoryEdit->setText(settings.value("backupDirectory", "./").toString());
+  dataDirectoryEdit->setText(settings.value("dataDirectory", "./data").toString());
+  backupDirectoryEdit->setText(settings.value("backupDirectory", ".").toString());
 
 }
 

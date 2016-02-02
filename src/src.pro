@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     aboutdlg.cpp \
     utils/base32decode.cpp \
     utils/base32encode.cpp \
-    utils/aesutil.cpp
+    utils/aesutil.cpp \
+    backup.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -59,7 +60,8 @@ HEADERS  += \
     aboutdlg.h \
     utils/base32decode.h \
     utils/base32encode.h \
-    utils/aesutil.h
+    utils/aesutil.h \
+    backup.h
 
 FORMS += \
     ui/qrk.ui \

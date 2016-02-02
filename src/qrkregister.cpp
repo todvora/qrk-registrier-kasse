@@ -941,7 +941,7 @@ bool QRKRegister::checkEOAny()
           Reports *rep = new Reports(dep, progressBar);
           if (! rep->endOfMonth()) {
               QApplication::setOverrideCursor(Qt::ArrowCursor);
-              return true;
+              return false;
           }
       } else {
           return false;

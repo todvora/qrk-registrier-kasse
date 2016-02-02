@@ -222,6 +222,12 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
   int type = Database::getActionTypeByName(payedByText);
 
   if (type == PAYED_BY_REPORT_EOD || type == PAYED_BY_REPORT_EOM) { /* actionType Tagesbeleg*/
+    /* do fix for Month 01*/
+    DEP *dep = new DEP(this);
+    Reports *rep = new Reports(dep, progressBar);
+    rep->fixMonth(id);
+
+
     QString DocumentTitle = QString("BON_%1_%2").arg(id).arg(payedByText);
     QTextDocument doc;
     doc.setHtml(Reports::getReport(id));

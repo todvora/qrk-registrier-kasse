@@ -18,6 +18,7 @@
  */
 
 To Do Liste:
+erledigt    Backup bei jedem Tagesabschluss (VERSION 0.16.0202)
 erledigt    Firmenname Fett drucken (VERSION 0.16.0130)
 erledigt    Datenverzeichnis Pfadangabe im Settings Dialog (VERSION 0.16.0115)
 erledigt    Logoauswahl im Settings Dialog (VERSION 0.16.0115)
@@ -51,5 +52,4 @@ offen       QR-Code für 2017
 offen       AES256 für 2017
 offen       Cardreader Support
 offen       DEP Export (JSONFormat)
-offen       Backup bei jedem Tagesabschluss
 offen       Serverbetrieb mit automatischen Import (JSon)

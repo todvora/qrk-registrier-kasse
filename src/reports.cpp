@@ -18,6 +18,7 @@
  */
 
 #include "reports.h"
+#include "backup.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -151,6 +152,9 @@ bool Reports::canCreateEOM(QDate date)
 void Reports::createEOD(int id, QDate date)
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
+
+  Backup::create();
+
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
 
@@ -182,6 +186,66 @@ void Reports::createEOD(int id, QDate date)
   qDebug() << "Reports::createEOD Total elapsed Time: " << timer.elapsed() << "milliseconds";
 
   QApplication::setOverrideCursor(Qt::ArrowCursor);
+
+}
+
+//--------------------------------------------------------------------------------
+void Reports::fixMonth(int id)
+{
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+  QString query = QString("SELECT timestamp FROM receipts WHERE receiptNum=%1").arg(id);
+  q.exec(query);
+  if (!q.next())
+    return;
+
+  if (!q.value("timestamp").toString().isEmpty())
+    return;
+
+  query = QString("SELECT timestamp FROM receipts WHERE receiptNum=%1").arg(id +1);
+
+  q.exec(query);
+  if (!q.next())
+    return;
+
+  QDate fromOld = q.value("timestamp").toDate();
+
+  QDate date;
+    date.setDate(fromOld.year(), fromOld.month(), 1);
+    date = date.addDays(-1);
+
+    query = QString("DELETE FROM reports WHERE receiptNum=%1").arg(id);
+    q.exec(query);
+
+    query = QString("UPDATE receipts SET timestamp=%1 WHERE receiptNum=%2").arg(date.toString(Qt::ISODate)).arg(id);
+    q.exec(query);
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    QElapsedTimer timer;
+    timer.start();
+    QDateTime from;
+    QDateTime to;
+
+    // ---------- MONTH -----------------------------
+    from.setDate(QDate::fromString(date.toString()));
+    from.setDate(QDate::fromString(QString("%1-%2-01").arg(date.year()).arg(date.month()),"yyyy-MM-dd"));
+    to.setDate(QDate::fromString(date.toString()));
+    to.setTime(QTime::fromString("23:59:59"));
+
+    QStringList eod;
+    eod.append(createStat(id, "Monatsumsatz", from, to));
+
+    insert(eod, id);
+
+//    dep->depInsertLine("Beleg", line);
+
+    pb->setValue(100);
+
+    qDebug() << "Reports::createEOM Total elapsed Time: " << timer.elapsed() << "milliseconds";
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
+
 
 }
 
@@ -560,7 +624,7 @@ bool Reports::endOfDay()
     if (date == QDate::currentDate()) {
       msgBox.setText(tr("Nach dem Erstellen des Tagesabschlusses ist eine Bonierung für den heutigen Tag nicht mehr möglich."));
     } else {
-      msgBox.setText(tr("Nach dem Erstellen des Tagesabschlusses für %1 ist eine Nachbonierung erst ab %2 möglich.").arg(date.toString()).arg(QDateTime::currentDateTime().toString()));
+      msgBox.setText(tr("Nach dem Erstellen des Tagesabschlusses für %1 ist eine Nachbonierung erst ab %2 möglich.").arg(date.toString()).arg(date.addDays(1).toString()));
     }
     msgBox.setStandardButtons(QMessageBox::Yes);
     msgBox.addButton(QMessageBox::No);
