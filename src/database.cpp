@@ -115,7 +115,7 @@ QString Database::getYearCounter()
 
 //--------------------------------------------------------------------------------
 
-void Database::updateProductSold(int count, QString product)
+void Database::updateProductSold(double count, QString product)
 {
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);

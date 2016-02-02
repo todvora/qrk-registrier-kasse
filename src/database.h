@@ -54,7 +54,7 @@ class Database : public QObject
     static QString getDayCounter();
     static QString getMonthCounter();
     static QString getYearCounter();
-    static void updateProductSold(int, QString);
+    static void updateProductSold(double, QString);
     static QStringList getMaximumItemSold();
 
 

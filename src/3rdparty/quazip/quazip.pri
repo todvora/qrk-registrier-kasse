@@ -14,7 +14,11 @@ HEADERS += $$PWD/crypt.h \
            $$PWD/quazipfileinfo.h \
            $$PWD/quazipnewinfo.h \
            $$PWD/unzip.h \
-           $$PWD/zip.h
+           $$PWD/zip.h \
+    $$PWD/quagzipfile.h \
+    $$PWD/quaziodevice.h \
+    $$PWD/quazip_global.h \
+    $$PWD/quazipdir.h
 SOURCES += $$PWD/qioapi.cpp \
            $$PWD/JlCompress.cpp \
            $$PWD/quaadler32.cpp \
@@ -24,4 +28,7 @@ SOURCES += $$PWD/qioapi.cpp \
            $$PWD/quazipfileinfo.cpp \
            $$PWD/quazipnewinfo.cpp \
            $$PWD/unzip.c \
-           $$PWD/zip.c
+           $$PWD/zip.c \
+    $$PWD/quagzipfile.cpp \
+    $$PWD/quaziodevice.cpp \
+    $$PWD/quazipdir.cpp
