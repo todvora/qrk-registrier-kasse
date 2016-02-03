@@ -6,6 +6,10 @@
 
 #include <ui_groupedit.h>
 
+namespace Ui {
+  class GroupEdit;
+}
+
 class GroupEdit : public QDialog
 {
   Q_OBJECT
@@ -17,9 +21,9 @@ class GroupEdit : public QDialog
     virtual void accept();
 
   private:
-    Ui::GroupEdit ui;
+    Ui::GroupEdit *ui;
     int id;
-    QSqlQueryModel categoriesModel;
+    QSqlQueryModel *categoriesModel;
 };
 
 #endif

@@ -226,16 +226,30 @@ bool Database::addProduct(const QList<QVariant> &data)
   if (Database::exists("products", data.at(0).toString()))
     return true;
 
+  int visible = data.at(4).toInt();
+  int group = 2;
+  if ( data.at(0).toString().startsWith("Zahlungsbeleg für Rechnung") ) {
+      /* We do not need to diplay this in the Manager*/
+      visible = 0;
+      group = 1;
+  }
+
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
-  bool ok = query.prepare(QString("INSERT INTO products (name, tax, net, gross) VALUES ('%1', %2, %3, %4)")
-                          .arg(data.at(0).toString())
-                          .arg(data.at(1).toInt())
-                          .arg(data.at(2).toDouble())
-                          .arg(data.at(3).toDouble()));
+  QString q = QString("INSERT INTO products ('name', 'tax', 'net', 'gross', 'visible', 'group') VALUES ('%1', %2, %3, %4, %5, %6)")
+          .arg(data.at(0).toString())
+          .arg(data.at(1).toInt())
+          .arg(data.at(2).toDouble())
+          .arg(data.at(3).toDouble())
+          .arg(visible)
+          .arg(group);
 
-  if (!ok)
+  bool ok = query.prepare(q);
+
+  if (!ok) {
     qDebug() << "Error: " << query.lastError().text();
+    qDebug() << "Query: " << q;
+  }
 
   if( query.exec() ){
     return true;
@@ -381,7 +395,7 @@ QString Database::getShopMasterData()
 
 bool Database::open(bool dbSelect)
 {
-  const int CURRENT_SCHEMA_VERSION = 6;
+  const int CURRENT_SCHEMA_VERSION = 7;
   // read global defintions (DB, ...)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
@@ -410,7 +424,7 @@ bool Database::open(bool dbSelect)
     dir.mkpath(".");
   }
 
-  if (QFile::exists(QString("%1/%2-QRK.db").arg(dataDir)))
+  if (QFile::exists(QString(dataDir + "/%1-QRK.db").arg(date.year() -1)))
     QFile::copy(QString(dataDir + "/%1-QRK.db").arg(date.year() -1),QString(dataDir + "/%1-QRK.db").arg(date.year()));
 
 

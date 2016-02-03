@@ -24,6 +24,7 @@
 #include <QSettings>
 
 class GroupsWidget;
+class ProductsWidget;
 class QTabWidget;
 
 class ManagerDialog : public QDialog
@@ -40,6 +41,7 @@ class ManagerDialog : public QDialog
 
   private:
     GroupsWidget *groups;
+    ProductsWidget *products;
     QTabWidget *tabWidget;
 };
 

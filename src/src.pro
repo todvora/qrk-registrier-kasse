@@ -39,7 +39,9 @@ SOURCES += main.cpp\
     givendialog.cpp \
     manager/groupedit.cpp \
     manager/groupswidget.cpp \
-    manager/managerdialog.cpp
+    manager/managerdialog.cpp \
+    manager/productedit.cpp \
+    manager/productswidget.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -67,7 +69,9 @@ HEADERS  += \
     givendialog.h \
     manager/groupedit.h \
     manager/groupswidget.h \
-    manager/managerdialog.h
+    manager/managerdialog.h \
+    manager/productedit.h \
+    manager/productswidget.h
 
 FORMS += \
     ui/qrk.ui \
@@ -80,7 +84,9 @@ FORMS += \
     ui/aboutdlg.ui \
     ui/givendialog.ui \
     manager/groupedit.ui \
-    manager/groupwidget.ui
+    manager/groupwidget.ui \
+    manager/productedit.ui \
+    manager/productswidget.ui
 
 RESOURCES += \
     qrk.qrc

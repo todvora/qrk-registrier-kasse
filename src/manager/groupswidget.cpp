@@ -4,6 +4,7 @@
 #include <QSqlRelationalTableModel>
 #include <QSqlRelationalDelegate>
 #include <QSqlRelation>
+#include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
 #include <QHeaderView>
@@ -24,7 +25,7 @@ GroupsWidget::GroupsWidget(QWidget *parent)
 
   model = new QSqlRelationalTableModel(this, dbc);
   model->setTable("groups");
-//  model->setRelation(model->fieldIndex("name"), QSqlRelation("groups", "id", "name"));
+  model->setFilter("id > 1");
   model->setEditStrategy(QSqlTableModel::OnFieldChange);
   model->select();
 

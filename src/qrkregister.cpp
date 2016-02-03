@@ -645,7 +645,8 @@ void QRKRegister::plusSlot()
     list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toString()
-         << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString();
+         << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString()
+         << "1";
 
     Database::addProduct(list);
   }
@@ -773,7 +774,8 @@ void QRKRegister::onButtonGroup_payNow_clicked(int payedBy)
     list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toString()
          << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toString()
-         << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString();
+         << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString()
+         << "1";
 
     Database::addProduct(list);
   }

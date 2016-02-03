@@ -47,7 +47,8 @@ CREATE TABLE  `groups` (
     `image`     	text DEFAULT '',
     `visible`   	tinyint(1) NOT NULL DEFAULT 1
 );
-INSERT INTO `groups`(`name`) VALUES ('Standard');
+INSERT INTO `groups`(`name`,`visible`) VALUES ('auto', 0);
+INSERT INTO `groups`(`name`,`visible`) VALUES ('Standard', 1);
 
 CREATE TABLE `products` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -55,10 +56,11 @@ CREATE TABLE `products` (
     `sold`	double NOT NULL DEFAULT 0,
     `net`	double NOT NULL,
     `gross`	double NOT NULL,
-    `group`	INTEGER NOT NULL DEFAULT 0,
+    `group`	INTEGER NOT NULL DEFAULT 2,
     `visible`	tinyint(1) NOT NULL DEFAULT 1,
     `completer`	tinyint(1) NOT NULL DEFAULT 1,
-    `tax`	double NOT NULL DEFAULT '20'
+    `tax`	double NOT NULL DEFAULT '20',
+    CONSTRAINT `group` FOREIGN KEY (`group`) REFERENCES `groups` (`id`)
 );
 
 CREATE TABLE `orders` (

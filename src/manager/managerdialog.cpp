@@ -24,15 +24,18 @@
 
 #include "managerdialog.h"
 #include "manager/groupswidget.h"
+#include "manager/productswidget.h"
 
 ManagerDialog::ManagerDialog(QWidget *parent)
   : QDialog(parent)
 {
 
   groups = new GroupsWidget(this);
+  products = new ProductsWidget(this);
 
   tabWidget = new QTabWidget;
   tabWidget->addTab(groups, tr("Gruppen"));
+  tabWidget->addTab(products, tr("Produkte"));
 
   QPushButton *pushButton = new QPushButton;
   pushButton->setMinimumHeight(60);

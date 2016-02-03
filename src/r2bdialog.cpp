@@ -18,12 +18,15 @@
  */
 
 #include "r2bdialog.h"
+#include <QDoubleValidator>
 
 R2BDialog::R2BDialog(QWidget *parent) :
   QDialog(parent), ui(new Ui::R2BDialog)
 {
 
   ui->setupUi(this);
+
+  ui->invoiceSum->setValidator(new QDoubleValidator(0.0, 9999999.99, 2, this));
 
   connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept(bool)));
 }
