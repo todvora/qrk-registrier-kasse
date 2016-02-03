@@ -14,8 +14,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ../bin/QRK
 # TEMPLATE = app
 
-VERSION = 0.16.0130
-
 SOURCES += main.cpp\
     databasedefinition.cpp \
     settingsdialog.cpp \
@@ -38,7 +36,10 @@ SOURCES += main.cpp\
     utils/base32encode.cpp \
     utils/aesutil.cpp \
     backup.cpp \
-    givendialog.cpp
+    givendialog.cpp \
+    manager/groupedit.cpp \
+    manager/groupswidget.cpp \
+    manager/managerdialog.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -63,7 +64,10 @@ HEADERS  += \
     utils/base32encode.h \
     utils/aesutil.h \
     backup.h \
-    givendialog.h
+    givendialog.h \
+    manager/groupedit.h \
+    manager/groupswidget.h \
+    manager/managerdialog.h
 
 FORMS += \
     ui/qrk.ui \
@@ -74,7 +78,9 @@ FORMS += \
     ui/qrkhome.ui \
     ui/qrkregister.ui \
     ui/aboutdlg.ui \
-    ui/givendialog.ui
+    ui/givendialog.ui \
+    manager/groupedit.ui \
+    manager/groupwidget.ui
 
 RESOURCES += \
     qrk.qrc

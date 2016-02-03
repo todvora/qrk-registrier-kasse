@@ -404,13 +404,14 @@ bool Database::open(bool dbSelect)
 
   QDate date = QDate::currentDate();
 
-  QDir dir("./data");
+  QString dataDir = qApp->applicationDirPath() + "/data";
+  QDir dir(dataDir);
   if (!dir.exists()) {
     dir.mkpath(".");
   }
 
-  if (QFile::exists(QString("data/%1-QRK.db").arg(date.year() -1 )))
-    QFile::copy(QString("data/%1-QRK.db").arg(date.year() -1),QString("data/%1-QRK.db").arg(date.year()));
+  if (QFile::exists(QString("%1/%2-QRK.db").arg(dataDir)))
+    QFile::copy(QString(dataDir + "/%1-QRK.db").arg(date.year() -1),QString(dataDir + "/%1-QRK.db").arg(date.year()));
 
 
   QSqlDatabase currentConnection;
@@ -418,7 +419,7 @@ bool Database::open(bool dbSelect)
   if ( dbType == "QSQLITE" )
   {
     currentConnection = QSqlDatabase::addDatabase("QSQLITE", "CN");
-    currentConnection.setDatabaseName(QString("data/%1-QRK.db").arg(date.year()));
+    currentConnection.setDatabaseName(QString(dataDir + "/%1-QRK.db").arg(date.year()));
   }
   else if ( dbType == "QMYSQL" )
   {

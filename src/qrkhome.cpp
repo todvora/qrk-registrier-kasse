@@ -102,7 +102,7 @@ QRKHome::QRKHome(QWidget *parent)
 
 
     // for TESTS
-    // connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(endOfDay()));
+    connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(managerButton_clicked()));
 
 
   }
@@ -121,16 +121,10 @@ void QRKHome::init()
     ui->backupDirIconLabel->setPixmap(pixmap);
     ui->backupDirLabel->setText(tr("n/a"));
   } else {
-    ui->backupDirLabel->setText(settings.value("backupDirectory").toString());
+    ui->backupDirLabel->setText(settings.value("backupDirectory", qApp->applicationDirPath()).toString());
   }
-  if (settings.value("dataDirectory").toString().isEmpty()){
-    QPixmap pixmap;
-    pixmap.load(":icons/cancel.png");
-    ui->dataDirIconLabel->setPixmap(pixmap);
-    ui->dataDirlabel->setText(tr("n/a"));
-  } else {
-    ui->dataDirlabel->setText(settings.value("dataDirectory").toString());
-  }
+
+  ui->dataDirlabel->setText(qApp->applicationDirPath() + "/data");
 
   ui->lcdNumberDay->display(Database::getDayCounter());
   ui->lcdNumberMonth->display(Database::getMonthCounter());

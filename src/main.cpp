@@ -52,6 +52,7 @@ void sighandler(int /*sig*/)
 
 int main(int argc, char *argv[])
 {
+
   QApplication app(argc, argv);
 
   // Prerequisite for the Fervor updater

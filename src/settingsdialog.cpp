@@ -243,8 +243,8 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   mainLayout->addWidget(printFooterEdit);
   mainLayout->addWidget(logoLabel);
   mainLayout->addLayout(logoLayout);
-  mainLayout->addWidget(dataDirectoryLabel);
-  mainLayout->addLayout(dataDirectoryLayout);
+//  mainLayout->addWidget(dataDirectoryLabel);
+//  mainLayout->addLayout(dataDirectoryLayout);
   mainLayout->addWidget(backupDirectoryLabel);
   mainLayout->addLayout(backupDirectoryLayout);
 
@@ -270,8 +270,8 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
 
   useLogo->setChecked(settings.value("useLogo", false).toBool());
   logoEdit->setText(settings.value("logo", "./logo.png").toString());
-  dataDirectoryEdit->setText(settings.value("dataDirectory", "./data").toString());
-  backupDirectoryEdit->setText(settings.value("backupDirectory", ".").toString());
+  dataDirectoryEdit->setText(settings.value("dataDirectory", qApp->applicationDirPath() + "/data").toString());
+  backupDirectoryEdit->setText(settings.value("backupDirectory", qApp->applicationDirPath()).toString());
 
 }
 

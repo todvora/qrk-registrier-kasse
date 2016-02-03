@@ -17,45 +17,30 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QRKHOME_H
-#define QRKHOME_H
+#ifndef MANAGERDIALOG_H
+#define MANAGERDIALOG_H
 
-#include "defines.h"
-#include "settingsdialog.h"
-#include "dep.h"
-#include "reports.h"
+#include <QDialog>
+#include <QSettings>
 
-#include "ui_qrkhome.h"
+class GroupsWidget;
+class QTabWidget;
 
-class QRKHome : public QWidget
+class ManagerDialog : public QDialog
 {
     Q_OBJECT
+
   public:
-    explicit QRKHome(QWidget *parent = 0);
-    void init();
+    ManagerDialog(QWidget *parent = 0);
 
   signals:
-    void registerButton_clicked();
-    void documentButton_clicked();
-    void managerButton_clicked();
-    void fullScreenButton_clicked();
-    void exitButton_clicked();
-
-    void endOfDay();
-    void endOfMonth();
 
   public slots:
-
-  private slots:
-    void menuSlot();
-    void taskSlot();
-    void settingsSlot();
+    void accept();
 
   private:
-    Ui::QRKHome *ui;
-    QFrame *menu;
-    QFrame *task;
-
+    GroupsWidget *groups;
+    QTabWidget *tabWidget;
 };
 
-#endif // HOME_H
+#endif // MANAGER_H

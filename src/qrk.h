@@ -67,6 +67,9 @@ class QRK : public QMainWindow
     bool endOfMonthSlot();
     void onRegisterButton_clicked();
     void onCancelRegisterButton_clicked();
+    void onManagerButton_clicked();
+    void onCancelManagerButton_clicked();
+
 
     void onDocumentButton_clicked();
     void onCancelDocumentButton_clicked();

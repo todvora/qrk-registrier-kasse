@@ -33,6 +33,7 @@
 #include "qrkhome.h"
 #include "qrkregister.h"
 #include "qrkdocument.h"
+#include "manager/managerdialog.h"
 
 #include <QStackedWidget>
 #include <QLCDNumber>
@@ -93,6 +94,7 @@ QRK::QRK()
 
   connect(qrk_home, SIGNAL(registerButton_clicked()), this, SLOT(onRegisterButton_clicked()));
   connect(qrk_home, SIGNAL(documentButton_clicked()), this, SLOT(onDocumentButton_clicked()));
+  connect(qrk_home, SIGNAL(managerButton_clicked()), this, SLOT(onManagerButton_clicked()));
 
   connect(qrk_register, SIGNAL(cancelRegisterButton_clicked()), this, SLOT(onCancelRegisterButton_clicked()));
   connect(qrk_register, SIGNAL(registerButton_clicked()), this, SLOT(onRegisterButton_clicked()));
@@ -222,6 +224,16 @@ void QRK::onRegisterButton_clicked()
   qrk_register->newOrder();
   stackedWidget->setCurrentIndex(1);
 
+}
+
+void QRK::onManagerButton_clicked()
+{
+  ManagerDialog *manager = new ManagerDialog(this);
+  manager->exec();
+}
+
+void QRK::onCancelManagerButton_clicked()
+{
 }
 
 //--------------------------------------------------------------------------------

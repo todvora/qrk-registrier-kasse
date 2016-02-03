@@ -153,6 +153,7 @@ void Reports::createEOD(int id, QDate date)
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
 
+  Backup::cleanUp();
   Backup::create();
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
