@@ -57,8 +57,8 @@ ManagerDialog::ManagerDialog(QWidget *parent)
   setLayout(mainLayout);
 
   setWindowTitle(tr("Manager"));
-  setMinimumWidth(640);
-  setMinimumHeight(400);
+  setMinimumWidth(800);
+  setMinimumHeight(500);
 
   connect(pushButton, SIGNAL(clicked()), this, SLOT(accept()));
 

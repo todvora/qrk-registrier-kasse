@@ -890,7 +890,7 @@ void QRKRegister::onButtonGroup_payNow_clicked(int payedBy)
     if (! checkEOAny())
         return;
 
-    if (useGivenDialog) {
+    if (useGivenDialog && payedBy == PAYED_BY_CASH) {
 
         double sum = ui->sumLabel->text().replace(currency ,"").toDouble();
         GivenDialog *given = new GivenDialog(sum, this);
