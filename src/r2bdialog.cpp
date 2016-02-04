@@ -26,7 +26,9 @@ R2BDialog::R2BDialog(QWidget *parent) :
 
   ui->setupUi(this);
 
-  ui->invoiceSum->setValidator(new QDoubleValidator(0.0, 9999999.99, 2, this));
+  QDoubleValidator *doubleVal = new QDoubleValidator(0.0, 9999999.99, 2, this);
+  doubleVal->setNotation(QDoubleValidator::StandardNotation);
+  ui->invoiceSum->setValidator(doubleVal);
 
   connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept(bool)));
 }

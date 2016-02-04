@@ -49,11 +49,12 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   ui->tableView->setColumnHidden(model->fieldIndex("sold"), true);
   ui->tableView->setColumnHidden(model->fieldIndex("net"), true);
   ui->tableView->setColumnHidden(model->fieldIndex("completer"), true);
+
   ui->tableView->resizeColumnToContents(model->fieldIndex("visible"));
   ui->tableView->resizeColumnToContents(model->fieldIndex("tax"));
   ui->tableView->resizeColumnToContents(3);  // related groups-name
-  ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
   ui->tableView->resizeRowsToContents();
+  ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 }
 
 //--------------------------------------------------------------------------------

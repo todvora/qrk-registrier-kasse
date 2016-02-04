@@ -13,8 +13,10 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
     : QDialog(parent), ui(new Ui::ProductEdit), id(theId)
 {
     ui->setupUi(this);
-    ui->net->setValidator(new QDoubleValidator(0.0, 9999999.99, 2, this));
-    ui->gross->setValidator(new QDoubleValidator(0.0, 9999999.99, 2, this));
+    QDoubleValidator *doubleVal = new QDoubleValidator(0.0, 9999999.99, 2, this);
+    doubleVal->setNotation(QDoubleValidator::StandardNotation);
+    ui->net->setValidator(doubleVal);
+    ui->gross->setValidator(doubleVal);
 
     QSqlDatabase dbc = QSqlDatabase::database("CN");
 

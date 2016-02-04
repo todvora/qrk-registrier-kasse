@@ -7,7 +7,9 @@ GivenDialog::GivenDialog(double &sum, QWidget *parent) :
 {
     ui->setupUi(this);
     ui->lcdNumber->setDigitCount(10);
-    ui->givenEdit->setValidator(new QDoubleValidator(0.0, 9999999.99, 2, this));
+    QDoubleValidator *doubleVal = new QDoubleValidator(0.0, 9999999.99, 2, this);
+    doubleVal->setNotation(QDoubleValidator::StandardNotation);
+    ui->givenEdit->setValidator(doubleVal);
     this->sum = sum;
     ui->toPayLabel->setText(tr("Zu bezahlen: %1 %2").arg(QString::number(sum,'f',2)).arg(Database::getCurrency()));
 
