@@ -14,7 +14,7 @@ namespace Ui {
   class ProductsWidget;
 }
 
-class ProductsWidget : public QDialog
+class ProductsWidget : public QWidget
 {
   Q_OBJECT
 

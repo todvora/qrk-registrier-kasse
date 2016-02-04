@@ -18,12 +18,16 @@ class ProductEdit : public QDialog
     ProductEdit(QWidget *parent, int theId = -1);
 
   public slots:
+    void taxComboChanged(int);
+    void netChanged();
+    void grossChanged();
     virtual void accept();
 
   private:
     Ui::ProductEdit *ui;
     int id;
     QSqlQueryModel *groupsModel;
+    QSqlQueryModel *taxModel;
 };
 
 #endif

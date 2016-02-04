@@ -543,6 +543,14 @@ bool Database::open(bool dbSelect)
       QStringList commands = cmd.split(';', QString::SkipEmptyParts);
       foreach (const QString &command, commands)
         query.exec(command);
+
+      // changes which are not possible in sql file needed for update-7
+      if ( i == 7 )
+      {
+          query.exec(QString("UPDATE products SET \"group\"=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
+          query.exec(QString("UPDATE products SET \"group\"=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
+      }
+
     }
 
     if ( schemaVersion != CURRENT_SCHEMA_VERSION )
@@ -551,10 +559,6 @@ bool Database::open(bool dbSelect)
                  .arg(CURRENT_SCHEMA_VERSION));
     }
 
-    // changes which are not possible in sql file needed for update-3
-    if ( schemaVersion == 2 )
-    {
-    }
   }
 
   if ( dbType == "QSQLITE" )

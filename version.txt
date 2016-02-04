@@ -17,9 +17,11 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.xx
+VERSION 0.16.0204
  + Dezimal Eingabe für Anzahl Produkte (in den Einstellungen-Extras)
  + Gegeben Dialog (in den Einstellungen-Extras)
+ + Gruppen und Produkte Manager
+ + Quick Gruppen und Produkte Buttons
 
 VERSION 0.16.0202
  + Backup bei jedem Tagesabschluss

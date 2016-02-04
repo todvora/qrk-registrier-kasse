@@ -2,7 +2,7 @@
 #define _GROUPS_WIDGET_H_
 
 #include <QDialog>
-class QSqlRelationalTableModel;
+class QSqlTableModel;
 
 #include "ui_groupwidget.h"
 
@@ -10,7 +10,7 @@ namespace Ui {
   class GroupsWidget;
 }
 
-class GroupsWidget : public QDialog
+class GroupsWidget : public QWidget
 {
   Q_OBJECT
 
@@ -24,7 +24,7 @@ class GroupsWidget : public QDialog
 
   private:
     Ui::GroupsWidget *ui;
-    QSqlRelationalTableModel *model;
+    QSqlTableModel *model;
 };
 
 #endif

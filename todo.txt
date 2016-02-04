@@ -18,6 +18,8 @@
  */
 
 To Do Liste:
+erledigt    Gruppen und Artikel auf Button legen (VERSION 0.16.0204)
+erledigt    Gruppen und Artikel Manager (VERSION 0.16.0204)
 erledigt    Backup bei jedem Tagesabschluss (VERSION 0.16.0202)
 erledigt    Firmenname Fett drucken (VERSION 0.16.0130)
 erledigt    Datenverzeichnis Pfadangabe im Settings Dialog (VERSION 0.16.0115)
@@ -44,8 +46,6 @@ erledigt    Bon zu beleg 2-zeilig Drucken           (VERSION 0.15.1231)
 
 offen       Dokumente - Filter über alle Felder
 offen       Kundentext bei Dokumenten anzeigen
-offen       Gruppen und Artikel auf Button legen
-offen       Gruppen und Artikel Manager
 offen       Mehrzeilige Produktzeile bei der Eingabe
 offen       Grössere Buttons für Touch (bitte nur wahlweise wegen kleinem Bildschirm)
 offen       QR-Code für 2017

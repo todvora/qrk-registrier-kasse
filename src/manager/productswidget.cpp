@@ -4,13 +4,14 @@
 #include <QSqlRelationalTableModel>
 #include <QSqlRelation>
 #include <QSortFilterProxyModel>
+#include <QSqlQuery>
 #include <QMessageBox>
 #include <QHeaderView>
 
 //--------------------------------------------------------------------------------
 
 ProductsWidget::ProductsWidget(QWidget *parent)
-  : QDialog(parent), ui(new Ui::ProductsWidget), newProductDialog(0)
+  : QWidget(parent), ui(new Ui::ProductsWidget), newProductDialog(0)
 {
   ui->setupUi(this);
 
@@ -26,14 +27,16 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   model->setRelation(model->fieldIndex("group"), QSqlRelation("groups", "id", "name"));
   model->setFilter("\"group\" > 1");
   model->setEditStrategy(QSqlTableModel::OnFieldChange);
+//  model->setEditStrategy(QSqlTableModel::OnRowChange);
   model->select();
   model->fetchMore();  // else the list is not filled with all possible rows
 
   model->setHeaderData(model->fieldIndex("name"), Qt::Horizontal, tr("Produkt"), Qt::DisplayRole);
-  model->setHeaderData(model->fieldIndex("price"), Qt::Horizontal, tr("Preis"), Qt::DisplayRole);
-  model->setHeaderData(3, Qt::Horizontal, tr("Gruppe"), Qt::DisplayRole);
+  model->setHeaderData(model->fieldIndex("gross"), Qt::Horizontal, tr("Preis"), Qt::DisplayRole);
+  model->setHeaderData(5, Qt::Horizontal, tr("Gruppe"), Qt::DisplayRole);
   model->setHeaderData(model->fieldIndex("visible"), Qt::Horizontal, tr("sichtbar"), Qt::DisplayRole);
   model->setHeaderData(model->fieldIndex("tax"), Qt::Horizontal, tr("MWSt"), Qt::DisplayRole);
+
 
   proxyModel = new QSortFilterProxyModel(this);
   proxyModel->setSourceModel(model);
@@ -43,11 +46,15 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   ui->tableView->setModel(proxyModel);
   ui->tableView->setSortingEnabled(true);
   ui->tableView->setColumnHidden(model->fieldIndex("id"), true);
-//  ui->tableView->horizontalHeader()->setResizeMode(model->fieldIndex("name"), QHeaderView::ResizeToContents);
+  ui->tableView->setColumnHidden(model->fieldIndex("sold"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("net"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("completer"), true);
+
   ui->tableView->resizeColumnToContents(model->fieldIndex("visible"));
   ui->tableView->resizeColumnToContents(model->fieldIndex("tax"));
   ui->tableView->resizeColumnToContents(3);  // related groups-name
   ui->tableView->resizeRowsToContents();
+  ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 }
 
 //--------------------------------------------------------------------------------
@@ -69,7 +76,7 @@ void ProductsWidget::plusSlot()
 {
   // reuse the "new" dialog so that the next call has already the previous
   // settings defined; makes input of a lot of products of a given group simpler
-  if ( !newProductDialog )
+  // if ( !newProductDialog )
     newProductDialog = new ProductEdit(this);
 
   newProductDialog->exec();
@@ -92,12 +99,21 @@ void ProductsWidget::minusSlot()
          QMessageBox::Yes, QMessageBox::No) == QMessageBox::No )
     return;
 
-  if ( !model->removeRow(row) )
+
+
+  model->removeRow(row);
+
+  /* Workaround, removeRow always return false*/
+  if ( model->data(model->index(row, 0)).toInt() != 0)
   {
     QMessageBox::information(this, tr("Löschen nicht möglich"),
         tr("Produkt '%1' kann nicht gelöscht werden, da es schon in Verwendung ist")
            .arg(model->data(model->index(row, 1)).toString()));
   }
+
+  model->select();
+  model->fetchMore();  // else the list is not filled with all possible rows
+
 }
 
 //--------------------------------------------------------------------------------

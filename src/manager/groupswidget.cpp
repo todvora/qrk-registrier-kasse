@@ -1,9 +1,7 @@
 #include "groupedit.h"
 #include "groupswidget.h"
 
-#include <QSqlRelationalTableModel>
-#include <QSqlRelationalDelegate>
-#include <QSqlRelation>
+#include <QSqlTableModel>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
@@ -12,7 +10,7 @@
 //--------------------------------------------------------------------------------
 
 GroupsWidget::GroupsWidget(QWidget *parent)
-  : QDialog(parent), ui(new Ui::GroupsWidget)
+  : QWidget(parent), ui(new Ui::GroupsWidget)
 
 {
   ui->setupUi(this);
@@ -23,7 +21,7 @@ GroupsWidget::GroupsWidget(QWidget *parent)
   connect(ui->minus, SIGNAL(clicked()), this, SLOT(minusSlot()));
   connect(ui->edit, SIGNAL(clicked()), this, SLOT(editSlot()));
 
-  model = new QSqlRelationalTableModel(this, dbc);
+  model = new QSqlTableModel(this, dbc);
   model->setTable("groups");
   model->setFilter("id > 1");
   model->setEditStrategy(QSqlTableModel::OnFieldChange);
@@ -31,15 +29,17 @@ GroupsWidget::GroupsWidget(QWidget *parent)
 
   model->setHeaderData(model->fieldIndex("name"), Qt::Horizontal, tr("Gruppe"), Qt::DisplayRole);
   model->setHeaderData(model->fieldIndex("visible"), Qt::Horizontal, tr("sichtbar"), Qt::DisplayRole);
-//  model->setHeaderData(3, Qt::Horizontal, tr("Kategorie"), Qt::DisplayRole);
 
 //  ui.tableView->setItemDelegate(new TouchDelegate(ui.tableView));
   ui->tableView->setModel(model);
   ui->tableView->setSortingEnabled(true);
   ui->tableView->setColumnHidden(model->fieldIndex("id"), true);
   ui->tableView->setColumnWidth(model->fieldIndex("name"), 250);
-//  ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+  ui->tableView->setColumnHidden(model->fieldIndex("color"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("button"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("image"), true);
 
+  ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
   ui->tableView->resizeRowsToContents();
 }
 
@@ -91,6 +91,7 @@ void GroupsWidget::minusSlot()
         tr("Gruppe '%1' kann nicht gelöscht werden, da sie noch in Verwendung ist")
            .arg(model->data(model->index(row, 1)).toString()));
   }
+  model->select();
 }
 
 //--------------------------------------------------------------------------------
