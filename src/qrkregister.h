@@ -23,7 +23,7 @@
 #include "defines.h"
 #include "database.h"
 #include "receiptitemmodel.h"
-#include "utils.h"
+#include "utils/utils.h"
 #include "documentprinter.h"
 #include "dep.h"
 #include "qrkdelegate.h"
@@ -67,6 +67,8 @@ class QRKRegister : public QWidget
     void plusSlot();
     void minusSlot();
     void onButtonGroup_payNow_clicked(int payedBy);
+    void quickProductButtons(int id);
+    void addProductToOrderList(int id);
     void totallyupSlot();
     void totallyupExitSlot();
     void receiptToInvoiceSlot();
@@ -76,6 +78,7 @@ class QRKRegister : public QWidget
     Ui::QRKRegister *ui;
 
     void setButtonGroupEnabled(bool enabled);
+    void quickGroupButtons();
 
     int currentReceipt;
     QProgressBar *progressBar;
@@ -89,6 +92,8 @@ class QRKRegister : public QWidget
     bool useGivenDialog;
     QString currency;
     QString taxlocation;
+    QButtonGroup *buttonGroupGroups;
+    QButtonGroup *buttonGroupProducts;
 
 };
 

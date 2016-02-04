@@ -20,7 +20,7 @@
 #ifndef REPORTS_H
 #define REPORTS_H
 
-#include "utils.h"
+#include "utils/utils.h"
 #include "dep.h"
 #include "database.h"
 #include "qrkregister.h"

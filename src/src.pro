@@ -26,7 +26,6 @@ SOURCES += main.cpp\
     qrkdelegate.cpp \
     dep.cpp \
     reports.cpp \
-    utils.cpp \
     r2bdialog.cpp \
     qrkhome.cpp \
     qrkdocument.cpp \
@@ -41,7 +40,8 @@ SOURCES += main.cpp\
     manager/groupswidget.cpp \
     manager/managerdialog.cpp \
     manager/productedit.cpp \
-    manager/productswidget.cpp
+    manager/productswidget.cpp \
+    utils/utils.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -55,7 +55,6 @@ HEADERS  += \
     qrkdelegate.h \
     dep.h \
     reports.h \
-    utils.h \
     r2bdialog.h \
     qrkdocument.h \
     qrkhome.h \
@@ -71,7 +70,8 @@ HEADERS  += \
     manager/groupswidget.h \
     manager/managerdialog.h \
     manager/productedit.h \
-    manager/productswidget.h
+    manager/productswidget.h \
+    utils/utils.h
 
 FORMS += \
     ui/qrk.ui \

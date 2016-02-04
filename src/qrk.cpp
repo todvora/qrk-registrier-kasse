@@ -28,7 +28,7 @@
 #include "qsortfiltersqlquerymodel.h"
 #include "documentprinter.h"
 #include "depexportdialog.h"
-#include "utils.h"
+#include "utils/utils.h"
 #include "r2bdialog.h"
 #include "qrkhome.h"
 #include "qrkregister.h"

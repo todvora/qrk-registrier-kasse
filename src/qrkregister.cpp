@@ -110,6 +110,144 @@ void QRKRegister::init()
   useMaximumItemSold = settings.value("useMaximumItemSold", false).toBool();
   useDecimalQuantity = settings.value("useDecimalQuantity", false).toBool();
   useGivenDialog = settings.value("useGivenDialog", false).toBool();
+
+  quickGroupButtons();
+}
+
+void QRKRegister::quickGroupButtons()
+{
+
+  buttonGroupGroups =  new QButtonGroup(this);
+
+  QLayoutItem *child;
+  while ((child = ui->scrollArea->widget()->layout()->takeAt(0)) != 0) {
+    delete child->widget(); // delete Layout Item's underlying widget
+  }
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+
+  bool ok = query.prepare("SELECT id, name FROM groups WHERE visible=1");
+
+  if (!ok)
+    qDebug() << "QRKRegister::quickGroupButtons() error: " << query.lastError().text();
+
+  query.exec();
+
+  while (query.next())
+  {
+    QString btText = query.value(1).toString();
+    QPushButton* bt = new QPushButton(btText, ui->scrollArea);
+    bt->setMinimumHeight(60);
+    // connect(bt, SIGNAL(clicked()), this, SLOT(trigger()));
+    ui->scrollArea->widget()->layout()->addWidget(bt);
+    //   scroll->widget()->resize(scroll->widget()->sizeHint());                           // <<<<<<<<<<<<<<<<<
+    qApp->processEvents();                                                                         // <<<<<<<<<<<<<<<<<
+    //   scroll->verticalScrollBar()->setValue(scroll->verticalScrollBar()->maximum());
+    buttonGroupGroups->addButton(bt,query.value(0).toInt());
+  }
+
+  QSpacerItem* spacer = new QSpacerItem( 0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding );
+  ui->scrollArea->widget()->layout()->addItem(spacer);
+  connect(buttonGroupGroups, SIGNAL(buttonClicked(int)), this, SLOT(quickProductButtons(int)));
+
+}
+
+void QRKRegister::quickProductButtons(int id)
+{
+
+  buttonGroupProducts = new QButtonGroup(this);
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+
+  bool ok = query.prepare(QString("SELECT id, name, gross FROM products WHERE \"group\"=%1").arg(id));
+
+  if (!ok)
+    qDebug() << "QRKRegister::quickGroupButtons() error: " << query.lastError().text();
+
+  query.exec();
+
+  QWidget *widget = new QWidget(this);
+  QGridLayout *gridLayout = new QGridLayout(widget);
+
+  int row = 0;
+  int col = 0;
+  while (query.next())
+  {
+    QString btText = QString("%1\n%2 %3")
+        .arg(query.value(1).toString())
+        .arg(QString::number( query.value(2).toDouble(),'f',2))
+        .arg(Database::getShortCurrency());
+    QPushButton* bt = new QPushButton(btText, widget);
+    bt->setMinimumHeight(60);
+    bt->setMaximumWidth(150);
+    buttonGroupProducts->addButton(bt,query.value(0).toInt());
+
+    gridLayout->addWidget(bt,row,col);
+    col++;
+    if (col == 2 ) {
+      row++;
+      col = 0;
+    }
+    // connect(bt, SIGNAL(clicked()), this, SLOT(trigger()));
+//    ui->scrollAreaProducts->widget()->layout()->addWidget(bt);
+    //   scroll->widget()->resize(scroll->widget()->sizeHint());                           // <<<<<<<<<<<<<<<<<
+//    qApp->processEvents();                                                                         // <<<<<<<<<<<<<<<<<
+    //   scroll->verticalScrollBar()->setValue(scroll->verticalScrollBar()->maximum());
+  }
+
+  QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+  gridLayout->addItem(spacer,row,0);
+  widget->setLayout(gridLayout);
+  ui->scrollAreaProducts->setWidget(widget);
+  connect(buttonGroupProducts, SIGNAL(buttonClicked(int)), this, SLOT(addProductToOrderList(int)));
+
+}
+
+void QRKRegister::addProductToOrderList(int id)
+{
+  int rc = orderListModel->rowCount();
+  if (rc == 0) {
+    plusSlot();
+    rc++;
+  }
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+
+  query.prepare(QString("SELECT name, tax, gross FROM products WHERE id=%1").arg(id));
+  bool ok = query.exec();
+
+  if (!ok)
+    return;
+
+  if (query.next()) {
+    QString name = query.value(0).toString();
+    QList<QStandardItem*> list = orderListModel->findItems(name, Qt::MatchExactly,REGISTER_COL_PRODUCT);
+    if (list.count() > 0) {
+      foreach( QStandardItem *item, list )
+      {
+        int row = item->row();
+        double count = orderListModel->item(row, REGISTER_COL_COUNT)->text().toInt();
+        count++;
+        orderListModel->item(row, REGISTER_COL_COUNT)->setText( QString::number(count) );
+        return;
+      }
+    }
+
+    bool newItem = orderListModel->item(rc -1, REGISTER_COL_PRODUCT)->text().isEmpty();
+    if (!newItem) {
+      plusSlot();
+      rc++;
+    }
+
+    orderListModel->item(rc -1, REGISTER_COL_COUNT)->setText( "1" );
+    orderListModel->item(rc -1, REGISTER_COL_PRODUCT)->setText( query.value(0).toString() );
+    orderListModel->item(rc -1, REGISTER_COL_TAX)->setText( query.value(1).toString() );
+    orderListModel->item(rc -1, REGISTER_COL_SINGLE)->setText( query.value(2).toString() );
+
+  }
 }
 
 //--------------------------------------------------------------------------------
