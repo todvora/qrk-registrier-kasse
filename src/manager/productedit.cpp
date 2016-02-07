@@ -1,6 +1,24 @@
+/*
+ * This file is part of QRK - Qt Registrier Kasse
+ *
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "productedit.h"
 #include "database.h"
-
 
 #include <QDoubleValidator>
 #include <QSqlRelationalTableModel>
@@ -13,8 +31,20 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
     : QDialog(parent), ui(new Ui::ProductEdit), id(theId)
 {
     ui->setupUi(this);
+
+    const QStringList colorNames = QColor::colorNames();
+    int index = 0;
+    foreach (const QString &colorName, colorNames) {
+        const QColor color(colorName);
+        ui->colorComboBox->addItem(colorName, color);
+        const QModelIndex idx = ui->colorComboBox->model()->index(index++, 0);
+        ui->colorComboBox->model()->setData(idx, color, Qt::BackgroundColorRole);
+    }
+
+
     QDoubleValidator *doubleVal = new QDoubleValidator(0.0, 9999999.99, 2, this);
     doubleVal->setNotation(QDoubleValidator::StandardNotation);
+
     ui->net->setValidator(doubleVal);
     ui->gross->setValidator(doubleVal);
 
@@ -33,7 +63,7 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
 
     if ( id != -1 )
     {
-        QSqlQuery query(QString("SELECT `name`,`group`,`visible`,`net`,`gross`,`tax` FROM products WHERE id=%1").arg(id), dbc);
+        QSqlQuery query(QString("SELECT `name`,`group`,`visible`,`net`,`gross`,`tax`, `color` FROM products WHERE id=%1").arg(id), dbc);
         query.next();
 
         ui->name->setText(query.value(0).toString());
@@ -53,6 +83,20 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
                 break;
 
         ui->taxComboBox->setCurrentIndex(i);
+
+        for (i = 0; i < ui->colorComboBox->count(); i++) {
+            QString color = ui->colorComboBox->model()->index(i, 0).data(Qt::BackgroundColorRole).toString();
+            if ( query.value(2).toString() == color )
+                break;
+        }
+
+        ui->colorComboBox->setCurrentIndex(i);
+        QPalette palette(ui->colorComboBox->palette());
+        QColor color(query.value(2).toString());
+        palette.setColor(QPalette::Active,QPalette::Button, color);
+        palette.setColor(QPalette::Highlight, color);
+        palette.setColor(QPalette::ButtonText, Qt::white);
+        ui->colorComboBox->setPalette(palette);
 
     }
     connect (ui->taxComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(taxComboChanged(int)));
@@ -96,21 +140,23 @@ void ProductEdit::grossChanged()
 void ProductEdit::accept()
 {
     QSqlDatabase dbc = QSqlDatabase::database("CN");
-
     QSqlQuery query(dbc);
+
+    QString color = ui->colorComboBox->model()->index(ui->colorComboBox->currentIndex(), 0).data(Qt::BackgroundColorRole).toString();
 
     double tax = taxModel->data(taxModel->index(ui->taxComboBox->currentIndex(), 1)).toDouble();
     double net = ui->gross->text().toDouble() / (1.0 + tax / 100.0);
 
     if ( id == -1 )  // new entry
     {
-        bool ok = query.exec(QString("INSERT INTO products (name, `group`, visible, net, gross, tax) VALUES('%1', %2, %3, %4, %5, %6)")
+        bool ok = query.exec(QString("INSERT INTO products (name, `group`, visible, net, gross, tax, color) VALUES('%1', %2, %3, %4, %5, %6, '%7')")
                              .arg(ui->name->text())
                              .arg(groupsModel->data(groupsModel->index(ui->groupComboBox->currentIndex(), 0)).toInt())
                              .arg(ui->visibleCheckBox->isChecked())
                              .arg(net)
                              .arg(ui->gross->text().toDouble())
-                             .arg(tax));
+                             .arg(tax)
+                             .arg(color));
 
         if (!ok) {
             qDebug() << "ProductEdit::accept() error: " << query.lastError().text();
@@ -120,13 +166,14 @@ void ProductEdit::accept()
     }
     else
     {
-        bool ok = query.exec(QString("UPDATE products SET name='%1', `group`=%2,visible=%3,net=%4,gross=%5,tax=%6 WHERE id=%7")
+        bool ok = query.exec(QString("UPDATE products SET name='%1', `group`=%2,visible=%3,net=%4,gross=%5,tax=%6, color='%7' WHERE id=%8")
                              .arg(ui->name->text())
                              .arg(groupsModel->data(groupsModel->index(ui->groupComboBox->currentIndex(), 0)).toInt())
                              .arg(ui->visibleCheckBox->isChecked())
                              .arg(net)
                              .arg(ui->gross->text().toDouble())
                              .arg(tax)
+                             .arg(color)
                              .arg(id));
         if (!ok) {
             qDebug() << "ProductEdit::accept() error: " << query.lastError().text();

@@ -1,5 +1,25 @@
+/*
+ * This file is part of QRK - Qt Registrier Kasse
+ *
+ * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "productswidget.h"
 #include "productedit.h"
+#include "qrkdelegate.h"
 
 #include <QSqlRelationalTableModel>
 #include <QSqlRelation>
@@ -37,7 +57,6 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   model->setHeaderData(model->fieldIndex("visible"), Qt::Horizontal, tr("sichtbar"), Qt::DisplayRole);
   model->setHeaderData(model->fieldIndex("tax"), Qt::Horizontal, tr("MWSt"), Qt::DisplayRole);
 
-
   proxyModel = new QSortFilterProxyModel(this);
   proxyModel->setSourceModel(model);
   proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -50,10 +69,12 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   ui->tableView->setColumnHidden(model->fieldIndex("net"), true);
   ui->tableView->setColumnHidden(model->fieldIndex("completer"), true);
 
-  ui->tableView->resizeColumnToContents(model->fieldIndex("visible"));
-  ui->tableView->resizeColumnToContents(model->fieldIndex("tax"));
-  ui->tableView->resizeColumnToContents(3);  // related groups-name
-  ui->tableView->resizeRowsToContents();
+  ui->tableView->setItemDelegateForColumn(model->fieldIndex("gross"), new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
+  ui->tableView->setItemDelegateForColumn(model->fieldIndex("tax"), new QrkDelegate (QrkDelegate::COMBO_TAX, this));
+
+  ui->tableView->setAlternatingRowColors(true);
+  ui->tableView->resizeColumnsToContents();
+
   ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 }
 

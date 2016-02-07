@@ -17,6 +17,12 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.02??
+ * fix Komma und Punkt Eingabe bei Produktpreisen
+ + Färbige Gruppen QuickButtons
+ + Färbige Produkt QuickButtons
+
+
 VERSION 0.16.0204
  + Dezimal Eingabe für Anzahl Produkte (in den Einstellungen-Extras)
  + Gegeben Dialog (in den Einstellungen-Extras)

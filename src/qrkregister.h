@@ -79,6 +79,7 @@ class QRKRegister : public QWidget
 
     void setButtonGroupEnabled(bool enabled);
     void quickGroupButtons();
+    QString wordWrap(QString text, int width, QFont font);
 
     int currentReceipt;
     QProgressBar *progressBar;

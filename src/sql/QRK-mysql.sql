@@ -69,6 +69,9 @@ CREATE TABLE `products` (
     `visible`	tinyint(1) NOT NULL DEFAULT 1,
     `completer`	tinyint(1) NOT NULL DEFAULT 1,
     `tax`	INTEGER NOT NULL DEFAULT '20',
+    `color`     text DEFAULT '#808080',
+    `button`    text DEFAULT '',
+    `image`     text DEFAULT '',
     PRIMARY KEY (`id`),
     KEY `group` (`group`),
     CONSTRAINT `group` FOREIGN KEY (`group`) REFERENCES `groups` (`id`)
