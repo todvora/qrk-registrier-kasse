@@ -56,7 +56,7 @@ class QRKRegister : public QWidget
     void setCurrentReceiptNum(int id);
     bool checkEOAny();
     bool checkEOAnyServerMode();
-    void setR2BServerMode(QJsonObject obj);
+    bool setR2BServerMode(QJsonObject obj);
     void setServerMode(bool);
 
   signals:

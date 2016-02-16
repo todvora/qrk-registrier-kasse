@@ -1271,7 +1271,7 @@ void QRKRegister::onCancelRegisterButton_clicked()
   }
 }
 
-void QRKRegister::setR2BServerMode(QJsonObject obj)
+bool QRKRegister::setR2BServerMode(QJsonObject obj)
 {
   QString product = QString("Zahlungsbeleg für Rechnung %1 - nicht für den Vorsteuerabzug geeignet" ).arg(obj.value("receiptNum").toString());
 
@@ -1291,8 +1291,9 @@ void QRKRegister::setR2BServerMode(QJsonObject obj)
        << ui->orderList->model()->data(orderListModel->index(0, REGISTER_COL_SINGLE, QModelIndex())).toString()
        << "1";
 
-  Database::addProduct(list);
+  bool ret = Database::addProduct(list);
 
+  return ret;
 }
 
 QString QRKRegister::wordWrap(QString text, int width, QFont font)

@@ -54,7 +54,10 @@ void Import::importR2B(QJsonObject data)
         reg->init();
         reg->setServerMode(true);
         reg->newOrder();
-        reg->setR2BServerMode(obj);
+        if (! reg->setR2BServerMode(obj)) {
+            qDebug() << "Import::importR2B Receipt " << obj.value("receiptNum").toString() << "  already exists!";
+            return;
+        }
 
         if (reg->checkEOAnyServerMode()) {
           if (int receiptNum = reg->createReceipts()) {
@@ -66,8 +69,8 @@ void Import::importR2B(QJsonObject data)
 
       } else {
         /* TODO: emit ERROR INFO*/
+        qDebug() << "Import::importR2B Invalid JSon Format.";
       }
-
   }
 }
 

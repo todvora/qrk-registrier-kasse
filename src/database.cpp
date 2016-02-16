@@ -226,16 +226,22 @@ QStringList Database::getMaximumItemSold()
 
 bool Database::addProduct(const QList<QVariant> &data)
 {
-  if (Database::exists("products", data.at(0).toString()))
-    return true;
+  bool productExists = Database::exists("products", data.at(0).toString());
 
   int visible = data.at(4).toInt();
   int group = 2;
   if ( data.at(0).toString().startsWith("Zahlungsbeleg für Rechnung") ) {
+      if (productExists)
+          return false;
+
       /* We do not need to diplay this in the Manager*/
       visible = 0;
       group = 1;
   }
+
+  if (productExists)
+      return true;
+
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);

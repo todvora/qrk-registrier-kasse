@@ -12,6 +12,7 @@ class Import : public QObject
     void loadJSonFile(QFileInfoList filename);
 
   signals:
+    void updateProgressBar(int value);
 
   public slots:
 
