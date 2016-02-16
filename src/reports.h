@@ -29,7 +29,7 @@ class Reports : public QObject
 {
     Q_OBJECT
   public:
-    Reports(DEP *dep, QProgressBar *pb, QObject *parent = 0);
+    Reports(DEP *dep, QProgressBar *pb, QObject *parent = 0, bool mode = false);
     ~Reports();
 
     static bool canCreateEOD(QDate);
@@ -55,11 +55,13 @@ class Reports : public QObject
   private:
     QStringList createStat(int, QString, QDateTime, QDateTime);
     QStringList createYearStat(int, QDate);
+    bool doEndOfDay(QDate date);
 
     DEP *dep;
     QProgressBar *pb;
     QString yearsales;
     int currentReceipt;
+    bool servermode;
 
 };
 

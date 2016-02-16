@@ -40,6 +40,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QDebug>
 
 //-----------------------------------------------------------------------
 
@@ -126,6 +127,7 @@ void QRK::iniStack()
   stackedWidget->addWidget(qrk_document);
 
   stackedWidget->setCurrentIndex(0);
+
 }
 
 //--------------------------------------------------------------------------------
@@ -183,7 +185,6 @@ void QRK::actionDEP_Export()
 
 bool QRK::endOfDaySlot()
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   DEP *dep = new DEP(this);
   Reports *rep = new Reports(dep, this->progressBar, this);
   rep->endOfDay();

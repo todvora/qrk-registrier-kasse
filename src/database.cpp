@@ -117,6 +117,9 @@ QString Database::getYearCounter()
 
 void Database::updateProductSold(double count, QString product)
 {
+    if (product.startsWith("Zahlungsbeleg für Rechnung"))
+        return;
+
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
 

@@ -41,7 +41,9 @@ SOURCES += main.cpp\
     manager/managerdialog.cpp \
     manager/productedit.cpp \
     manager/productswidget.cpp \
-    utils/utils.cpp
+    utils/utils.cpp \
+    import/filewatcher.cpp \
+    import/import.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -71,7 +73,9 @@ HEADERS  += \
     manager/managerdialog.h \
     manager/productedit.h \
     manager/productswidget.h \
-    utils/utils.h
+    utils/utils.h \
+    import/filewatcher.h \
+    import/import.h
 
 FORMS += \
     ui/qrk.ui \

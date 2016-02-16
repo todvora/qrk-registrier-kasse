@@ -25,6 +25,9 @@
 #include "dep.h"
 #include "reports.h"
 
+#include <QFileSystemWatcher>
+#include <QFileInfoList>
+
 #include "ui_qrkhome.h"
 
 class QRKHome : public QWidget
@@ -50,11 +53,14 @@ class QRKHome : public QWidget
     void menuSlot();
     void taskSlot();
     void settingsSlot();
+    void serverModeCheckBox_clicked(bool checked);
+    void addToQueue(QFileInfoList value);
 
   private:
     Ui::QRKHome *ui;
     QFrame *menu;
     QFrame *task;
+    QFileSystemWatcher watcher;
 
 };
 

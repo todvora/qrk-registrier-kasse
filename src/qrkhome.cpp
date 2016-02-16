@@ -19,11 +19,13 @@
 
 #include "qrkhome.h"
 #include "database.h"
+#include "import/filewatcher.h"
 
 #include <QMessageBox>
 #include <QDesktopWidget>
 #include <QSettings>
 
+#include <QDebug>
 
 QRKHome::QRKHome(QWidget *parent)
   : QWidget(parent),ui(new Ui::QRKHome), menu(0)
@@ -99,7 +101,7 @@ QRKHome::QRKHome(QWidget *parent)
 
     connect(ui->registerButton, SIGNAL(clicked()), this, SIGNAL(registerButton_clicked()));
     connect(ui->documentButton, SIGNAL(clicked()), this, SIGNAL(documentButton_clicked()));
-
+    connect(ui->serverModeCheckBox, SIGNAL(clicked(bool)), this, SLOT(serverModeCheckBox_clicked(bool)));
 
     // for TESTS
     connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(managerButton_clicked()));
@@ -129,6 +131,19 @@ void QRKHome::init()
   ui->lcdNumberDay->display(Database::getDayCounter());
   ui->lcdNumberMonth->display(Database::getMonthCounter());
   ui->lcdNumberYear->display(Database::getYearCounter());
+  ui->importWidget->setVisible(false);
+
+//  watcher.addPath(qApp->applicationDirPath() + "/import/" );
+
+  QStringList directoryList = watcher.directories();
+  Q_FOREACH(QString directory, directoryList)
+    qDebug() << "Directory name" << directory <<"\n";
+
+  FileWatcher *fw = new FileWatcher();
+  QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), fw, SLOT(showModified(QString)));
+  QObject::connect(fw, SIGNAL(addToQueue(QFileInfoList)), this, SLOT(addToQueue(QFileInfoList)));
+
+//  QObject::connect(&watcher, SIGNAL(fileChanged(QString)), fw, SLOT(showModified(QString)));
 
 }
 
@@ -162,4 +177,23 @@ void QRKHome::taskSlot()
 
   task->move(mapToGlobal(p));
   task->show();
+}
+
+void QRKHome::serverModeCheckBox_clicked(bool checked)
+{
+  ui->importWidget->setVisible(checked);
+  ui->registerButton->setEnabled(!checked);
+  ui->taskButton->setEnabled(!checked);
+
+  if (checked)
+    watcher.addPath(qApp->applicationDirPath() + "/import/" );
+  else
+    watcher.removePath(qApp->applicationDirPath() + "/import/" );
+
+}
+
+void QRKHome::addToQueue(QFileInfoList list)
+{
+  Q_FOREACH(QFileInfo fileinfo, list)
+    ui->importWidget->addItem(QDateTime::currentDateTime().toString() + " -> "+ fileinfo.fileName());
 }

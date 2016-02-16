@@ -33,6 +33,32 @@
 #include <QSharedMemory>
 
 //--------------------------------------------------------------------------------
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+
+void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString & str)
+{
+    QString txt;
+    switch (type) {
+    case QtDebugMsg:
+        txt = QString("%1 Debug: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+        break;
+    case QtWarningMsg:
+        txt = QString("%1 Warning: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+    break;
+    case QtCriticalMsg:
+        txt = QString("%1 Critical: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+    break;
+    case QtFatalMsg:
+        txt = QString("%1 Fatal: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+    break;
+    }
+    QFile outFile(qApp->applicationDirPath() + "/qrk.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    ts << txt.simplified() << endl;
+}
 
 void printHelp()
 {
@@ -54,6 +80,8 @@ int main(int argc, char *argv[])
 {
 
   QApplication app(argc, argv);
+
+  qInstallMessageHandler(QRKMessageHandler);
 
   // Prerequisite for the Fervor updater
   QApplication::setOrganizationName("ckvsoft");

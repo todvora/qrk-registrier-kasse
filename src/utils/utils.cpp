@@ -59,8 +59,14 @@ QString Utils::getSignature(QJsonObject data)
     double tax = q.value(0).toDouble();
     double net = gross / (1.0 + tax / 100.0);
     sign[Database::getTaxType( tax )] = QString::number( net , 'f', 2);
-    counter += net;
+    /* check if this is a R2B we need the NET for the TurnoverCounter*/
+    if (!data.value("isR2B").toBool(false))
+        counter += net;
   }
+
+  /* check if this is a R2B we need the NET for the TurnoverCounter*/
+  if (data.value("isR2B").toBool(false))
+      counter += data.value("R2BNet").toDouble(0);
 
   QString concatenatedValue = sign["Kassen-ID"].toString() + sign["Belegnummer"].toString();
 
@@ -125,15 +131,15 @@ QString Utils::getLastReceiptSignature()
       sign.append( "_" );
       sign.append( sig.value("Beleg-Datum-Uhrzeit").toString() );
       sign.append( "_" );
-      sign.append( sig.value("Normal").toString() );
+      sign.append( QString::number(sig.value("Normal").toDouble(),'f',2).replace(".",","));
       sign.append( "_" );
-      sign.append( sig.value("Ermaessigt1").toString() );
+      sign.append( QString::number(sig.value("Ermaessigt1").toDouble(),'f',2).replace(".",","));
       sign.append( "_" );
-      sign.append( sig.value("Ermaessigt2").toString() );
+      sign.append( QString::number(sig.value("Ermaessigt2").toDouble(),'f',2).replace(".",","));
       sign.append( "_" );
-      sign.append( sig.value("Null").toString() );
+      sign.append( QString::number(sig.value("Null").toDouble(),'f',2).replace(".",","));
       sign.append( "_" );
-      sign.append( sig.value("Besonders").toString() );
+      sign.append( QString::number(sig.value("Besonders").toDouble(),'f',2).replace(".",","));
       sign.append( "_" );
       sign.append( sig.value("Stand-Umsatz-Zaehler-AES256-ICM").toString() );
       sign.append( "_" );

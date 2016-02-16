@@ -55,6 +55,9 @@ class QRKRegister : public QWidget
     bool createOrder(bool storno = false);
     void setCurrentReceiptNum(int id);
     bool checkEOAny();
+    bool checkEOAnyServerMode();
+    void setR2BServerMode(QJsonObject obj);
+    void setServerMode(bool);
 
   signals:
     void cancelRegisterButton_clicked();
@@ -72,6 +75,7 @@ class QRKRegister : public QWidget
     void totallyupSlot();
     void totallyupExitSlot();
     void receiptToInvoiceSlot();
+    void onCancelRegisterButton_clicked();
 
 
   private:
@@ -91,6 +95,9 @@ class QRKRegister : public QWidget
     bool useMaximumItemSold;
     bool useDecimalQuantity;
     bool useGivenDialog;
+    bool isR2B;
+    double R2BNet;
+    bool servermode;
     QString currency;
     QString taxlocation;
     QButtonGroup *buttonGroupGroups;

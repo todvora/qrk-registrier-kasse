@@ -21,6 +21,18 @@ VERSION 0.16.02??
  * fix Komma und Punkt Eingabe bei Produktpreisen
  + Färbige Gruppen QuickButtons
  + Färbige Produkt QuickButtons
+ + Serverbetrieb mit automatischen Import (JSon)
+   JSonFormat:
+     {"r2b":[
+     {"receiptNum":"RE12345", "net":"22.50", "gross":"27.00", "payedBy":"0" }
+     ]}
+
+     PAYED_BY_CASH = 0
+     PAYED_BY_DEBITCARD = 1
+     PAYED_BY_CREDITCARD = 2
+
+     Dateinamen r2b_1.json, r2b_2.json .... , r2b_4.json
+     in dieser Reihenfolge werden die Bons erstellt.
 
 
 VERSION 0.16.0204

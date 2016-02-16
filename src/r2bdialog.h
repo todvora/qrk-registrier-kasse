@@ -32,6 +32,7 @@ class R2BDialog : public QDialog
     explicit R2BDialog(QWidget *parent = 0);
 
     QString getInvoiceNum();
+    QString getInvoiceNet();
     QString getInvoiceSum();
 
   signals:
@@ -43,6 +44,7 @@ class R2BDialog : public QDialog
   private:
     Ui::R2BDialog *ui;
     QString invoiceNum;
+    QString invoiceNet;
     QString invoiceSum;
 };
 

@@ -28,8 +28,8 @@
 
 #include <QDebug>
 
-Reports::Reports(DEP *dep, QProgressBar *pb, QObject *parent)
-  : QObject(parent), dep(dep)
+Reports::Reports(DEP *dep, QProgressBar *pb, QObject *parent, bool mode)
+  : QObject(parent), dep(dep), servermode(mode)
 {
   this->pb = pb;
   pb->setValue(1);
@@ -153,9 +153,6 @@ void Reports::createEOD(int id, QDate date)
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
 
-  Backup::cleanUp();
-  Backup::create();
-
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
 
@@ -221,8 +218,6 @@ void Reports::fixMonth(int id)
 
     query = QString("UPDATE receipts SET timestamp=%1 WHERE receiptNum=%2").arg(date.toString(Qt::ISODate)).arg(id);
     q.exec(query);
-
-    QApplication::setOverrideCursor(Qt::WaitCursor);
 
     QElapsedTimer timer;
     timer.start();
@@ -325,7 +320,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   double sumProducts = q.value(0).toDouble();
 
   QStringList stat;
-  stat.append(QString("Anzahl verkaufter Produkte oder Leistungen: %1").arg(sumProducts));
+  stat.append(QString("Anzahl verkaufter Produkte oder Leistungen: %1").arg(QString::number(sumProducts,'f',2).replace(".",",")));
 
   pb->setValue(value + 8);
 
@@ -375,7 +370,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     }
     stat.append(QString("%1%: %2")
                 .arg(q.value(1).toInt())
-                .arg(QString::number(q.value(2).toDouble(), 'f', 2)));
+                .arg(QString::number(q.value(2).toDouble(), 'f', 2).replace(".",",")));
   }
   stat.append("-");
 
@@ -395,7 +390,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   {
     stat.append(QString("%1%: %2")
                 .arg(q.value(0).toString())
-                .arg(QString::number(q.value(1).toDouble(), 'f', 2)));
+                .arg(QString::number(q.value(1).toDouble(), 'f', 2).replace(".",",")));
   }
   stat.append("-");
 
@@ -406,7 +401,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   q.exec();
   q.next();
 
-  QString sales = QString::number(q.value(0).toDouble(),'f',2);
+  QString sales = QString::number(q.value(0).toDouble(),'f',2).replace(".",",");
 
   if (type == "Jahresumsatz") {
     yearsales = sales;
@@ -438,14 +433,14 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   query = QString("SELECT sum(orders.count) AS count, products.name, orders.gross, sum(orders.count * orders.gross) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN '%1' AND '%2' GROUP BY products.name ORDER BY orders.tax, products.name ASC").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
   q.exec(query);
 
-  stat.append(tr("Verkaufte Produkte oder Leistungen (Gruppiert) Gesamt: %1").arg(sumProducts));
+  stat.append(tr("Verkaufte Produkte oder Leistungen (Gruppiert) Gesamt: %1").arg(QString::number(sumProducts,'f',2).replace(".",",")));
   while (q.next())
   {
     stat.append(QString("%1: %2: %3: %4: %5%")
                 .arg(q.value(0).toString())
                 .arg(q.value(1).toString())
-                .arg(QString::number(q.value(2).toDouble(),'f',2))
-                .arg(QString::number(q.value(3).toDouble(),'f',2))
+                .arg(QString::number(q.value(2).toDouble(),'f',2).replace(".",","))
+                .arg(QString::number(q.value(3).toDouble(),'f',2).replace(".",","))
                 .arg(q.value(4).toDouble()));
   }
 
@@ -524,7 +519,7 @@ QString Reports::getReport(int id)
 
   int type = q.value(0).toInt();
   QString format = (type == 4)? "MMMM yyyy": "dd MMMM yyyy";
-  QString header = QString("%1 - %2").arg(Database::getActionType(type)).arg(q.value(1).toDate().toString(format));
+  QString header = QString("BON # %1, %2 - %3").arg(id).arg(Database::getActionType(type)).arg(q.value(1).toDate().toString(format));
 
   q.prepare(QString("SELECT text FROM reports WHERE receiptNum=%1").arg(id));
   q.exec();
@@ -622,6 +617,9 @@ bool Reports::endOfDay()
   QDate date = Database::getLastReceiptDate();
   bool create = Reports::canCreateEOD(date);
   if (create) {
+    if (servermode)
+      return doEndOfDay(date);
+
     if (date == QDate::currentDate()) {
       msgBox.setText(tr("Nach dem Erstellen des Tagesabschlusses ist eine Bonierung für den heutigen Tag nicht mehr möglich."));
     } else {
@@ -633,11 +631,7 @@ bool Reports::endOfDay()
     msgBox.setButtonText(QMessageBox::No, tr("Abbrechen"));
     msgBox.setDefaultButton(QMessageBox::No);
     if(msgBox.exec() == QMessageBox::Yes){
-      QRKRegister *reg = new QRKRegister(pb);
-      currentReceipt = reg->createReceipts();
-      reg->finishReceipts(3, currentReceipt, true);
-      createEOD(currentReceipt, date);
-      return true;
+      return doEndOfDay(date);
     } else {
       return false;
     }
@@ -697,7 +691,10 @@ bool Reports::endOfMonth()
       msgBox.setButtonText(QMessageBox::Yes, tr("Erstellen"));
       msgBox.setButtonText(QMessageBox::No, tr("Abbrechen"));
       msgBox.setDefaultButton(QMessageBox::No);
-      if(msgBox.exec() == QMessageBox::Yes){
+      if (servermode) {
+        if (! endOfDay())
+          return false;
+      } else if(msgBox.exec() == QMessageBox::Yes){
         if (! endOfDay())
           return false;
       } else {
@@ -724,3 +721,14 @@ bool Reports::endOfMonth()
   return true;
 }
 
+bool Reports::doEndOfDay(QDate date)
+{
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  Backup::cleanUp();
+  Backup::create();
+  QRKRegister *reg = new QRKRegister(pb);
+  currentReceipt = reg->createReceipts();
+  reg->finishReceipts(3, currentReceipt, true);
+  createEOD(currentReceipt, date);
+  return true;
+}
