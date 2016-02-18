@@ -12,13 +12,14 @@ FileWatcher::FileWatcher (QWidget* parent)
   this->timer = new QTimer(this);
   timer->setSingleShot(true);
   connect(timer,SIGNAL(timeout()),this,SLOT(fileAdded()));
+
 }
 
 FileWatcher::~FileWatcher ()
 {
 }
 
-void FileWatcher::showModified(const QString &str)
+void FileWatcher::directoryChanged(const QString &str)
 {
   timer->start(20);
   // Q_UNUSED(str)
@@ -43,7 +44,9 @@ void FileWatcher::fileAdded()
     qDebug() << "FileWatcher::appendQueue: " << fileinfo.absoluteFilePath();
 
   emit addToQueue(list);
-  Import *i = new Import(this);
-  i->loadJSonFile(list);
+  import = new Import(this);
+  connect(import,SIGNAL(importInfo(QString)),this,SIGNAL(importInfo(QString)));
+
+  import->loadJSonFile(list);
   list.clear();
 }

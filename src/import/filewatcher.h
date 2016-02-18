@@ -5,6 +5,7 @@
 #include <QFileInfoList>
 
 class QTimer;
+class Import;
 
 class FileWatcher : public QWidget
 {
@@ -16,9 +17,10 @@ public:
 
   signals:
     void addToQueue(QFileInfoList infoList);
+    void importInfo(QString str);
 
   public slots:
-    void showModified(const QString& str);
+    void directoryChanged(const QString& str);
     void fileAdded();
 
 
@@ -26,6 +28,7 @@ private:
     void appendQueue(QString path);
     QTimer *timer;
     QFileInfoList list;
+    Import *import;
 };
 
 #endif // FILEWATCHER_H

@@ -84,7 +84,7 @@ void SettingsDialog::accept()
 
   settings.setValue("useLogo", general->getUseLogo());
   settings.setValue("logo", general->getLogo());
-  settings.setValue("dataDirectory", general->getDataDirectory());
+  settings.setValue("importDirectory", general->getImportDirectory());
   settings.setValue("backupDirectory", general->getBackupDirectory());
   settings.setValue("useInputNetPrice", extra->getInputNetPrice());
   settings.setValue("useMaximumItemSold", extra->getMaximumItemSold());
@@ -190,7 +190,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
 
 
   QLabel *logoLabel = new QLabel(tr("Logo:"));
-  QLabel *dataDirectoryLabel = new QLabel(tr("Daten Verzeichnis:"));
+  QLabel *importDirectoryLabel = new QLabel(tr("Server Mode\nImport Verzeichnis:"));
   QLabel *backupDirectoryLabel = new QLabel(tr("Backup Verzeichnis:"));
 
   useLogo = new QCheckBox(tr("Logo verwenden"));
@@ -198,22 +198,22 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   logoEdit->setEnabled(false);
   backupDirectoryEdit = new QLineEdit();
   backupDirectoryEdit->setEnabled(false);
-  dataDirectoryEdit = new QLineEdit();
-  dataDirectoryEdit->setEnabled(false);
+  importDirectoryEdit = new QLineEdit();
+  importDirectoryEdit->setEnabled(false);
 
   logoButton = new QPushButton;
   QPushButton *backupDirectoryButton = new QPushButton;
-  QPushButton *dataDirectoryButton = new QPushButton;
+  QPushButton *importDirectoryButton = new QPushButton;
 
   QHBoxLayout *logoLayout = new QHBoxLayout;
   QHBoxLayout *backupDirectoryLayout = new QHBoxLayout;
-  QHBoxLayout *dataDirectoryLayout = new QHBoxLayout;
+  QHBoxLayout *importDirectoryLayout = new QHBoxLayout;
 
   logoLayout->addWidget(useLogo);
   logoLayout->addWidget(logoEdit);
   logoLayout->addWidget(logoButton);
-  dataDirectoryLayout->addWidget(dataDirectoryEdit);
-  dataDirectoryLayout->addWidget(dataDirectoryButton);
+  importDirectoryLayout->addWidget(importDirectoryEdit);
+  importDirectoryLayout->addWidget(importDirectoryButton);
   backupDirectoryLayout->addWidget(backupDirectoryEdit);
   backupDirectoryLayout->addWidget(backupDirectoryButton);
 
@@ -223,9 +223,9 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   logoButton->setIconSize(size);
   logoButton->setText(tr("Auswahl"));
 
-  dataDirectoryButton->setIcon(icon);
-  dataDirectoryButton->setIconSize(size);
-  dataDirectoryButton->setText(tr("Auswahl"));
+  importDirectoryButton->setIcon(icon);
+  importDirectoryButton->setIconSize(size);
+  importDirectoryButton->setText(tr("Auswahl"));
 
   backupDirectoryButton->setIcon(icon);
   backupDirectoryButton->setIconSize(size);
@@ -233,7 +233,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
 
   connect(logoButton, SIGNAL(clicked(bool)), this, SLOT(logoButton_clicked()));
   connect(backupDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(backupDirectoryButton_clicked()));
-  connect(dataDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(dataDirectoryButton_clicked()));
+  connect(importDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(importDirectoryButton_clicked()));
   connect(useLogo, SIGNAL(toggled(bool)) , this, SLOT(useLogoCheck_toggled(bool)));
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -243,8 +243,8 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   mainLayout->addWidget(printFooterEdit);
   mainLayout->addWidget(logoLabel);
   mainLayout->addLayout(logoLayout);
-//  mainLayout->addWidget(dataDirectoryLabel);
-//  mainLayout->addLayout(dataDirectoryLayout);
+  mainLayout->addWidget(importDirectoryLabel);
+  mainLayout->addLayout(importDirectoryLayout);
   mainLayout->addWidget(backupDirectoryLabel);
   mainLayout->addLayout(backupDirectoryLayout);
 
@@ -270,7 +270,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
 
   useLogo->setChecked(settings.value("useLogo", false).toBool());
   logoEdit->setText(settings.value("logo", "./logo.png").toString());
-  dataDirectoryEdit->setText(settings.value("dataDirectory", qApp->applicationDirPath() + "/data").toString());
+  importDirectoryEdit->setText(settings.value("importDirectory", qApp->applicationDirPath() + "/import").toString());
   backupDirectoryEdit->setText(settings.value("backupDirectory", qApp->applicationDirPath()).toString());
 
 }
@@ -308,16 +308,16 @@ void GeneralTab::backupDirectoryButton_clicked()
 
 }
 
-void GeneralTab::dataDirectoryButton_clicked()
+void GeneralTab::importDirectoryButton_clicked()
 {
 
   QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
-                                                   getDataDirectory(),
+                                                   getImportDirectory(),
                                                    QFileDialog::ShowDirsOnly
                                                    | QFileDialog::DontResolveSymlinks);
 
   if (!path.isEmpty())
-    dataDirectoryEdit->setText(path);
+    importDirectoryEdit->setText(path);
 
 }
 
@@ -341,9 +341,9 @@ QString GeneralTab::getBackupDirectory()
   return backupDirectoryEdit->text();
 }
 
-QString GeneralTab::getDataDirectory()
+QString GeneralTab::getImportDirectory()
 {
-  return dataDirectoryEdit->text();
+  return importDirectoryEdit->text();
 }
 
 MasterDataTab::MasterDataTab(QSettings &, QWidget *parent)

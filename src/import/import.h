@@ -13,11 +13,12 @@ class Import : public QObject
 
   signals:
     void updateProgressBar(int value);
+    void importInfo(QString str);
 
   public slots:
 
   private:
-    void importR2B(QJsonObject data);
+    bool importR2B(QJsonObject data);
     void importReceipt(QJsonObject data);
     QFileInfoList list;
 

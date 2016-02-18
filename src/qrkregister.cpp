@@ -301,6 +301,11 @@ void QRKRegister::addProductToOrderList(int id)
                 double count = orderListModel->item(row, REGISTER_COL_COUNT)->text().toInt();
                 count++;
                 orderListModel->item(row, REGISTER_COL_COUNT)->setText( QString::number(count) );
+                QModelIndex idx = orderListModel->index(row, REGISTER_COL_COUNT);
+
+                ui->orderList->selectionModel()->setCurrentIndex(idx, QItemSelectionModel::NoUpdate);
+                ui->orderList->edit(idx);
+
                 return;
             }
         }
@@ -315,6 +320,11 @@ void QRKRegister::addProductToOrderList(int id)
         orderListModel->item(rc -1, REGISTER_COL_PRODUCT)->setText( query.value(0).toString() );
         orderListModel->item(rc -1, REGISTER_COL_TAX)->setText( query.value(1).toString() );
         orderListModel->item(rc -1, REGISTER_COL_SINGLE)->setText( query.value(2).toString() );
+
+        QModelIndex idx = orderListModel->index(rc -1, REGISTER_COL_COUNT);
+
+        ui->orderList->selectionModel()->setCurrentIndex(idx, QItemSelectionModel::NoUpdate);
+        ui->orderList->edit(idx);
 
     }
 }

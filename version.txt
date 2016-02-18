@@ -17,10 +17,14 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.02??
- * fix Komma und Punkt Eingabe bei Produktpreisen
- + Färbige Gruppen QuickButtons
- + Färbige Produkt QuickButtons
+VERSION 0.16.021??
+ + Bei Tages und Monatsbelegen wird auch die Bonnummer gedruckt
+ * Fix WaitCursor
+ * Fix Beim verwenden von Quickbuttons wurde beim ersten Artikel die Artikelanzahl nicht
+   automatisch in den Editmode versetzt
+ * Wenn beim verlassen des Kassenmodus ein nicht abgeschlossener Bon vorhanden ist
+   wird nachgefragt ob man den Kassenmodus wirklich verlassen möchte.
+   Beim verlassen werden nicht abgeschlossene Bons verworfen.
  + Serverbetrieb mit automatischen Import (JSon)
    JSonFormat:
      {"r2b":[
@@ -33,6 +37,17 @@ VERSION 0.16.02??
 
      Dateinamen r2b_1.json, r2b_2.json .... , r2b_4.json
      in dieser Reihenfolge werden die Bons erstellt.
+
+    Erfolgreich importierte Dateine werden in .old umbenannt
+    Fehlerhafte Dateien werden in .false umbenannt
+
+
+VERSION 0.16.0212
+ * fix Tagesabschluss hatte in manchen fällen die Datenbank beschädigt.
+   Sollten die Daten denoch falsch (Falsche Rechnungsnummer am Bon)sein bitte bei mir melden.
+ * fix Komma und Punkt Eingabe bei Produktpreisen
+ + Färbige Gruppen QuickButtons
+ + Färbige Produkt QuickButtons
 
 
 VERSION 0.16.0204

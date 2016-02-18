@@ -54,13 +54,14 @@ class QRKHome : public QWidget
     void taskSlot();
     void settingsSlot();
     void serverModeCheckBox_clicked(bool checked);
-    void addToQueue(QFileInfoList value);
+    void importInfo(QString str);
 
   private:
     Ui::QRKHome *ui;
     QFrame *menu;
     QFrame *task;
     QFileSystemWatcher watcher;
+    QString watcherpath;
 
 };
 

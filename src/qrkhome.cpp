@@ -131,7 +131,17 @@ void QRKHome::init()
   ui->lcdNumberDay->display(Database::getDayCounter());
   ui->lcdNumberMonth->display(Database::getMonthCounter());
   ui->lcdNumberYear->display(Database::getYearCounter());
-  ui->importWidget->setVisible(false);
+  ui->serverModeCheckBox->setText(tr("Server Modus (Import Bon zu Rechnung Verzeichnis: %1)").arg(settings.value("importDirectory", qApp->applicationDirPath()  + "/import").toString()));
+
+  watcherpath = settings.value("importDirectory", qApp->applicationDirPath() + "/import" ).toString();
+
+  watcher.removePaths(watcher.directories());
+  if (ui->serverModeCheckBox->isChecked()) {
+    watcher.addPath(watcherpath);
+    ui->importWidget->setVisible(true);
+  } else {
+      ui->importWidget->setVisible(false);
+  }
 
 //  watcher.addPath(qApp->applicationDirPath() + "/import/" );
 
@@ -140,8 +150,9 @@ void QRKHome::init()
     qDebug() << "Directory name" << directory <<"\n";
 
   FileWatcher *fw = new FileWatcher();
-  QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), fw, SLOT(showModified(QString)));
-  QObject::connect(fw, SIGNAL(addToQueue(QFileInfoList)), this, SLOT(addToQueue(QFileInfoList)));
+  QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), fw, SLOT(directoryChanged(QString)));
+  QObject::connect(fw, SIGNAL(importInfo(QString)), this, SLOT(importInfo(QString)));
+  // QObject::connect(fw, SIGNAL(addToQueue(QFileInfoList)), this, SLOT(addToQueue(QFileInfoList)));
 
 //  QObject::connect(&watcher, SIGNAL(fileChanged(QString)), fw, SLOT(showModified(QString)));
 
@@ -186,14 +197,28 @@ void QRKHome::serverModeCheckBox_clicked(bool checked)
   ui->taskButton->setEnabled(!checked);
 
   if (checked)
-    watcher.addPath(qApp->applicationDirPath() + "/import/" );
+    watcher.addPath(watcherpath);
   else
-    watcher.removePath(qApp->applicationDirPath() + "/import/" );
+    watcher.removePath(watcherpath);
 
 }
 
-void QRKHome::addToQueue(QFileInfoList list)
+void QRKHome::importInfo(QString str)
 {
-  Q_FOREACH(QFileInfo fileinfo, list)
-    ui->importWidget->addItem(QDateTime::currentDateTime().toString() + " -> "+ fileinfo.fileName());
+    ui->importWidget->sortItems(Qt::DescendingOrder);
+    ui->importWidget->setWordWrap( true);
+    ui->importWidget->addItem(QDateTime::currentDateTime().toString() + ": " + str);
+    if (str.startsWith(tr("Import Fehler"))) {
+        int count = ui->importWidget->count();
+        ui->importWidget->item(count -1)->setTextColor(Qt::red);
+    } else {
+        int count = ui->importWidget->count();
+        ui->importWidget->item(count -1)->setTextColor(Qt::darkGreen);
+    }
+    ui->importWidget->sortItems(Qt::DescendingOrder);
+
+    ui->lcdNumberDay->display(Database::getDayCounter());
+    ui->lcdNumberMonth->display(Database::getMonthCounter());
+    ui->lcdNumberYear->display(Database::getYearCounter());
+
 }
