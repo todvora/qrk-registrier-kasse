@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.021??
+VERSION 0.16.0222
  * Fix Tages/Monatsabschluss (Wenn mehr als 2 Monate keine Eingabe war wurde
    das falsche Datum verwendet
  * Fix WaitCursor
