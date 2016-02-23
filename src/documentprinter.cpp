@@ -28,6 +28,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QDir>
+#include <QAbstractTextDocumentLayout>
 #include <QDebug>
 
 DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, bool noPrinter)
@@ -84,11 +85,17 @@ void DocumentPrinter::printDocument(QTextDocument *document, QString title)
     }
   }
 
-  if ( noPrinter || printer.outputFormat() == QPrinter::PdfFormat)
-    printer.setOutputFileName(QString("pdf/QRK-REPORT_%1.pdf").arg( title ));
-  else
-    printer.setPrinterName(settings.value("reportPrinter").toString());
+  if ( noPrinter || printer.outputFormat() == QPrinter::PdfFormat) {
+      initAlternatePrinter(printer);
+      printer.setOutputFileName(QString("pdf/QRK-REPORT_%1.pdf").arg( title ));
+      document->adjustSize();
 
+  } else {
+      initAlternatePrinter(printer);
+      printer.setPrinterName(settings.value("reportPrinter").toString());
+      document->adjustSize();
+
+  }
 
   document->print(&printer);
 
@@ -467,6 +474,19 @@ bool DocumentPrinter::initAlternatePrinter(QPrinter &printer)
     printer.setPaperSize(printer.A4);
   if (f == "A5")
     printer.setPaperSize(printer.A5);
+  if (f == "POS") {
+      printer.setFullPage(true);
+      printer.setPaperSize(QSizeF(settings.value("paperWidth", 80).toInt(),
+                                  settings.value("paperHeight", 210).toInt()), QPrinter::Millimeter);
+
+      const QMarginsF marginsF(settings.value("marginLeft", 0).toDouble(),
+                               settings.value("marginTop", 17).toDouble(),
+                               settings.value("marginRight", 5).toDouble(),
+                               settings.value("marginBottom", 0).toInt());
+
+      printer.setPageMargins(marginsF,QPageLayout::Millimeter);
+      printer.setFullPage(false);
+  }
 
   return true;
 }

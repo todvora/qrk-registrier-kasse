@@ -21,7 +21,7 @@ FileWatcher::~FileWatcher ()
 
 void FileWatcher::directoryChanged(const QString &str)
 {
-    timer->start(1);
+    timer->start(200);
     // Q_UNUSED(str)
     // QMessageBox::information(this,"Directory Modified", "Your Directory is modified: " + str);
     appendQueue(str);

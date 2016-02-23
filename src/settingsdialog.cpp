@@ -550,6 +550,7 @@ PrinterTab::PrinterTab(QSettings &settings, QWidget *parent)
   QString x = settings.value("paperFormat", "A4").toString();
   paperFormatCombo->addItem("A4");
   paperFormatCombo->addItem("A5");
+  // paperFormatCombo->addItem("POS");
   paperFormatCombo->setCurrentText(settings.value("paperFormat", "A4").toString());
 
   invoiceCompanyPaperFormatCombo->addItem("A4");
