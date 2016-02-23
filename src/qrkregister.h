@@ -84,6 +84,7 @@ class QRKRegister : public QWidget
     void setButtonGroupEnabled(bool enabled);
     void quickGroupButtons();
     QString wordWrap(QString text, int width, QFont font);
+    void printDocument(int id, QString title);
 
     int currentReceipt;
     QProgressBar *progressBar;

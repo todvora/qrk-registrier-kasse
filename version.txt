@@ -18,13 +18,20 @@
  */
 
 VERSION 0.16.021??
- + Bei Tages und Monatsbelegen wird auch die Bonnummer gedruckt
+ * Fix Tages/Monatsabschluss (Wenn mehr als 2 Monate keine Eingabe war wurde
+   das falsche Datum verwendet
  * Fix WaitCursor
  * Fix Beim verwenden von Quickbuttons wurde beim ersten Artikel die Artikelanzahl nicht
    automatisch in den Editmode versetzt
  * Wenn beim verlassen des Kassenmodus ein nicht abgeschlossener Bon vorhanden ist
    wird nachgefragt ob man den Kassenmodus wirklich verlassen möchte.
    Beim verlassen werden nicht abgeschlossene Bons verworfen.
+ + Demomodus
+ + Datenreset im Demomodus
+ + Dokumente - Kundentext wird jetzt angezeigt
+ + Dokumente - Filter über alle Felder
+   Wird mit Spaltensortierung ausgewählt
+ + Bei Tages und Monatsbelegen wird auch die Bonnummer gedruckt
  + Serverbetrieb mit automatischen Import (JSon)
    JSonFormat:
      {"r2b":[

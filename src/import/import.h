@@ -9,7 +9,7 @@ class Import : public QObject
     Q_OBJECT
   public:
     explicit Import(QObject *parent = 0);
-    void loadJSonFile(QFileInfoList filename);
+    void loadJSonFile(QFileInfoList *filename);
 
   signals:
     void updateProgressBar(int value);

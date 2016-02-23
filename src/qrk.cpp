@@ -34,6 +34,7 @@
 #include "qrkregister.h"
 #include "qrkdocument.h"
 #include "manager/managerdialog.h"
+#include "utils/demomode.h"
 
 #include <QStackedWidget>
 #include <QLCDNumber>
@@ -87,6 +88,8 @@ QRK::QRK()
   connect(ui->actionDEP_Exportieren, SIGNAL(triggered()), this, SLOT(actionDEP_Export()));
   connect(ui->actionAbout_QRK, SIGNAL(triggered()), this, SLOT(actionAbout_QRK()));
   connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+  connect(ui->actionDEMO_Daten_zur_cksetzen, SIGNAL(triggered()), this, SLOT(actionResetDemoData()));
+  connect(ui->actionDEMOMODUS_Verlassen, SIGNAL(triggered()), this, SLOT(actionLeaveDemoMode()));
 
   connect(qrk_home, SIGNAL(endOfDay()), this, SLOT(endOfDaySlot()));
   connect(qrk_home, SIGNAL(endOfMonth()), this, SLOT(endOfMonthSlot()));
@@ -142,6 +145,9 @@ void QRK::timerDone()
 
 void QRK::init()
 {
+  ui->menuDEMOMODUS->setEnabled(DemoMode::isDemoMode());
+  ui->menuDEMOMODUS->menuAction()->setVisible(DemoMode::isDemoMode());
+
   setShopName();
   cashRegisterId = Database::getCashRegisterId();
 
@@ -292,3 +298,14 @@ void QRK::exitSlot()
   closeEvent(event);
 }
 
+void QRK::actionLeaveDemoMode()
+{
+  Database::resetAllData();
+  DemoMode::leaveDemoMode();
+  init();
+}
+
+void QRK::actionResetDemoData()
+{
+  Database::resetAllData();
+}

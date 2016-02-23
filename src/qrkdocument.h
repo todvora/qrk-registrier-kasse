@@ -48,6 +48,7 @@ class QRKDocument : public QWidget
     void onCancellationButton_clicked();
     void onPrintcopyButton_clicked(bool = false);
     void onInvoiceCompanyButton_clicked();
+    void sortChanged();
 
 
   protected slots:

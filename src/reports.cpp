@@ -99,7 +99,7 @@ bool Reports::canCreateEOD(QDate date)
 
 //--------------------------------------------------------------------------------
 
-int Reports::getReportId()
+int Reports::getReportType()
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
@@ -260,8 +260,8 @@ void Reports::createEOM(int id, QDate date)
   QDateTime to;
 
   // ---------- MONTH -----------------------------
-  from.setDate(QDate::fromString(date.toString()));
-  from.setDate(QDate::fromString(QString("%1-%2-01").arg(date.year()).arg(date.month()),"yyyy-MM-dd"));
+  //from.setDate(QDate::fromString(date.toString()));
+  from.setDate(QDate::fromString(QString("%1-%2-01").arg(date.year()).arg(date.month()),"yyyy-M-d"));
   to.setDate(QDate::fromString(date.toString()));
   to.setTime(QTime::fromString("23:59:59"));
 
@@ -471,6 +471,7 @@ void Reports::insert(QStringList list, int id)
     q.exec();
     pb->setValue(i++);
   }
+
   qDebug() << "Reports::insert elapsed Time: " << timer.elapsed() << "milliseconds";
 
 }
@@ -666,12 +667,12 @@ bool Reports::endOfMonth()
     msgBox.setWindowTitle(tr("Monatsabschluss"));
     QDateTime checkdate = QDateTime::currentDateTime();
 
-    if (QDate::currentDate().month() > 1) {
+    if (QDate::currentDate().year() == rDate.year() && QDate::currentDate().month() > 1) {
       checkdate.setDate(QDate::fromString(QString("%1-%2-1")
-                                          .arg(QDate::currentDate().year())
-                                          .arg(QDate::currentDate().month())
+                                          .arg(rDate.year())
+                                          .arg(rDate.month())
                                           , "yyyy-M-d")
-                        .addDays(-1));
+                        .addMonths(1).addDays(-1));
     } else {
       checkdate.setDate(QDate::fromString(QString("%1-12-31")
                                           .arg(QDate::currentDate().year()),"yyyy-M-d")
@@ -731,4 +732,9 @@ bool Reports::doEndOfDay(QDate date)
   reg->finishReceipts(3, currentReceipt, true);
   createEOD(currentReceipt, date);
   return true;
+}
+
+int Reports::getCurrentId()
+{
+  return currentReceipt;
 }

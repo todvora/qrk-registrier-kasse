@@ -18,7 +18,12 @@
  */
 
 To Do Liste:
-erledift Serverbetrieb mit automatischen Import (JSon) (VERSION 0.16.0216)
+
+erledigt    Kundentext bei Dokumenten anzeigen (VERSION 0.16.0222)
+erledigt    Dokumente - Filter über alle Felder (VERSION 0.16.0222)
+            Wird mit Spaltensortierung ausgewählt
+
+erledigt    Serverbetrieb mit automatischen Import (JSon) (VERSION 0.16.0222)
    JSonFormat:
      {"r2b":[
      {"receiptNum":"RE12345", "net":"22.50", "gross":"27.00", "payedBy":"0" }
@@ -57,8 +62,6 @@ erledigt    Stammdaten Eingabe                      (VERSION 0.16.0104)
 erledigt    Fußtext auf Kassebon                    (VERSION 0.16.0104)
 erledigt    Bon zu beleg 2-zeilig Drucken           (VERSION 0.15.1231)
 
-offen       Dokumente - Filter über alle Felder
-offen       Kundentext bei Dokumenten anzeigen
 offen       Mehrzeilige Produktzeile bei der Eingabe
 offen       Grössere Buttons für Touch (bitte nur wahlweise wegen kleinem Bildschirm)
 offen       QR-Code für 2017

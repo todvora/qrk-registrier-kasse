@@ -21,6 +21,7 @@
 
 #include <QSqlDriver>
 #include <QSqlField>
+#include <QSqlRecord>
 
 QSortFilterSqlQueryModel::QSortFilterSqlQueryModel(QObject *parent) :
   QSqlQueryModel(parent)
@@ -76,6 +77,7 @@ void QSortFilterSqlQueryModel::select()
     query.append(" " + whereClause);
   }
 
+
   if (sortKeyColumn >= 0) {
     QString orderClause;
     orderClause = "ORDER BY " + QString::number(sortKeyColumn+1) + " " + ((sortOrder == Qt::AscendingOrder) ? "ASC" : "DESC");
@@ -90,6 +92,8 @@ void QSortFilterSqlQueryModel::setSort(int column, Qt::SortOrder order)
 {
   sortKeyColumn = column;
   sortOrder = order;
+  QSortFilterSqlQueryModel::setFilterColumn(this->record().fieldName( column ));
+  emit sortChanged();
 }
 
 void QSortFilterSqlQueryModel::sort(int column, Qt::SortOrder order)
@@ -120,4 +124,9 @@ void QSortFilterSqlQueryModel::filter(const QString &filter)
     setFilter(filter);
     select();
   }
+}
+
+QString QSortFilterSqlQueryModel::getFilterColumnName()
+{
+  return this->headerData( sortKeyColumn, Qt::Horizontal ).toString();
 }

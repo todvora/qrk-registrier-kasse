@@ -16,6 +16,9 @@ void Backup::create()
 
   QString outfile = QString("%1/data_%2.zip").arg(backupDir).arg(QDateTime::currentDateTime().toString("yyyyMMdd-hhmmss"));
 
+  qDebug() << "Backup::create infilefile: " << infile;
+  qDebug() << "Backup::create outfilefile: " << outfile;
+
   bool ok = JlCompress::compressFile( outfile, infile );
   if (!ok)
     qDebug() << "JlCompress::compressFile:" << ok;

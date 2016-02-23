@@ -43,7 +43,8 @@ SOURCES += main.cpp\
     manager/productswidget.cpp \
     utils/utils.cpp \
     import/filewatcher.cpp \
-    import/import.cpp
+    import/import.cpp \
+    utils/demomode.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -75,7 +76,8 @@ HEADERS  += \
     manager/productswidget.h \
     utils/utils.h \
     import/filewatcher.h \
-    import/import.h
+    import/import.h \
+    utils/demomode.h
 
 FORMS += \
     ui/qrk.ui \
@@ -113,3 +115,4 @@ TRANSLATIONS += tr/QRK_en.ts \
 # LIBS += -lpthread
 LIBS += -lcryptopp
 LIBS += -lz
+CONFIG += static

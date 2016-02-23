@@ -36,6 +36,8 @@ class Database : public QObject
     static QStringList getLastReceipt();
     static QDate getLastReceiptDate();
     static QDateTime getLastReceiptDateTime();
+    static bool addCustomerText(int id, QString text);
+    static QString getCustomerText(int id);
     static bool addProduct(const QList<QVariant> &data);
     static bool exists(const QString type, const QString &name);
     static int getPayedBy(int);
@@ -56,7 +58,7 @@ class Database : public QObject
     static QString getYearCounter();
     static void updateProductSold(double, QString);
     static QStringList getMaximumItemSold();
-
+    static void resetAllData();
 
   private:
     static QString getDatabaseType();

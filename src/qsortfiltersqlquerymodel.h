@@ -33,6 +33,10 @@ class QSortFilterSqlQueryModel : public QSqlQueryModel
 
     //void setQuery(const QSqlQuery &query);
     void setQuery(const QString & query, const QSqlDatabase & dbc = QSqlDatabase::database() );
+    QString getFilterColumnName();
+
+  signals:
+    void sortChanged();
 
   public slots:
 

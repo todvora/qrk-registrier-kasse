@@ -9,9 +9,9 @@
 FileWatcher::FileWatcher (QWidget* parent)
     : QWidget(parent)
 {
-  this->timer = new QTimer(this);
-  timer->setSingleShot(true);
-  connect(timer,SIGNAL(timeout()),this,SLOT(fileAdded()));
+    this->timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer,SIGNAL(timeout()),this,SLOT(fileAdded()));
 
 }
 
@@ -21,8 +21,8 @@ FileWatcher::~FileWatcher ()
 
 void FileWatcher::directoryChanged(const QString &str)
 {
-  timer->start(20);
-  // Q_UNUSED(str)
+    timer->start(1);
+    // Q_UNUSED(str)
     // QMessageBox::information(this,"Directory Modified", "Your Directory is modified: " + str);
     appendQueue(str);
 }
@@ -40,13 +40,14 @@ void FileWatcher::appendQueue(QString path)
 
 void FileWatcher::fileAdded()
 {
-  Q_FOREACH(QFileInfo fileinfo, list)
-    qDebug() << "FileWatcher::appendQueue: " << fileinfo.absoluteFilePath();
+    Q_FOREACH(QFileInfo fileinfo, list)
+        qDebug() << "FileWatcher::appendQueue: " << fileinfo.absoluteFilePath();
 
-  emit addToQueue(list);
-  import = new Import(this);
-  connect(import,SIGNAL(importInfo(QString)),this,SIGNAL(importInfo(QString)));
+    // emit addToQueue(list);
+    import = new Import(this);
 
-  import->loadJSonFile(list);
-  list.clear();
+    connect(import,SIGNAL(importInfo(QString)),this,SIGNAL(importInfo(QString)));
+
+    import->loadJSonFile(&list);
+    list.clear();
 }

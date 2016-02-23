@@ -29,7 +29,7 @@ CREATE TABLE `orders` (
 CREATE INDEX `orders_receiptId_index` ON `orders` (`receiptId`);
 CREATE INDEX `orders_receiptId_index` ON `orders` (`receiptId`);
 
-INSERT INTO orders_backup SELECT `id`,`receiptId`,`product`,`count`,`net`,`gross`, `tax` FROM `orders`;
+INSERT INTO orders SELECT `id`,`receiptId`,`product`,`count`,`net`,`gross`, `tax` FROM `orders_backup`;
 DROP TABLE orders_backup;
 
 

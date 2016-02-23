@@ -82,6 +82,9 @@ void QRKDocument::documentList()
   ui->documentList->resizeColumnsToContents();
   ui->documentContent->resizeColumnsToContents();
 
+  ui->documentFilterLabel->setText("Filter " + documentListModel->getFilterColumnName());
+
+  connect(documentListModel, SIGNAL(sortChanged()), this, SLOT(sortChanged()));
   connect(ui->documentFilterEdit, SIGNAL (textChanged(QString)), documentListModel, SLOT (filter(QString)));
   connect(ui->documentList->selectionModel(), SIGNAL (selectionChanged ( const QItemSelection &, const QItemSelection &)),this, SLOT (onDocumentSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
@@ -103,6 +106,7 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
   int type = Database::getActionTypeByName(payedByText);
 
   if (type == PAYED_BY_REPORT_EOD || type == PAYED_BY_REPORT_EOM) { /* actionType Tagesbeleg*/
+    ui->customerTextLabel->setHidden(true);
     ui->documentContent->setHidden(true);
     ui->textBrowser->setHidden(false);
     ui->cancellationButton->setEnabled(false);
@@ -112,6 +116,7 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     ui->textBrowser->setHtml(Reports::getReport(receiptNum));
 
   } else {
+    ui->customerTextLabel->setHidden(false);
     ui->documentContent->setHidden(false);
     ui->textBrowser->setHidden(true);
     ui->cancellationButton->setEnabled(true);;
@@ -123,7 +128,8 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     else if (Database::getStorno(receiptNum) == 2)
       stornoText = tr("(Storno Beleg für Beleg Nr: %1)").arg(Database::getStornoId(receiptNum));
 
-    ui->documentLabel->setText(QString("Beleg Nr: %1\t%2\t%3\t\t%4").arg(receiptNum).arg(payedByText).arg(QString::number(price, 'f', 2)).arg(stornoText));
+    ui->documentLabel->setText(tr("Beleg Nr: %1\t%2\t%3\t\t%4").arg(receiptNum).arg(payedByText).arg(QString::number(price, 'f', 2)).arg(stornoText));
+    ui->customerTextLabel->setText(tr("Kunden Zusatztext: ") + Database::getCustomerText(receiptNum));
 
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     int id = ui->documentList->model()->data(documentListModel->index(row, REGISTER_COL_COUNT, QModelIndex())).toInt();
@@ -227,7 +233,6 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
     Reports *rep = new Reports(dep, progressBar);
     rep->fixMonth(id);
 
-
     QString DocumentTitle = QString("BON_%1_%2").arg(id).arg(payedByText);
     QTextDocument doc;
     doc.setHtml(Reports::getReport(id));
@@ -268,4 +273,9 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
 
     emit documentButton_clicked();
   }
+}
+
+void QRKDocument::sortChanged()
+{
+  ui->documentFilterLabel->setText("Filter " + documentListModel->getFilterColumnName());
 }

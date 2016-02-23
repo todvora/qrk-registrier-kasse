@@ -13,19 +13,19 @@ Import::Import(QObject *parent) : QObject(parent)
 
 }
 
-void Import::loadJSonFile(QFileInfoList filenames)
+void Import::loadJSonFile(QFileInfoList *filenames)
 {
 
-  Q_FOREACH(QFileInfo fileinfo, filenames) {
+  Q_FOREACH(QFileInfo fileinfo, *filenames) {
 
     QString receiptInfo;
+    filenames->removeOne(fileinfo);
     qDebug() << "Import::loadJSonFile " << fileinfo.absoluteFilePath();
     QFile file;
     file.setFileName(fileinfo.absoluteFilePath());
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        continue;
     receiptInfo = file.readAll();
-    file.close();
-
     QJsonDocument jd = QJsonDocument::fromJson(receiptInfo.toUtf8());
     QJsonObject data = jd.object();
     if (data.contains("r2b")) {
@@ -35,11 +35,17 @@ void Import::loadJSonFile(QFileInfoList filenames)
           emit importInfo(QString("import %1 -> OK").arg(data.value("filename").toString()));
           QString filename = file.fileName().replace("json", "old");
           QFile::remove(filename);
-          file.rename(filename);
+          if (!file.rename(filename))
+            emit importInfo(QString("Import Fehler -> Datei %1 kann nicht umbenannt werden").arg(data.value("filename").toString()));
+
+          file.close();
+
       } else {
           QString filename = file.fileName().replace("json", "false");
           QFile::remove(filename);
           file.rename(filename);
+          file.close();
+
       }
     } else if (data.contains("receipt")) {
       qDebug() << "Import::loadJSonFile type = receipt";
@@ -74,13 +80,12 @@ bool Import::importR2B(QJsonObject data)
           if (int receiptNum = reg->createReceipts()) {
             reg->setCurrentReceiptNum(receiptNum);
             if (reg->createOrder())
-              if (reg->finishReceipts(0))
+              if (reg->finishReceipts(obj.value("payedBy").toInt(0)))
                   return true;
           }
         }
 
       } else {
-        /* TODO: emit ERROR INFO*/
           QString info = tr("Import Fehler -> Falsches JSON Format, Dateiname: %1").arg(data.value("filename").toString());
           emit importInfo(info);
           qDebug() << "Import::importR2B Invalid JSon Format.";

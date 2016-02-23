@@ -34,8 +34,9 @@ class Reports : public QObject
 
     static bool canCreateEOD(QDate);
     static bool canCreateEOM(QDate);
-    static int getReportId();
+    static int getReportType();
     static QDate getLastEOD();
+    int getCurrentId();
 
     void createEOD(int, QDate);
     void insert(QStringList, int);

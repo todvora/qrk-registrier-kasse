@@ -355,7 +355,6 @@ void QRKRegister::updateOrderSum()
     if (rows > 0)
         setButtonGroupEnabled(enabled);
 
-    //  sum = (long)(sum*100+0.5)/100.0;
     ui->sumLabel->setText(tr("%1 %2").arg(QString::number(sum, 'f', 2)).arg(currency));
 
 }
@@ -1012,20 +1011,24 @@ void QRKRegister::onButtonGroup_payNow_clicked(int payedBy)
         Database::addProduct(list);
     }
 
+
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     dbc.transaction();
 
     currentReceipt = createReceipts();
     if ( currentReceipt )
     {
-        if ( createOrder() )
+      if (!ui->headerText->text().isEmpty())
+        Database::addCustomerText(currentReceipt, ui->headerText->text());
+
+      if ( createOrder() )
+      {
+        if ( finishReceipts(payedBy) )
         {
-            if ( finishReceipts(payedBy) )
-            {
-                emit cancelRegisterButton_clicked();
-                emit registerButton_clicked();
-            }
+          emit cancelRegisterButton_clicked();
+          emit registerButton_clicked();
         }
+      }
     }
 
     if (!dbc.commit()) {
@@ -1124,7 +1127,7 @@ bool QRKRegister::checkEOAny()
     // ist letzter bon am gleichen tag
     bool needDay(false);
     bool needMonth(false);
-    int type = Reports::getReportId();
+    int type = Reports::getReportType();
     lastEOD = Reports::getLastEOD();
 
     if (! (type == -1)) {
@@ -1167,8 +1170,9 @@ bool QRKRegister::checkEOAny()
             Reports *rep = new Reports(dep, progressBar);
             if (! rep->endOfDay() ) {
                 QApplication::setOverrideCursor(Qt::ArrowCursor);
-                return true;
+                return false;
             }
+            printDocument(rep->getCurrentId(), "Tagesabschluss");
 
         } else {
             return false;
@@ -1192,6 +1196,8 @@ bool QRKRegister::checkEOAny()
                 QApplication::setOverrideCursor(Qt::ArrowCursor);
                 return false;
             }
+            printDocument(rep->getCurrentId(), "Monatsabschluss");
+
         } else {
             return false;
         }
@@ -1213,7 +1219,7 @@ bool QRKRegister::checkEOAnyServerMode()
   // ist letzter bon am gleichen tag
   bool needDay(false);
   bool needMonth(false);
-  int type = Reports::getReportId();
+  int type = Reports::getReportType();
   lastEOD = Reports::getLastEOD();
 
   if (! (type == -1)) {
@@ -1238,7 +1244,7 @@ bool QRKRegister::checkEOAnyServerMode()
     Reports *rep = new Reports(dep, progressBar, this, true);
     if (! rep->endOfDay() ) {
       QApplication::setOverrideCursor(Qt::ArrowCursor);
-      return true;
+      return false;
     }
 
   } else if (needMonth && checkDate != date) {
@@ -1333,4 +1339,14 @@ QString QRKRegister::wordWrap(QString text, int width, QFont font)
 void QRKRegister::setServerMode(bool mode)
 {
   servermode = mode;
+}
+
+void QRKRegister::printDocument(int id, QString title)
+{
+  QString DocumentTitle = QString("BON_%1_%2").arg(id).arg(title);
+  QTextDocument doc;
+  doc.setHtml(Reports::getReport(id));
+  DocumentPrinter *p = new DocumentPrinter(this, progressBar);
+  p->printDocument(&doc, DocumentTitle);
+  delete p;
 }

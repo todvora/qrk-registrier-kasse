@@ -68,8 +68,16 @@
     <addaction name="actionAbout_QRK"/>
     <addaction name="actionAbout_QT"/>
    </widget>
+   <widget class="QMenu" name="menuDEMOMODUS">
+    <property name="title">
+     <string>DE&amp;MOMODUS</string>
+    </property>
+    <addaction name="actionDEMO_Daten_zur_cksetzen"/>
+    <addaction name="actionDEMOMODUS_Verlassen"/>
+   </widget>
    <addaction name="menuDatei"/>
    <addaction name="menuHilfe"/>
+   <addaction name="menuDEMOMODUS"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionDEP_Exportieren">
@@ -100,6 +108,16 @@
   <action name="actionAbout_QT">
    <property name="text">
     <string>Über &amp;QT</string>
+   </property>
+  </action>
+  <action name="actionDEMO_Daten_zur_cksetzen">
+   <property name="text">
+    <string>DEMO Daten zurücksetzen</string>
+   </property>
+  </action>
+  <action name="actionDEMOMODUS_Verlassen">
+   <property name="text">
+    <string>DEMOMODUS Verlassen</string>
    </property>
   </action>
  </widget>

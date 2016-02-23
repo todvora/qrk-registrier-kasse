@@ -20,6 +20,7 @@
 #include "qrk.h"
 #include "settingsdialog.h"
 #include "fvupdater.h"
+#include "utils/demomode.h"
 
 #include "defines.h"
 #include "database.h"
@@ -163,6 +164,23 @@ int main(int argc, char *argv[])
   if ( !Database::open( dbSelect) )
     return 0;
 
+  /*check if we have SET Demomode*/
+  if (DemoMode::isModeNotSet()) {
+    QMessageBox messageBox(QMessageBox::Question,
+                QObject::tr("DEMOMODUS"),
+                QObject::tr("Wird QRK (Qt Registrier Kasse) im Echtbetrieb verwendet?\n\nJA wenn QRK im produktiven Einsatz ist.\n\nNEIN wenn DEMO Daten verwendet werden."),
+                QMessageBox::Yes | QMessageBox::No,
+                0);
+        messageBox.setButtonText(QMessageBox::Yes, QObject::tr("Ja"));
+        messageBox.setButtonText(QMessageBox::No, QObject::tr("Nein"));
+
+    if (messageBox.exec() == QMessageBox::Yes )
+    {
+      DemoMode::leaveDemoMode();
+    }
+  }
+
+  /*Check for MasterData*/
   QString cri = Database::getCashRegisterId();
   if ( cri.isEmpty() ) {
     QMessageBox::warning(0, QObject::tr("Kassenidentifikationsnummer"), QObject::tr("Stammdaten müssen vollständig ausgefüllt werden.."));

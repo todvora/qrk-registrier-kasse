@@ -105,6 +105,12 @@ CREATE TABLE `receipts` (
 
 CREATE INDEX `receipts_stornoId_index` ON `receipts` (`stornoId`);
 
+CREATE TABLE `customer` (
+    `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `receiptNum`	int(11) DEFAULT NULL,
+    `text`              text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `dep` (
     `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `version`           text NOT NULL,

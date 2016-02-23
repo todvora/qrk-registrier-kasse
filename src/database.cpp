@@ -18,6 +18,7 @@
  */
 
 #include "database.h"
+#include "utils/demomode.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -195,8 +196,12 @@ QString Database::getCashRegisterId()
   QSqlQuery query(dbc);
   query.prepare("SELECT strValue FROM globals WHERE name='shopCashRegisterId'");
   query.exec();
-  if (query.next())
+  if (query.next()) {
+    if (DemoMode::isDemoMode())
+      return "DEMO-" + query.value(0).toString();
+
     return query.value(0).toString();
+  }
 
   return QString();
 }
@@ -220,6 +225,63 @@ QStringList Database::getMaximumItemSold()
     list << "" << "20" << "0,00";
     return list;
 
+}
+
+//--------------------------------------------------------------------------------
+
+bool Database::addCustomerText(int id, QString text)
+{
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+  QString q = QString("INSERT INTO customer ('receiptNum', 'text') VALUES (%1, '%2')")
+          .arg(id)
+          .arg(text);
+
+  bool ok = query.prepare(q);
+
+  if (!ok) {
+    qDebug() << "Error: " << query.lastError().text();
+    qDebug() << "Query: " << q;
+  }
+
+  if( query.exec() ){
+    return true;
+  } else {
+    qDebug() << "Database::addCustomerText error: " << query.lastError().text();
+  }
+
+  // qDebug() << "Error: " << query.lastError().text();
+  return false;
+}
+
+//--------------------------------------------------------------------------------
+
+QString Database::getCustomerText(int id)
+{
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery query(dbc);
+  QString q = QString("SELECT text FROM customer WHERE receiptNum=%1")
+          .arg(id);
+
+  bool ok = query.prepare(q);
+
+  if (!ok) {
+    qDebug() << "Error: " << query.lastError().text();
+    qDebug() << "Query: " << q;
+  }
+
+  if( query.exec() ){
+    if (query.next())
+      return query.value("text").toString();
+
+    return "";
+  } else {
+    qDebug() << "Database::getCustomerText error: " << query.lastError().text();
+  }
+
+  return "";
 }
 
 //--------------------------------------------------------------------------------
@@ -404,7 +466,7 @@ QString Database::getShopMasterData()
 
 bool Database::open(bool dbSelect)
 {
-  const int CURRENT_SCHEMA_VERSION = 8;
+    const int CURRENT_SCHEMA_VERSION = 9;
   // read global defintions (DB, ...)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
@@ -706,4 +768,51 @@ int Database::getStornoId(int id)
 
   query.next();
   return query.value(0).toInt();
+}
+
+void Database::resetAllData()
+{
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  QSqlQuery q(dbc);
+
+  q.prepare("DELETE FROM 'dep';");
+  q.exec();
+
+  q.prepare("DELETE FROM 'orders';");
+  q.exec();
+
+  q.prepare("DELETE FROM 'receipts';");
+  q.exec();
+
+  q.prepare("UPDATE globals SET value = 0 WHERE name = 'lastReceiptNum';");
+  q.exec();
+
+  q.prepare("UPDATE globals SET value = 0 WHERE name = 'turnovercounter';");
+  q.exec();
+
+  QString dbType = getDatabaseType();
+
+  if ( dbType == "QMYSQL") {
+    /*MYSQL*/
+    q.prepare("ALTER TABLE dep AUTO_INCREMENT = 1;");
+    q.exec();
+
+    q.prepare("ALTER TABLE orders AUTO_INCREMENT = 1;");
+    q.exec();
+
+    q.prepare("ALTER TABLE receipt AUTO_INCREMENT = 1;");
+    q.exec();
+
+  } else {
+    /*SQLITE*/
+    q.prepare("delete from sqlite_sequence where name='dep';");
+    q.exec();
+
+    q.prepare("delete from sqlite_sequence where name='orders';");
+    q.exec();
+
+    q.prepare("delete from sqlite_sequence where name='receipts';");
+    q.exec();
+  }
+
 }

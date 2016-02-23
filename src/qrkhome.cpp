@@ -131,7 +131,7 @@ void QRKHome::init()
   ui->lcdNumberDay->display(Database::getDayCounter());
   ui->lcdNumberMonth->display(Database::getMonthCounter());
   ui->lcdNumberYear->display(Database::getYearCounter());
-  ui->serverModeCheckBox->setText(tr("Server Modus (Import Bon zu Rechnung Verzeichnis: %1)").arg(settings.value("importDirectory", qApp->applicationDirPath()  + "/import").toString()));
+  ui->serverModeCheckBox->setText(tr("Server Modus (Importverzeichnis: %1)").arg(settings.value("importDirectory", qApp->applicationDirPath()  + "/import").toString()));
 
   watcherpath = settings.value("importDirectory", qApp->applicationDirPath() + "/import" ).toString();
 

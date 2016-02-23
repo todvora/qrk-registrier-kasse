@@ -38,6 +38,7 @@ CREATE TABLE  `globals` (
     `value`     	int(11),
     `strValue`  	text
 );
+INSERT INTO `globals`(`name`,`value`) VALUES ('demomode',1);
 
 CREATE TABLE  `groups` (
     `id`        	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -48,7 +49,7 @@ CREATE TABLE  `groups` (
     `visible`   	tinyint(1) NOT NULL DEFAULT 1
 );
 INSERT INTO `groups`(`name`,`visible`) VALUES ('auto', 0);
-INSERT INTO `groups`(`name`,`visible`) VALUES ('Standard', 1);
+INSERT INTO `groups`(`name`,`visible`) VALUES ('Default', 0);
 
 CREATE TABLE `products` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -79,7 +80,6 @@ CREATE TABLE `orders` (
 
 CREATE INDEX `orders_receiptId_index` ON `orders` (`receiptId`);
 
-
 CREATE TABLE  `receipts` (
         `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         `timestamp`	datetime NOT NULL,
@@ -93,6 +93,12 @@ CREATE TABLE  `receipts` (
 );
 
 CREATE INDEX `receipts_stornoId_index` ON `receipts` (`stornoId`);
+
+CREATE TABLE `customer` (
+    `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `receiptNum`	int(11) DEFAULT NULL,
+    `text`              text
+);
 
 CREATE TABLE `dep` (
     `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
