@@ -20,6 +20,7 @@
 VERSION 0.16.02??
  * fix payedBy im ServerBetrieb
  + beim Aktivieren des Servermodes wird auf Schreibberechtigung geprüft
+ + Fusion Style wird für Linux und Windows verwendet
 
 VERSION 0.16.0222
  * Fix Tages/Monatsabschluss (Wenn mehr als 2 Monate keine Eingabe war wurde

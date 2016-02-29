@@ -32,6 +32,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QSharedMemory>
+#include <QStyleFactory>
 #include <QtPlugin>
 
 //--------------------------------------------------------------------------------
@@ -81,6 +82,7 @@ void sighandler(int /*sig*/)
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
+  QApplication::setStyle(QStyleFactory::create("Fusion"));
 
   qInstallMessageHandler(QRKMessageHandler);
 
