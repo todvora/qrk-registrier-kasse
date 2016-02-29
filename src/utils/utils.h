@@ -32,6 +32,7 @@ class Utils
     static double getYearlyTotal(int year);
     static qlonglong getTurnOverCounter();
     static void updateTurnOverCounter(qlonglong);
+    static bool isDirectoryWritable(QString path);
 
   private:
     static QString getLastReceiptSignature();

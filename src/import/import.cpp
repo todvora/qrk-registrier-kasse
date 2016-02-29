@@ -23,7 +23,7 @@ void Import::loadJSonFile(QFileInfoList *filenames)
     qDebug() << "Import::loadJSonFile " << fileinfo.absoluteFilePath();
     QFile file;
     file.setFileName(fileinfo.absoluteFilePath());
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
         continue;
     receiptInfo = file.readAll();
     QJsonDocument jd = QJsonDocument::fromJson(receiptInfo.toUtf8());
@@ -37,6 +37,7 @@ void Import::loadJSonFile(QFileInfoList *filenames)
           QFile::remove(filename);
           if (!file.rename(filename))
             emit importInfo(QString("Import Fehler -> Datei %1 kann nicht umbenannt werden").arg(data.value("filename").toString()));
+
 
           file.close();
 
@@ -80,7 +81,7 @@ bool Import::importR2B(QJsonObject data)
           if (int receiptNum = reg->createReceipts()) {
             reg->setCurrentReceiptNum(receiptNum);
             if (reg->createOrder())
-              if (reg->finishReceipts(obj.value("payedBy").toInt(0)))
+              if (reg->finishReceipts(obj.value("payedBy").toString().toInt(0)))
                   return true;
           }
         }

@@ -30,6 +30,10 @@ GroupEdit::GroupEdit(QWidget *parent, int theId)
 
   const QStringList colorNames = QColor::colorNames();
   int index = 0;
+  ui->colorComboBox->addItem(tr("Standard Farbe"));
+  const QModelIndex idx = ui->colorComboBox->model()->index(index++, 0);
+  ui->colorComboBox->model()->setData(idx, "", Qt::BackgroundColorRole);
+
   foreach (const QString &colorName, colorNames) {
       const QColor color(colorName);
       ui->colorComboBox->addItem(colorName, color);
@@ -48,18 +52,21 @@ GroupEdit::GroupEdit(QWidget *parent, int theId)
     ui->visibleCheckBox->setChecked(query.value(1).toBool());
 
     int i;
-    for (i = 0; i < ui->colorComboBox->count(); i++) {
+    for (i = 0; i <= ui->colorComboBox->count(); i++) {
         QString color = ui->colorComboBox->model()->index(i, 0).data(Qt::BackgroundColorRole).toString();
         if ( query.value(2).toString() == color )
             break;
     }
+
+    if (i > ui->colorComboBox->count())
+      i = 0;
 
     ui->colorComboBox->setCurrentIndex(i);
     QPalette palette(ui->colorComboBox->palette());
     QColor color(query.value(2).toString());
     palette.setColor(QPalette::Active,QPalette::Button, color);
     palette.setColor(QPalette::Highlight, color);
-    palette.setColor(QPalette::ButtonText, Qt::white);
+//    palette.setColor(QPalette::ButtonText, Qt::white);
     ui->colorComboBox->setPalette(palette);
 
   }

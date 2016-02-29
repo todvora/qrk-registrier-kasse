@@ -28,6 +28,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QByteArray>
+#include <QFileInfo>
 #include <QDebug>
 
 Utils::Utils()
@@ -221,4 +222,15 @@ double Utils::getYearlyTotal(int year)
 
   return sales;
 
+}
+
+bool Utils::isDirectoryWritable(QString path)
+{
+    QFileInfo f(path);
+    if (f.exists() && f.isDir()) {
+        if (f.isWritable())
+            return true;
+    }
+
+    return false;
 }

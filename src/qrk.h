@@ -35,6 +35,7 @@ class QRKRegister;
 class QStackedWidget;
 class QLCDNumber;
 
+
 class QRK : public QMainWindow
 {
     Q_OBJECT

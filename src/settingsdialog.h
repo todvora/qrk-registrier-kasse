@@ -30,6 +30,20 @@ class QComboBox;
 class QCheckBox;
 class QSpinBox;
 class QLineEdit;
+class QRadioButton;
+
+class SignaturTab : public QWidget
+{
+    Q_OBJECT
+
+  public:
+    explicit SignaturTab(QSettings &s, QWidget *parent = 0);
+
+  private:
+    QComboBox *mobileCombo;
+    QComboBox *smartCardCombo;
+
+};
 
 class ExtraTab : public QWidget
 {
@@ -197,6 +211,7 @@ class SettingsDialog : public QDialog
     PrinterTab *printer;
     ReceiptPrinterTab *receiptprinter;
     ExtraTab *extra;
+    SignaturTab *signature;
 
 };
 

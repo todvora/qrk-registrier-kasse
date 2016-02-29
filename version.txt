@@ -17,6 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.02??
+ * fix payedBy im ServerBetrieb
+ + beim Aktivieren des Servermodes wird auf Schreibberechtigung geprüft
+
 VERSION 0.16.0222
  * Fix Tages/Monatsabschluss (Wenn mehr als 2 Monate keine Eingabe war wurde
    das falsche Datum verwendet
@@ -45,7 +49,7 @@ VERSION 0.16.0222
      Dateinamen r2b_1.json, r2b_2.json .... , r2b_4.json
      in dieser Reihenfolge werden die Bons erstellt.
 
-    Erfolgreich importierte Dateine werden in .old umbenannt
+    Erfolgreich importierte Dateien werden in .old umbenannt
     Fehlerhafte Dateien werden in .false umbenannt
 
 

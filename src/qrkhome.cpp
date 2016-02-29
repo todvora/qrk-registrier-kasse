@@ -196,11 +196,18 @@ void QRKHome::serverModeCheckBox_clicked(bool checked)
   ui->registerButton->setEnabled(!checked);
   ui->taskButton->setEnabled(!checked);
 
-  if (checked)
-    watcher.addPath(watcherpath);
-  else
-    watcher.removePath(watcherpath);
+  if (checked) {
+      if (Utils::isDirectoryWritable(watcherpath)) {
+          watcher.addPath(watcherpath);
+      } else {
+          QMessageBox::warning(this,tr("Fehler"),tr("Import Verzeichnis %1 ist nicht beschreibbar.").arg(watcherpath),QMessageBox::Ok);
+          ui->serverModeCheckBox->setChecked(false);
+          emit serverModeCheckBox_clicked(false);
+      }
 
+  } else {
+    watcher.removePath(watcherpath);
+  }
 }
 
 void QRKHome::importInfo(QString str)

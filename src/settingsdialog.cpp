@@ -33,6 +33,7 @@ SettingsDialog::SettingsDialog(QSettings &s, QWidget *parent)
   printer = new PrinterTab(settings);
   receiptprinter = new ReceiptPrinterTab(settings);
   extra = new ExtraTab(settings);
+  signature = new SignaturTab(settings);
 
   tabWidget = new QTabWidget;
   tabWidget->addTab(master, tr("Stammdaten"));
@@ -40,6 +41,7 @@ SettingsDialog::SettingsDialog(QSettings &s, QWidget *parent)
   tabWidget->addTab(receiptprinter, tr("BON Drucker"));
   tabWidget->addTab(general, tr("Allgemein"));
   tabWidget->addTab(extra, tr("Extra"));
+  tabWidget->addTab(signature, tr("Signatureinheit"));
 
   QPushButton *pushButton = new QPushButton;
   pushButton->setMinimumHeight(60);
@@ -61,6 +63,7 @@ SettingsDialog::SettingsDialog(QSettings &s, QWidget *parent)
   setLayout(mainLayout);
 
   setWindowTitle(tr("Einstellungen"));
+  setMinimumWidth(600);
 
   connect(pushButton, SIGNAL(clicked()), this, SLOT(accept()));
 
@@ -120,18 +123,58 @@ void SettingsDialog::accept()
 
 }
 
+SignaturTab::SignaturTab(QSettings &s, QWidget *parent)
+  : QWidget(parent)
+{
+
+  mobileCombo = new QComboBox();
+  mobileCombo->addItem("A-Trust Mobile");
+
+  smartCardCombo = new QComboBox();
+
+  QFormLayout *mobileLayout = new QFormLayout;
+  QFormLayout *smartCardLayout = new QFormLayout;
+
+  QGroupBox *mobileGroup = new QGroupBox(tr("Mobile Signatureinheit"));
+  mobileGroup->setStyleSheet("QGroupBox::title {top: 5px; left: 10px;}");
+  mobileGroup->setAlignment(Qt::AlignLeft);
+  mobileGroup->setCheckable(true);
+  mobileGroup->setChecked(false);
+
+  mobileLayout->addRow("Mobile Anbieter",mobileCombo);
+  mobileGroup->setLayout(mobileLayout);
+
+  QGroupBox *smartCardGroup = new QGroupBox(tr("SmartCard"));
+  smartCardGroup->setStyleSheet("QGroupBox::title {top: 5px; left: 10px;}");
+  smartCardGroup->setAlignment(Qt::AlignLeft);
+  smartCardGroup->setCheckable(true);
+  smartCardGroup->setChecked(false);
+  smartCardLayout->addRow("SmartCard Lesegeräte",smartCardCombo);
+
+  smartCardGroup->setLayout(smartCardLayout);
+
+  QVBoxLayout *mainLayout = new QVBoxLayout;
+  mainLayout->addWidget(mobileGroup);
+
+  mainLayout->addWidget(smartCardGroup);
+
+  mainLayout->addStretch(1);
+  setLayout(mainLayout);
+
+}
+
 ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   : QWidget(parent)
 {
 
   useInputNetPriceCheck = new QCheckBox;
-  useInputNetPriceCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+  useInputNetPriceCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
   useMaximumItemSoldCheck = new QCheckBox;
-  useMaximumItemSoldCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+  useMaximumItemSoldCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
   useDecimalQuantityCheck = new QCheckBox;
-  useDecimalQuantityCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
+  useDecimalQuantityCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
   useGivenDialogCheck = new QCheckBox;
   useGivenDialogCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;

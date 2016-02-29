@@ -116,11 +116,3 @@ TRANSLATIONS += tr/QRK_en.ts \
 LIBS += -lcryptopp
 LIBS += -lz
 CONFIG += static
-
-win32 {
-    QTPLUGIN += windowsprintersupport
-} else:mac {
-    QTPLUGIN += cocoaprintersupport
-} else {
-    QTPLUGIN += cupsprintersupport
-}

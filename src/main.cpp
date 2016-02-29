@@ -32,6 +32,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QSharedMemory>
+#include <QtPlugin>
 
 //--------------------------------------------------------------------------------
 #include <QFile>
@@ -79,7 +80,6 @@ void sighandler(int /*sig*/)
 
 int main(int argc, char *argv[])
 {
-
   QApplication app(argc, argv);
 
   qInstallMessageHandler(QRKMessageHandler);

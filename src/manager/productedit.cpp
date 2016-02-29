@@ -34,6 +34,10 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
 
     const QStringList colorNames = QColor::colorNames();
     int index = 0;
+    ui->colorComboBox->addItem(tr("gleich wie Gruppe"));
+    const QModelIndex idx = ui->colorComboBox->model()->index(index++, 0);
+    ui->colorComboBox->model()->setData(idx, "", Qt::BackgroundColorRole);
+
     foreach (const QString &colorName, colorNames) {
         const QColor color(colorName);
         ui->colorComboBox->addItem(colorName, color);
@@ -60,6 +64,7 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
     taxModel->setQuery(q, dbc);
     ui->taxComboBox->setModel(taxModel);
     ui->taxComboBox->setModelColumn(1);  // show tax
+    ui->taxComboBox->setCurrentIndex(0);
 
     if ( id != -1 )
     {
@@ -84,18 +89,21 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
 
         ui->taxComboBox->setCurrentIndex(i);
 
-        for (i = 0; i < ui->colorComboBox->count(); i++) {
+        for (i = 0; i <= ui->colorComboBox->count(); i++) {
             QString color = ui->colorComboBox->model()->index(i, 0).data(Qt::BackgroundColorRole).toString();
-            if ( query.value(2).toString() == color )
+            if ( query.value(6).toString() == color )
                 break;
         }
 
+        if (i > ui->colorComboBox->count())
+          i = 0;
+
         ui->colorComboBox->setCurrentIndex(i);
         QPalette palette(ui->colorComboBox->palette());
-        QColor color(query.value(2).toString());
+        QColor color(query.value(6).toString());
         palette.setColor(QPalette::Active,QPalette::Button, color);
         palette.setColor(QPalette::Highlight, color);
-        palette.setColor(QPalette::ButtonText, Qt::white);
+//        palette.setColor(QPalette::ButtonText, Qt::gray);
         ui->colorComboBox->setPalette(palette);
 
     }
