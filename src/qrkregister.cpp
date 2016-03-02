@@ -857,31 +857,15 @@ void QRKRegister::plusSlot()
     isR2B = false;
     R2BNet = 0.0;
 
-    int row;
-
     if (orderListModel->rowCount() > 0)
     {
 
         if (! ui->plusButton->isEnabled())
             return;
 
-        row = orderListModel->rowCount() -1;
-
-        /* TODO: check for Autosave */
-        bool checked = orderListModel->item(row ,REGISTER_COL_SAVE)->checkState();
-
-        QList<QVariant> list;
-
-        list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
-             << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toString()
-             << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toString()
-             << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString()
-             << "1";
-
-        Database::addProduct(list);
     }
 
-    row = orderListModel->rowCount();
+    int row = orderListModel->rowCount();
     orderListModel->insertRow(row);
     ui->orderList->model()->blockSignals(true);
 
@@ -994,21 +978,26 @@ void QRKRegister::onButtonGroup_payNow_clicked(int payedBy)
         given->exec();
     }
 
-    int row;
-
     if (orderListModel->rowCount() > 0)
     {
-        row = orderListModel->rowCount() -1;
+        int rc = orderListModel->rowCount();
 
         QList<QVariant> list;
 
-        list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
-             << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toString()
-             << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toString()
-             << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString()
-             << "1";
+        for(int row = 0; row < rc; row++) {
+            /* TODO: check for Autosave */
+            bool checked = orderListModel->item(row ,REGISTER_COL_SAVE)->checkState();
+            Q_UNUSED(checked);
 
-        Database::addProduct(list);
+            list.clear();
+            list << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_PRODUCT, QModelIndex())).toString()
+                 << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_TAX, QModelIndex())).toString()
+                 << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toString()
+                 << ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_SINGLE, QModelIndex())).toString()
+                 << "1";
+
+            Database::addProduct(list);
+        }
     }
 
 
@@ -1295,6 +1284,9 @@ bool QRKRegister::setR2BServerMode(QJsonObject obj)
   orderListModel->item(0, REGISTER_COL_PRODUCT)->setText( product );
   orderListModel->item(0, REGISTER_COL_TAX)->setText( "0" );
   orderListModel->item(0, REGISTER_COL_SINGLE)->setText( obj.value("gross").toString() );
+
+  if (!obj.value("customer_text").toString().isEmpty())
+    ui->headerText->setText(obj.value("customer_text").toString());
 
   R2BNet = obj.value("net").toDouble();
   isR2B = true;

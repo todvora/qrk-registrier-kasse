@@ -19,8 +19,14 @@
 
 VERSION 0.16.02??
  * fix payedBy im ServerBetrieb
+ * fix wenn im KassenMode in einer Zeile ein bestehender Produktname geändert wurde wurde dieser
+   Artikel am BON nicht gedruckt. (Fehlende Position)
  + beim Aktivieren des Servermodes wird auf Schreibberechtigung geprüft
  + Fusion Style wird für Linux und Windows verwendet
+ + ServerBetrieb -> Kundentext wurde als optionaler Parameter in die JSON Datei aufgenommen
+    {"r2b":[
+    {"receiptNum":"RE12345", "net":"22.50", "gross":"27.00", "payedBy":"0", "customerText":"Optionaler Kunden text" }
+    ]}
 
 VERSION 0.16.0222
  * Fix Tages/Monatsabschluss (Wenn mehr als 2 Monate keine Eingabe war wurde
