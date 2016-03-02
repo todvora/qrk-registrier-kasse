@@ -1285,8 +1285,8 @@ bool QRKRegister::setR2BServerMode(QJsonObject obj)
   orderListModel->item(0, REGISTER_COL_TAX)->setText( "0" );
   orderListModel->item(0, REGISTER_COL_SINGLE)->setText( obj.value("gross").toString() );
 
-  if (!obj.value("customer_text").toString().isEmpty())
-    ui->headerText->setText(obj.value("customer_text").toString());
+  if (!obj.value("customerText").toString().isEmpty())
+    ui->headerText->setText(obj.value("customerText").toString());
 
   R2BNet = obj.value("net").toDouble();
   isR2B = true;

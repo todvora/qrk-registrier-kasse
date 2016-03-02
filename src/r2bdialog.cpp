@@ -21,7 +21,7 @@
 #include <QDoubleValidator>
 
 R2BDialog::R2BDialog(QWidget *parent) :
-  QDialog(parent), ui(new Ui::R2BDialog)
+  QRKDialog(parent), ui(new Ui::R2BDialog)
 {
 
   ui->setupUi(this);
@@ -30,13 +30,22 @@ R2BDialog::R2BDialog(QWidget *parent) :
   doubleVal->setNotation(QDoubleValidator::StandardNotation);
   ui->invoiceNet->setValidator(doubleVal);
   ui->invoiceSum->setValidator(doubleVal);
+  registerMandatoryField(ui->invoiceNet);
+  registerMandatoryField(ui->invoiceSum);
+  registerMandatoryField(ui->invoiceNum);
+  ui->pushButton->setEnabled(false);
 
+  connect(this, SIGNAL(hasAcceptableInput(bool)), SLOT(setOkButtonEnabled(bool)));
   connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept(bool)));
+}
+
+void R2BDialog::setOkButtonEnabled(bool isAccptableInput)
+{
+    ui->pushButton->setEnabled(isAccptableInput);
 }
 
 void R2BDialog::accept(bool)
 {
-
   invoiceNum = ui->invoiceNum->text();
   invoiceNet = ui->invoiceNet->text();
   invoiceSum = ui->invoiceSum->text();

@@ -17,36 +17,31 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef R2BDIALOG_H
-#define R2BDIALOG_H
+#ifndef QRKDIALOG_H
+#define QRKDIALOG_H
 
-#include "qrkdelegate.h"
-#include "qrkdialog.h"
+#include <QDialog>
 
-#include "ui_r2bdialog.h"
+class QLineEdit;
 
-class R2BDialog : public QRKDialog
+class QRKDialog : public QDialog
 {
     Q_OBJECT
-  public:
-    explicit R2BDialog(QWidget *parent = 0);
+public:
+    explicit QRKDialog(QWidget *parent = 0);
 
-    QString getInvoiceNum();
-    QString getInvoiceNet();
-    QString getInvoiceSum();
+    void registerMandatoryField(QLineEdit* le, const QString& regexp = "");
+    void unregisterMandatoryField(QLineEdit* le);
 
-  signals:
+signals:
+    void hasAcceptableInput(bool);
 
-  public slots:
-    virtual void accept(bool);
-    void setOkButtonEnabled(bool isAccptableInput);
+private slots:
+    void checkLineEdits();
 
+private:
+    QList<QLineEdit*> _mandatoryFields;
 
-  private:
-    Ui::R2BDialog *ui;
-    QString invoiceNum;
-    QString invoiceNet;
-    QString invoiceSum;
 };
 
-#endif // R2BDIALOG_H
+#endif // QRKDIALOG_H

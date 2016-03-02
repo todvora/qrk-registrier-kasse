@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     utils/utils.cpp \
     import/filewatcher.cpp \
     import/import.cpp \
-    utils/demomode.cpp
+    utils/demomode.cpp \
+    qrkdialog.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -77,7 +78,8 @@ HEADERS  += \
     utils/utils.h \
     import/filewatcher.h \
     import/import.h \
-    utils/demomode.h
+    utils/demomode.h \
+    qrkdialog.h
 
 FORMS += \
     ui/qrk.ui \

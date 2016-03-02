@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>261</height>
+    <height>269</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -197,6 +197,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>invoiceNum</tabstop>
+  <tabstop>invoiceNet</tabstop>
+  <tabstop>invoiceSum</tabstop>
+  <tabstop>pushButton</tabstop>
+ </tabstops>
  <resources>
   <include location="../qrk.qrc"/>
  </resources>
