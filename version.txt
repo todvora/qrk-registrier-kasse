@@ -17,12 +17,12 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.02??
+VERSION 0.16.0306
  * fix payedBy im ServerBetrieb
  * fix wenn im KassenMode in einer Zeile ein bestehender Produktname geändert wurde wurde dieser
    Artikel am BON nicht gedruckt. (Fehlende Position)
- * R2B Eingabefelder sind jetzt Pflichtfelder. Solange nicgt alle Felder ausgefüllt sind
-   bleibt der OK Button disabled
+ * R2B Eingabefelder sind jetzt Pflichtfelder. Solange nicht alle Felder ausgefüllt sind
+   bleibt der OK Button deaktiviert
  + beim Aktivieren des Servermodes wird auf Schreibberechtigung geprüft
  + Fusion Style wird für Linux und Windows verwendet
  + ServerBetrieb -> Kundentext wurde als optionaler Parameter in die JSON Datei aufgenommen
