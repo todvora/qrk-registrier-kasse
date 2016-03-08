@@ -17,6 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0308
+ * Beim verlassen des Demomodes wurden die Reports nicht gelöscht.
+ + Beim starten des Servermodes wird gleich gescannt ob es Imports gibt.
+
 VERSION 0.16.0306
  * fix payedBy im ServerBetrieb
  * fix wenn im KassenMode in einer Zeile ein bestehender Produktname geändert wurde wurde dieser

@@ -199,6 +199,14 @@ void QRKHome::serverModeCheckBox_clicked(bool checked)
   if (checked) {
       if (Utils::isDirectoryWritable(watcherpath)) {
           watcher.addPath(watcherpath);
+          /* create and remove file
+           * to scan at servermode startup
+           */
+          QFile f(watcherpath + "/scan");
+          f.open(QFile::WriteOnly);
+          f.putChar('s');
+          f.close();
+          f.remove();
       } else {
           QMessageBox::warning(this,tr("Fehler"),tr("Import Verzeichnis %1 ist nicht beschreibbar.").arg(watcherpath),QMessageBox::Ok);
           ui->serverModeCheckBox->setChecked(false);

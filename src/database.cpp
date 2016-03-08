@@ -784,6 +784,12 @@ void Database::resetAllData()
   q.prepare("DELETE FROM 'receipts';");
   q.exec();
 
+  q.prepare("DELETE FROM 'reports';");
+  q.exec();
+
+  q.prepare("DELETE FROM 'products' WHERE `group`=1;");
+  q.exec();
+
   q.prepare("UPDATE globals SET value = 0 WHERE name = 'lastReceiptNum';");
   q.exec();
 
