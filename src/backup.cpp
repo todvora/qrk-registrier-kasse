@@ -25,6 +25,25 @@ void Backup::create()
 
 }
 
+void Backup::pakLogFile()
+{
+
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+  QString backupDir = settings.value("backupDirectory", qApp->applicationDirPath()).toString();
+
+  QString infile = QString("%1/%2-QRK.db").arg(qApp->applicationDirPath() + "/qrk.log");
+
+  QString outfile = QString("%1/qrk_log_%2.zip").arg(backupDir).arg(QDateTime::currentDateTime().toString("yyyyMMdd-hhmmss"));
+
+  qDebug() << "Backup::pakLogFile infilefile: " << infile;
+  qDebug() << "Backup::pakLogFile outfilefile: " << outfile;
+
+  bool ok = JlCompress::compressFile( outfile, infile );
+  if (!ok)
+    qDebug() << "JlCompress::compressFile:" << ok;
+
+}
+
 void Backup::cleanUp()
 {
   removeDir("./imageformats");

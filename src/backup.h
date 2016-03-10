@@ -7,6 +7,7 @@ class Backup
 {
   public:
     static void create();
+    static void pakLogFile();
     static void cleanUp();
 
   private:

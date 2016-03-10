@@ -29,6 +29,7 @@ void FileWatcher::directoryChanged(const QString &str)
 
 void FileWatcher::appendQueue(QString path)
 {
+    qDebug() << "FileWatcher::appendQueue EVENT: " << path;
     QDir directory;
 
     directory.setPath(path);
@@ -41,7 +42,7 @@ void FileWatcher::appendQueue(QString path)
 void FileWatcher::fileAdded()
 {
     Q_FOREACH(QFileInfo fileinfo, list)
-        qDebug() << "FileWatcher::appendQueue: " << fileinfo.absoluteFilePath();
+    qDebug() << "FileWatcher::fileAdded: " << fileinfo.absoluteFilePath();
 
     // emit addToQueue(list);
     import = new Import(this);

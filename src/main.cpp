@@ -21,6 +21,7 @@
 #include "settingsdialog.h"
 #include "fvupdater.h"
 #include "utils/demomode.h"
+#include "backup.h"
 
 #include "defines.h"
 #include "database.h"
@@ -45,19 +46,22 @@ void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString
     QString txt;
     switch (type) {
     case QtDebugMsg:
-        txt = QString("%1 Debug: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+        txt = QString("%1 %2 Debug: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
     case QtWarningMsg:
-        txt = QString("%1 Warning: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+        txt = QString("%1 %2 Warning: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
     break;
     case QtCriticalMsg:
-        txt = QString("%1 Critical: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+        txt = QString("%1 %2 Critical: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
     break;
     case QtFatalMsg:
-        txt = QString("%1 Fatal: %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(str);
+        txt = QString("%1 %2 Fatal: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
     break;
     }
     QFile outFile(qApp->applicationDirPath() + "/qrk.log");
+    if (outFile.size() > 20000000) /*20 Mega*/
+        Backup::pakLogFile();
+
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
     ts << txt.simplified() << endl;
