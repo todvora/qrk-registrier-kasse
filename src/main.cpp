@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 
   // Set feed URL before doing anything else
   FvUpdater::sharedUpdater()->SetFeedURL("http://service.ckvsoft.at/swupdates/Appcast.xml");
-  FvUpdater::sharedUpdater()->setRequiredSslFingerPrint("d7e0f2fc899f5ec4456300c7061ff1da");	// Optional
+  FvUpdater::sharedUpdater()->setRequiredSslFingerPrint("c3b038cb348c7d06328579fb950a48eb");	// Optional
   FvUpdater::sharedUpdater()->setHtAuthCredentials("swupdates", "updatepw");	// Optional
   FvUpdater::sharedUpdater()->setSkipVersionAllowed(true);	// Optional
   FvUpdater::sharedUpdater()->setRemindLaterAllowed(true);	// Optional
