@@ -557,6 +557,7 @@ void QRKRegister::newOrder()
     QStringList list = Database::getLastReceipt();
 
     ui->headerText->clear();
+    ui->receiptToInvoice->setEnabled(true);
 
     if (!list.empty()) {
         QString date = list.takeAt(0);
@@ -692,6 +693,7 @@ QJsonObject QRKRegister::compileData(int id)
     Root["headerText"] = getHeaderText();
     Root["totallyup"] = (totallyup)? "Nachbonierung":"";
     Root["comment"] = (id > 0)? tr("Storno für Beleg Nr: %1").arg(id):settings.value("receiptPrinterHeading", "KASSABON").toString();
+    Root["isStorno"] = (id > 0);
     Root["receiptNum"] = receiptNum;
     Root["receiptTime"] = receiptTime.toString(Qt::ISODate);
     Root["currentRegisterYear"] = QDate::currentDate().year();
@@ -707,6 +709,7 @@ QJsonObject QRKRegister::compileData(int id)
         double singlePrice = orders.value(2).toDouble();
         double gross = singlePrice * count;
         double tax = orders.value(3).toDouble();
+        // double net = gross / (1.0 + tax / 100.0);
 
         sum += gross;
 
@@ -724,7 +727,9 @@ QJsonObject QRKRegister::compileData(int id)
         Orders.append(order);
 
         QString taxType = Database::getTaxType(tax);
-        Root[taxType] = Root[taxType].toDouble() + gross;
+        Root[taxType] = Root[taxType].toDouble() + gross; /* last Info: we need GROSS :)*/
+        // Root[taxType] = Root[taxType].toDouble() + net; /* need NET for DEP*/
+
     }
 
     QJsonArray Taxes;
@@ -741,7 +746,6 @@ QJsonObject QRKRegister::compileData(int id)
     Root["sum"] = sum;
     Root["sumYear"] = sumYear;
     Root["positions"] = positions;
-    //  Root["positionsText"] = tr("Anzahl verkaufter Produkte oder Leistungen: %1").arg(positions);
     Root["Taxes"] = Taxes;
     Root["taxesCount"] = taxes.count();
 

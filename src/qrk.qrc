@@ -55,5 +55,6 @@
         <file>sql/QRK-sqlite-update-8.sql</file>
         <file>sql/QRK-mysql-update-9.sql</file>
         <file>sql/QRK-sqlite-update-9.sql</file>
+        <file>font/ocra.ttf</file>
     </qresource>
 </RCC>

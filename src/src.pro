@@ -45,7 +45,8 @@ SOURCES += main.cpp\
     import/filewatcher.cpp \
     import/import.cpp \
     utils/demomode.cpp \
-    qrkdialog.cpp
+    qrkdialog.cpp \
+    utils/qrcode.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -79,7 +80,8 @@ HEADERS  += \
     import/filewatcher.h \
     import/import.h \
     utils/demomode.h \
-    qrkdialog.h
+    qrkdialog.h \
+    utils/qrcode.h
 
 FORMS += \
     ui/qrk.ui \
@@ -115,6 +117,10 @@ TRANSLATIONS += tr/QRK_en.ts \
 
 # LIBS += -lqrencode
 # LIBS += -lpthread
+win32:INCLUDEPATH += $$PWD/QRencode-dll-mingw/
+win32:LIBS += $$PWD/QRencode-dll-mingw/libqrencode.a
+unix:LIBS  += -lqrencode
+
 LIBS += -lcryptopp
 LIBS += -lz
-CONFIG += static
+# CONFIG += static

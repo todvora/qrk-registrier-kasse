@@ -33,9 +33,10 @@ class Utils
     static qlonglong getTurnOverCounter();
     static void updateTurnOverCounter(qlonglong);
     static bool isDirectoryWritable(QString path);
+    static QString getReceiptSignature(int id);
+    static QString getLastReceiptSignature();
 
   private:
-    static QString getLastReceiptSignature();
 
 };
 

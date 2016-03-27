@@ -56,18 +56,27 @@ QString Utils::getSignature(QJsonObject data)
   q.exec();
   double counter = 0.00;
   while(q.next()){
-    double gross = data.value(Database::getTaxType(q.value(0).toDouble())).toDouble();
+    /*
+     * we need GROSS
+     * double gross = data.value(Database::getTaxType(q.value(0).toDouble())).toDouble();
+     * double tax = q.value(0).toDouble();
+     * double net = gross / (1.0 + tax / 100.0);
+    */
+
     double tax = q.value(0).toDouble();
-    double net = gross / (1.0 + tax / 100.0);
-    sign[Database::getTaxType( tax )] = QString::number( net , 'f', 2);
-    /* check if this is a R2B we need the NET for the TurnoverCounter*/
-    if (!data.value("isR2B").toBool(false))
-        counter += net;
+    double gross = data.value(Database::getTaxType(q.value(0).toDouble())).toDouble();
+
+    sign[Database::getTaxType( tax )] = QString::number( gross , 'f', 2);
+    /* check if this is a R2B we need the xxxNETxxx now GROSS for the TurnoverCounter*/
+    // if (!data.value("isR2B").toBool(false))
+        counter += gross;
   }
 
-  /* check if this is a R2B we need the NET for the TurnoverCounter*/
+  /* check if this is a R2B we need the xxxNETxxx now GROSS for the TurnoverCounter*/
+  /*
   if (data.value("isR2B").toBool(false))
       counter += data.value("R2BNet").toDouble(0);
+  */
 
   QString concatenatedValue = sign["Kassen-ID"].toString() + sign["Belegnummer"].toString();
 
@@ -78,7 +87,10 @@ QString Utils::getSignature(QJsonObject data)
   QString base64encryptedTurnOverCounter = AESUtil::encryptTurnoverCounter(concatenatedValue, turnOverCounter, symmetricKey);
   // qlonglong decryptedTurnoverCounter = AESUtil::decryptTurnoverCounter(concatenatedValue, encrypted, AESUtil::getPrivateKey());
 
-  sign["Stand-Umsatz-Zaehler-AES256-ICM"] = base64encryptedTurnOverCounter;
+  if (data.value("isStorno").toBool(false))
+    sign["Stand-Umsatz-Zaehler-AES256-ICM"] = "U1RP";
+  else
+    sign["Stand-Umsatz-Zaehler-AES256-ICM"] = base64encryptedTurnOverCounter;
 
   QString ls = getLastReceiptSignature();
 
@@ -101,14 +113,18 @@ return "_" + rkSuite.getSuiteID() + "_" + cashBoxID + "_" + receiptIdentifier.
 + "_" + encryptedTurnoverValue + "_" + signatureCertificateSerialNumber + "_" + signatureValuePreviousReceipt;
 */
 
-
 QString Utils::getLastReceiptSignature()
+{
+  int lastReceiptId = Database::getLastReceiptNum() - 1;
+  return AESUtil::sigReceipt(getReceiptSignature(lastReceiptId));
+}
+
+QString Utils::getReceiptSignature(int id)
 {
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
 
-  int lastReceiptId = Database::getLastReceiptNum() - 1;
-  int ok = q.prepare(QString("SELECT signature FROM receipts WHERE receiptNum=%1").arg(lastReceiptId));
+  int ok = q.prepare(QString("SELECT signature FROM receipts WHERE receiptNum=%1").arg(id));
   if (!ok)
     qDebug() << "Utils select signature error: " << q.lastError().text();
 
@@ -132,15 +148,15 @@ QString Utils::getLastReceiptSignature()
       sign.append( "_" );
       sign.append( sig.value("Beleg-Datum-Uhrzeit").toString() );
       sign.append( "_" );
-      sign.append( QString::number(sig.value("Normal").toDouble(),'f',2).replace(".",","));
+      sign.append( sig.value("Satz-Normal").toString().replace(".",","));
       sign.append( "_" );
-      sign.append( QString::number(sig.value("Ermaessigt1").toDouble(),'f',2).replace(".",","));
+      sign.append( sig.value("Satz-Ermaessigt-1").toString().replace(".",","));
       sign.append( "_" );
-      sign.append( QString::number(sig.value("Ermaessigt2").toDouble(),'f',2).replace(".",","));
+      sign.append( sig.value("Satz-Ermaessigt-2").toString().replace(".",","));
       sign.append( "_" );
-      sign.append( QString::number(sig.value("Null").toDouble(),'f',2).replace(".",","));
+      sign.append( sig.value("Satz-Null").toString().replace(".",","));
       sign.append( "_" );
-      sign.append( QString::number(sig.value("Besonders").toDouble(),'f',2).replace(".",","));
+      sign.append( sig.value("Satz-Besonders").toString().replace(".",","));
       sign.append( "_" );
       sign.append( sig.value("Stand-Umsatz-Zaehler-AES256-ICM").toString() );
       sign.append( "_" );
@@ -148,13 +164,13 @@ QString Utils::getLastReceiptSignature()
       sign.append( "_" );
       sign.append( sig.value("Sig-Voriger-Beleg").toString() );
 
-      return AESUtil::sigLastReceipt(sign);
+      return sign;
 
     }
 
   }
 
-  return AESUtil::sigLastReceipt(Database::getCashRegisterId());
+  return Database::getCashRegisterId();
 
 }
 

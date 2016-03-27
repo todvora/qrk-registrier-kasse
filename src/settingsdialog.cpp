@@ -127,6 +127,8 @@ SignaturTab::SignaturTab(QSettings &s, QWidget *parent)
   : QWidget(parent)
 {
 
+  Q_UNUSED(s);
+
   mobileCombo = new QComboBox();
   mobileCombo->addItem("A-Trust Mobile");
 

@@ -97,7 +97,7 @@ QString AESUtil::decryptTurnoverCounter( QString concatenated, QString encodedTu
 /// \param value
 /// \return
 ///
-QString AESUtil::sigLastReceipt(QString value)
+QString AESUtil::sigReceipt(QString value)
 {
   QString hashValue = HashValue(value);
   QString sig = base64_encode(hashValue);

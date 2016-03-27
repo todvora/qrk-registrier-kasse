@@ -32,7 +32,7 @@ class AESUtil
 
     static QString encryptTurnoverCounter(QString concatenated, qlonglong turnoverCounter, QString symmetricKey);
     static QString decryptTurnoverCounter(QString concatenated, QString encryptedTurnoverCounter, QString symmetricKey);
-    static QString sigLastReceipt(QString);
+    static QString sigReceipt(QString);
     static QString generateKey();
 
     static void test();

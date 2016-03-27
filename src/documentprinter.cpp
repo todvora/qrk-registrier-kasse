@@ -19,6 +19,8 @@
 
 #include "documentprinter.h"
 #include "database.h"
+#include "utils/utils.h"
+#include "utils/qrcode.h"
 
 #include <QSettings>
 #include <QJsonObject>
@@ -426,6 +428,16 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
     painter.drawText(0, y, WIDTH, headerTextHeight, Qt::AlignCenter, printFooter);
     y += 5 + headerTextHeight + 4;
   }
+
+    QString sign = Utils::getReceiptSignature(data.value("receiptNum").toInt());
+    QRCode *qr = new QRCode;
+    QPixmap QR = qr->encodeTextToPixmap(sign);
+    delete qr;
+
+  if (QR.width() > printer.pageRect().width())
+    QR =  QR.scaled(printer.pageRect().width(), printer.pageRect().height(), Qt::KeepAspectRatio);
+
+  painter.drawPixmap((WIDTH / 2) - (QR.width()/2) - 1, y, QR);
 
   painter.end();
 
