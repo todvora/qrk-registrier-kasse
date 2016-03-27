@@ -466,7 +466,7 @@ QString Database::getShopMasterData()
 
 bool Database::open(bool dbSelect)
 {
-    const int CURRENT_SCHEMA_VERSION = 9;
+    const int CURRENT_SCHEMA_VERSION = 10;
   // read global defintions (DB, ...)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 

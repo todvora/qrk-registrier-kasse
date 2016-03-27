@@ -19,6 +19,8 @@
 
 To Do Liste:
 
+erledigt    QR-Code für 2017 (VERSION 0.16.0327)
+erledigt    AES256 für 2017 (VERSION 0.16.0327)
 erledigt    Kundentext bei Dokumenten anzeigen (VERSION 0.16.0222)
 erledigt    Dokumente - Filter über alle Felder (VERSION 0.16.0222)
             Wird mit Spaltensortierung ausgewählt
@@ -64,7 +66,5 @@ erledigt    Bon zu beleg 2-zeilig Drucken           (VERSION 0.15.1231)
 
 offen       Mehrzeilige Produktzeile bei der Eingabe
 offen       Grössere Buttons für Touch (bitte nur wahlweise wegen kleinem Bildschirm)
-offen       QR-Code für 2017
-offen       AES256 für 2017
 offen       Cardreader Support
 offen       DEP Export (JSONFormat)

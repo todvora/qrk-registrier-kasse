@@ -17,6 +17,15 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0327
+ + QRCode wird jetzt erstellt und am BON gedruckt
+ * Diverse Fixes und Code Cleanups
+ * Der Summenzähler wurde von NET auf GROSS (Netto auf Brutto) umgestellt.
+ * Anpassung der Steuersätze Österreich (20%, 10%, 13%, 19%, 0%)
+   Steuersatz 12% wurde entfernt. Die wurden durch die 13% ersetzt und als
+   Steuersatz-Besonders wurden die neuen 19% aufgenommen.
+
+
 VERSION 0.16.0308
  * Beim verlassen des Demomodes wurden die Reports nicht gelöscht.
  + Beim starten des Servermodes wird gleich gescannt ob es Imports gibt.
