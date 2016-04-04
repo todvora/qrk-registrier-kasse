@@ -382,8 +382,6 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
     int receiptNum = Database::getLastReceiptNum();
     bool ok = false;
     receiptNum++;
-    if (isReport && id != receiptNum)
-        qDebug() << "QRKRegister::finishReceipts Report id != receiptNum";
 
     currentReceipt = receiptNum;
     ok = query.exec(QString("UPDATE globals SET value=%1 WHERE name='lastReceiptNum'").arg(receiptNum));

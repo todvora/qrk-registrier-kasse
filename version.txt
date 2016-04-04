@@ -17,14 +17,21 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.0327
- + QRCode wird jetzt erstellt und am BON gedruckt
+VERSION 0.16.0404
+ + QRCode wird jetzt erstellt und am BON gedruckt (Noch ohne Signatureinheit!)
+ + Manager Gruppenfilter hinzugefügt
  * Diverse Fixes und Code Cleanups
  * Der Summenzähler wurde von NET auf GROSS (Netto auf Brutto) umgestellt.
  * Anpassung der Steuersätze Österreich (20%, 10%, 13%, 19%, 0%)
    Steuersatz 12% wurde entfernt. Die wurden durch die 13% ersetzt und als
    Steuersatz-Besonders wurden die neuen 19% aufgenommen.
-
+ * Fix Kunden Zusatztext wurde bei Kopie nicht gedruckt
+ * Gruppen und Produkt Manager Die Größe der Felder kann manuel geändert werden
+ * Produkt Manager Anzahl der Felder wurde reduziert (Preis/Mwst)
+ * Manager Design wurde angepasst
+ * Tages/Monatsabschluß Wenn ein Artikel mehrmals verkauft wird und der Preis nicht der
+   gleiche ist wird das jetzt erkannt und extra aufgeschlüsselt.
+   (Zb. Es wurde der Tages oder Kundenpreis händisch geändert)
 
 VERSION 0.16.0308
  * Beim verlassen des Demomodes wurden die Reports nicht gelöscht.

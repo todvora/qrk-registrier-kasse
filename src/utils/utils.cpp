@@ -85,7 +85,6 @@ QString Utils::getSignature(QJsonObject data)
   updateTurnOverCounter(turnOverCounter);
   QString symmetricKey = AESUtil::getPrivateKey();
   QString base64encryptedTurnOverCounter = AESUtil::encryptTurnoverCounter(concatenatedValue, turnOverCounter, symmetricKey);
-  // qlonglong decryptedTurnoverCounter = AESUtil::decryptTurnoverCounter(concatenatedValue, encrypted, AESUtil::getPrivateKey());
 
   if (data.value("isStorno").toBool(false))
     sign["Stand-Umsatz-Zaehler-AES256-ICM"] = "U1RP";
@@ -100,9 +99,7 @@ QString Utils::getSignature(QJsonObject data)
   QJsonDocument doc(sign);
   QByteArray bytes = doc.toJson(doc.Compact);
 
-//  qDebug() << "Utils::getSignature: " << QString::fromStdString( bytes.toStdString() );
-
-  return QString::fromStdString( bytes.toStdString() );
+  return bytes;
 }
 
 /*
@@ -134,14 +131,14 @@ QString Utils::getReceiptSignature(int id)
   {
 
     // RK Suite defined in Detailspezifikation/ABS 2
-    // R1_AT0("1", "AT0", "ES256", "SHA-256", 8);
+    // R1_AT100("1", "AT100", "ES256", "SHA-256", 8);
     QString s = q.value(0).toString();
     QJsonDocument doc = QJsonDocument::fromJson(s.toUtf8());
 
     if(doc.isObject())
     {
       QJsonObject sig = doc.object();
-      QString sign = "_R1_AT0_";
+      QString sign = "_R1_AT100_";
       sign.append( sig.value("Kassen-ID").toString() );
       sign.append( "_" );
       sign.append( sig.value("Belegnummer").toString() );

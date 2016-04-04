@@ -55,7 +55,7 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   model->setHeaderData(model->fieldIndex("gross"), Qt::Horizontal, tr("Preis"), Qt::DisplayRole);
   model->setHeaderData(5, Qt::Horizontal, tr("Gruppe"), Qt::DisplayRole);
   model->setHeaderData(model->fieldIndex("visible"), Qt::Horizontal, tr("sichtbar"), Qt::DisplayRole);
-  model->setHeaderData(model->fieldIndex("tax"), Qt::Horizontal, tr("MWSt"), Qt::DisplayRole);
+  model->setHeaderData(model->fieldIndex("tax"), Qt::Horizontal, tr("MwSt"), Qt::DisplayRole);
 
   proxyModel = new QSortFilterProxyModel(this);
   proxyModel->setSourceModel(model);
@@ -68,14 +68,20 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   ui->tableView->setColumnHidden(model->fieldIndex("sold"), true);
   ui->tableView->setColumnHidden(model->fieldIndex("net"), true);
   ui->tableView->setColumnHidden(model->fieldIndex("completer"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("color"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("button"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("image"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("tax"), true);
+  ui->tableView->setColumnHidden(model->fieldIndex("gross"), true);
 
-  ui->tableView->setItemDelegateForColumn(model->fieldIndex("gross"), new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
-  ui->tableView->setItemDelegateForColumn(model->fieldIndex("tax"), new QrkDelegate (QrkDelegate::COMBO_TAX, this));
+//  ui->tableView->setItemDelegateForColumn(model->fieldIndex("gross"), new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
+//  ui->tableView->setItemDelegateForColumn(model->fieldIndex("tax"), new QrkDelegate (QrkDelegate::COMBO_TAX, this));
 
   ui->tableView->setAlternatingRowColors(true);
   ui->tableView->resizeColumnsToContents();
+  ui->tableView->horizontalHeader()->setStretchLastSection(true);
 
-  ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+//  ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 }
 
 //--------------------------------------------------------------------------------

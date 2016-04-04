@@ -410,9 +410,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     data["receiptNum"] = id;
     data["receiptTime"] = to.toString(Qt::ISODate);
 
-    // in arbeit ...
-    //    QString signature = Utils::getSignature(data);
-    QString signature = "";
+    QString signature = Utils::getSignature(data);
 
     query = QString("UPDATE receipts SET gross=%1, timestamp='%2', signature='%3' WHERE receiptNum=%4")
         .arg(QString::number(q.value(0).toDouble(),'f',2))
@@ -430,7 +428,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   stat.append(QString("%1: %2").arg(type).arg(sales));
   stat.append("=");
 
-  query = QString("SELECT sum(orders.count) AS count, products.name, orders.gross, sum(orders.count * orders.gross) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN '%1' AND '%2' GROUP BY products.name ORDER BY orders.tax, products.name ASC").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
+  query = QString("SELECT sum(orders.count) AS count, products.name, orders.gross, sum(orders.count * orders.gross) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN '%1' AND '%2' GROUP BY products.name, orders.gross ORDER BY orders.tax, products.name ASC").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
   q.exec(query);
 
   stat.append(tr("Verkaufte Produkte oder Leistungen (Gruppiert) Gesamt: %1").arg(QString::number(sumProducts,'f',2).replace(".",",")));
@@ -705,7 +703,7 @@ bool Reports::endOfMonth()
     if (canCreateEOM) {
       QRKRegister *reg = new QRKRegister(pb);
       currentReceipt =  reg->createReceipts();
-      reg->finishReceipts(4, currentReceipt, true);
+      reg->finishReceipts(4, 0, true);
       createEOM(currentReceipt, checkdate.date());
     } else {
       QDate next = QDate::currentDate();
@@ -729,7 +727,7 @@ bool Reports::doEndOfDay(QDate date)
   Backup::create();
   QRKRegister *reg = new QRKRegister(pb);
   currentReceipt = reg->createReceipts();
-  reg->finishReceipts(3, currentReceipt, true);
+  reg->finishReceipts(3, 0, true);
   createEOD(currentReceipt, date);
   return true;
 }

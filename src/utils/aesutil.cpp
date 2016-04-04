@@ -276,6 +276,16 @@ QByteArray AESUtil::base64_encode(QString str)
   return QByteArray::fromStdString(encoded).simplified();
 }
 
+QByteArray AESUtil::base64Url_encode(QString str)
+{
+  string decoded = str.toStdString();
+  string encoded;
+
+  // StringSource ss(decoded, true, new Base64URLEncoder(new StringSink(encoded)));
+
+  return QByteArray::fromStdString(encoded).simplified();
+}
+
 ///
 /// \brief AESUtil::base32_decode
 /// \param str

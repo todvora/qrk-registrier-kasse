@@ -22,6 +22,7 @@
 
 #include <QSqlTableModel>
 #include <QSqlQuery>
+#include <QSortFilterProxyModel>
 #include <QSqlError>
 #include <QMessageBox>
 #include <QHeaderView>
@@ -39,6 +40,7 @@ GroupsWidget::GroupsWidget(QWidget *parent)
   connect(ui->plus, SIGNAL(clicked()), this, SLOT(plusSlot()));
   connect(ui->minus, SIGNAL(clicked()), this, SLOT(minusSlot()));
   connect(ui->edit, SIGNAL(clicked()), this, SLOT(editSlot()));
+  connect(ui->groupFilter, SIGNAL(textChanged(const QString &)), this, SLOT(filterGroup(const QString &)));
 
   model = new QSqlTableModel(this, dbc);
   model->setTable("groups");
@@ -49,8 +51,13 @@ GroupsWidget::GroupsWidget(QWidget *parent)
   model->setHeaderData(model->fieldIndex("name"), Qt::Horizontal, tr("Gruppe"), Qt::DisplayRole);
   model->setHeaderData(model->fieldIndex("visible"), Qt::Horizontal, tr("sichtbar"), Qt::DisplayRole);
 
-//  ui.tableView->setItemDelegate(new TouchDelegate(ui.tableView));
-  ui->tableView->setModel(model);
+  proxyModel = new QSortFilterProxyModel(this);
+  proxyModel->setSourceModel(model);
+  proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  proxyModel->setFilterKeyColumn(model->fieldIndex("name"));
+
+//  ui->tableView->setModel(model);
+  ui->tableView->setModel(proxyModel);
   ui->tableView->setSortingEnabled(true);
   ui->tableView->setColumnHidden(model->fieldIndex("id"), true);
   ui->tableView->setColumnWidth(model->fieldIndex("name"), 250);
@@ -60,8 +67,22 @@ GroupsWidget::GroupsWidget(QWidget *parent)
 
   ui->tableView->setAlternatingRowColors(true);
   ui->tableView->resizeColumnsToContents();
-  ui->tableView->horizontalHeader()->setSectionResizeMode(model->fieldIndex("name"), QHeaderView::Stretch);
+//  ui->tableView->horizontalHeader()->setSectionResizeMode(model->fieldIndex("name"), QHeaderView::Stretch);
+  ui->tableView->horizontalHeader()->setStretchLastSection(true);
 
+}
+
+//--------------------------------------------------------------------------------
+
+void GroupsWidget::filterGroup(const QString &filter)
+{
+  // show only matching items
+
+  proxyModel->setFilterWildcard("*" + filter + "*");
+
+  model->fetchMore();  // else the list is not filled with all possible rows
+                       // e.g. when using mouse wheel it would fetch more items
+                       // but on the WeTab we have no mouse
 }
 
 //--------------------------------------------------------------------------------
@@ -78,25 +99,7 @@ void GroupsWidget::plusSlot()
 
 void GroupsWidget::minusSlot()
 {
-  /*  ... this is for multi selection
-  QModelIndexList selected = ui.tableView->selectionModel()->selectedIndexes();
-  QMap<int, bool> rows;  // we need a row only once
-  for (int i = 0; i < selected.count(); i++)
-    rows[selected[i].row()] = true;
-
-  QList<int> selectedRows = rows.keys();
-
-  for (int i = 0; i < selectedRows.count(); i++)
-  {
-    if ( !model->removeRow(selectedRows[i]) )
-    {
-      QMessageBox::information(this, tr("Löschen nicht möglich"),
-          tr("Gruppe %1 kann nicht gelöscht werden, da sie noch in Verwendung ist")
-             .arg(model->data(model->index(selectedRows[i], 1)).toString()));
-    }
-  }
-  */
-  int row = ui->tableView->currentIndex().row();
+  int row = proxyModel->mapToSource(ui->tableView->currentIndex()).row();
   if ( row == -1 )
     return;
 
@@ -119,8 +122,9 @@ void GroupsWidget::minusSlot()
 
 void GroupsWidget::editSlot()
 {
-  QModelIndex current(ui->tableView->currentIndex());
-  int row = ui->tableView->currentIndex().row();
+
+  QModelIndex current(proxyModel->mapToSource(ui->tableView->currentIndex()));
+  int row = current.row();
   if ( row == -1 )
     return;
 

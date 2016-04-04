@@ -3,6 +3,7 @@
 
 #include <QDialog>
 class QSqlTableModel;
+class QSortFilterProxyModel;
 
 #include "ui_groupwidget.h"
 
@@ -18,6 +19,7 @@ class GroupsWidget : public QWidget
     GroupsWidget(QWidget *parent);
 
   private slots:
+    void filterGroup(const QString &filter);
     void plusSlot();
     void minusSlot();
     void editSlot();
@@ -25,6 +27,8 @@ class GroupsWidget : public QWidget
   private:
     Ui::GroupsWidget *ui;
     QSqlTableModel *model;
+    QSortFilterProxyModel *proxyModel;
+
 };
 
 #endif

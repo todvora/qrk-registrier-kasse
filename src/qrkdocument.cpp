@@ -233,7 +233,7 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
     Reports *rep = new Reports(dep, progressBar);
     rep->fixMonth(id);
 
-    QString DocumentTitle = QString("BON_%1_%2").arg(id).arg(payedByText);
+    QString DocumentTitle = QString("BELEG_%1_%2").arg(id).arg(payedByText);
     QTextDocument doc;
     doc.setHtml(Reports::getReport(id));
 
@@ -263,6 +263,7 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
     }
 
     data["isInvoiceCompany"] = isInvoiceCompany;
+    data["headerText"] = Database::getCustomerText(id);
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     DocumentPrinter *p = new DocumentPrinter(this, progressBar);

@@ -43,6 +43,7 @@ class AESUtil
     static QString HashValue(QString);
 
     static QByteArray base64_encode(QString string);
+    static QByteArray base64Url_encode(QString string);
     static QByteArray base64_decode(QString string, bool hex = false);
     static QByteArray base32_encode(QString str);
     static QByteArray base32_decode(QString str);
