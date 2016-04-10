@@ -32,7 +32,6 @@ class R2BDialog : public QRKDialog
     explicit R2BDialog(QWidget *parent = 0);
 
     QString getInvoiceNum();
-    QString getInvoiceNet();
     QString getInvoiceSum();
 
   signals:

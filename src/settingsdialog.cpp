@@ -111,6 +111,7 @@ void SettingsDialog::accept()
   settings.setValue("printCompanyNameBold", receiptprinter->getPrintCompanyNameBold());
   settings.setValue("useReportPrinter", receiptprinter->getUseReportPrinter());
   settings.setValue("logoRight", receiptprinter->getIsLogoRight());
+  settings.setValue("qrcode", receiptprinter->getPrintQRCode());
   settings.setValue("numberCopies", receiptprinter->getNumberCopies());
   settings.setValue("paperWidth", receiptprinter->getpaperWidth());
   settings.setValue("paperHeight", receiptprinter->getpaperHeight());
@@ -671,6 +672,7 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
   printCompanyNameBoldCheck = new QCheckBox();
   useReportPrinterCheck = new QCheckBox();
   useLogoRightCheck = new QCheckBox();
+  printQRCodeCheck = new QCheckBox();
 
   numberCopiesSpin = new QSpinBox();
   numberCopiesSpin->setMinimum(1);
@@ -705,7 +707,8 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
   receiptPrinterLayout->addRow(tr("Drucker:"), receiptPrinterCombo);
   receiptPrinterLayout->addRow(tr("Firmenname Fett drucken:"), printCompanyNameBoldCheck);
   receiptPrinterLayout->addRow("Berichtdrucker für den zweiten Ausdruck verwenden", useReportPrinterCheck);
-  receiptPrinterLayout->addRow("Logo auf der rechten Seite Drucken", useLogoRightCheck);
+  receiptPrinterLayout->addRow("Logo auf der rechten Seite drucken", useLogoRightCheck);
+  receiptPrinterLayout->addRow("QRCode drucken", printQRCodeCheck);
 
   receiptPrinterLayout->addRow(tr("Anzahl Kopien"), numberCopiesSpin);
   receiptPrinterLayout->addRow(tr("Papier Breite [mm]"), paperWidthSpin);
@@ -740,6 +743,8 @@ ReceiptPrinterTab::ReceiptPrinterTab(QSettings &settings, QWidget *parent)
   printCompanyNameBoldCheck->setChecked(settings.value("printCompanyNameBold", true).toBool());
   useReportPrinterCheck->setChecked(settings.value("useReportPrinter", true).toBool());
   useLogoRightCheck->setChecked(settings.value("logoRight", false).toBool());
+  printQRCodeCheck->setChecked(settings.value("qrcode", true).toBool());
+
   numberCopiesSpin->setValue(settings.value("numberCopies", 1).toInt());
   paperWidthSpin->setValue(settings.value("paperWidth", 80).toInt());
   paperHeightSpin->setValue(settings.value("paperHeight", 3000).toInt());
@@ -774,6 +779,11 @@ bool ReceiptPrinterTab::getUseReportPrinter()
 bool ReceiptPrinterTab::getIsLogoRight()
 {
   return useLogoRightCheck->isChecked();
+}
+
+bool ReceiptPrinterTab::getPrintQRCode()
+{
+  return printQRCodeCheck->isChecked();
 }
 
 int ReceiptPrinterTab::getNumberCopies()

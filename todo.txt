@@ -19,7 +19,7 @@
 
 To Do Liste:
 
-erledigt    QR-Code für 2017 (VERSION 0.16.0327)
+erledigt    QR-Code bzw. OCR-Code für 2017 (VERSION 0.16.0327)
 erledigt    AES256 für 2017 (VERSION 0.16.0327)
 erledigt    Kundentext bei Dokumenten anzeigen (VERSION 0.16.0222)
 erledigt    Dokumente - Filter über alle Felder (VERSION 0.16.0222)

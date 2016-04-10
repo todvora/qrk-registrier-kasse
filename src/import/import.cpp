@@ -69,7 +69,7 @@ bool Import::importR2B(QJsonObject data)
   bool ok = false;
   foreach (const QJsonValue & value, r2bArray) {
       QJsonObject obj = value.toObject();
-      ok = obj.contains("gross") && obj.contains("net") && obj.contains("receiptNum") && obj.contains("payedBy");
+      ok = obj.contains("gross") && obj.contains("receiptNum") && obj.contains("payedBy");
       if (ok) {
         QProgressBar *bar = new QProgressBar(0);
         QRKRegister *reg = new QRKRegister(bar);

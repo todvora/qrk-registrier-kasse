@@ -28,9 +28,7 @@ R2BDialog::R2BDialog(QWidget *parent) :
 
   QDoubleValidator *doubleVal = new QDoubleValidator(0.0, 9999999.99, 2, this);
   doubleVal->setNotation(QDoubleValidator::StandardNotation);
-  ui->invoiceNet->setValidator(doubleVal);
   ui->invoiceSum->setValidator(doubleVal);
-  registerMandatoryField(ui->invoiceNet);
   registerMandatoryField(ui->invoiceSum);
   registerMandatoryField(ui->invoiceNum);
   ui->pushButton->setEnabled(false);
@@ -47,7 +45,6 @@ void R2BDialog::setOkButtonEnabled(bool isAccptableInput)
 void R2BDialog::accept(bool)
 {
   invoiceNum = ui->invoiceNum->text();
-  invoiceNet = ui->invoiceNet->text();
   invoiceSum = ui->invoiceSum->text();
   QDialog::accept();
 }
@@ -58,16 +55,6 @@ QString R2BDialog::getInvoiceNum()
     return "Zahlungsbeleg für Rechnung 1 - nicht für den Vorsteuerabzug geeignet";
 
   return QString("Zahlungsbeleg für Rechnung %1 - nicht für den Vorsteuerabzug geeignet" ).arg(invoiceNum);
-}
-
-QString R2BDialog::getInvoiceNet()
-{
-  invoiceNet.replace(',','.');
-  if (invoiceSum.isEmpty())
-    return "0.0";
-
-  QString text = QString::number(invoiceNet.toDouble(),'f',2).toUpper();
-  return text;
 }
 
 QString R2BDialog::getInvoiceSum()

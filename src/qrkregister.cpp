@@ -431,7 +431,6 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
     if (!isReport && isR2B){
         /* R2B. We need NET for the TurnoverCounter*/
         data["isR2B"] = isR2B;
-        data["R2BNet"] = R2BNet;
     }
 
     QString signature = Utils::getSignature(data);
@@ -857,7 +856,6 @@ void QRKRegister::plusSlot()
 
     setButtonGroupEnabled(false);
     isR2B = false;
-    R2BNet = 0.0;
 
     if (orderListModel->rowCount() > 0)
     {
@@ -1066,7 +1064,6 @@ void QRKRegister::receiptToInvoiceSlot()
             orderListModel->item(0, REGISTER_COL_COUNT)->setText( "1" );
             orderListModel->item(0, REGISTER_COL_PRODUCT)->setText( r2b.getInvoiceNum() );
             orderListModel->item(0, REGISTER_COL_TAX)->setText( "0" );
-            R2BNet = r2b.getInvoiceNet().toDouble();
             orderListModel->item(0, REGISTER_COL_SINGLE)->setText( r2b.getInvoiceSum() );
 
             orderListModel->item(0, REGISTER_COL_COUNT)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -1290,7 +1287,6 @@ bool QRKRegister::setR2BServerMode(QJsonObject obj)
   if (!obj.value("customerText").toString().isEmpty())
     ui->headerText->setText(obj.value("customerText").toString());
 
-  R2BNet = obj.value("net").toDouble();
   isR2B = true;
 
   QList<QVariant> list;

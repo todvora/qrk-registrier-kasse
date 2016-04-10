@@ -17,8 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.0404
+VERSION 0.16.0410
  + QRCode wird jetzt erstellt und am BON gedruckt (Noch ohne Signatureinheit!)
+   Einstellbar in den Einstellungen Bon-Drucker. Wenn der QRCode deaktiviert ist
+   wird NUR für Österreich der OCR gedruckt.
  + Manager Gruppenfilter hinzugefügt
  * Diverse Fixes und Code Cleanups
  * Der Summenzähler wurde von NET auf GROSS (Netto auf Brutto) umgestellt.
@@ -32,6 +34,9 @@ VERSION 0.16.0404
  * Tages/Monatsabschluß Wenn ein Artikel mehrmals verkauft wird und der Preis nicht der
    gleiche ist wird das jetzt erkannt und extra aufgeschlüsselt.
    (Zb. Es wurde der Tages oder Kundenpreis händisch geändert)
+ * Fix für kleine (<= 60mm) Bondrucker, Druckdesignänderung für Bondrucker deren Druckbreite
+   kleiner als 60mm ist
+ * Pflichteingabefeld "Netto" bei R2B wurde entfernt
 
 VERSION 0.16.0308
  * Beim verlassen des Demomodes wurden die Reports nicht gelöscht.

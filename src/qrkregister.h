@@ -97,7 +97,6 @@ class QRKRegister : public QWidget
     bool useDecimalQuantity;
     bool useGivenDialog;
     bool isR2B;
-    double R2BNet;
     bool servermode;
     QString currency;
     QString taxlocation;

@@ -44,6 +44,8 @@ class DocumentPrinter : public QObject
     void printI(QJsonObject data, QPrinter &printer);
     QProgressBar *pb;
     bool noPrinter;
+    bool smallPrinter;
+    bool printQRCode;
     int receiptNum;
     bool logoRight;
     int numberCopies;

@@ -141,6 +141,7 @@ class ReceiptPrinterTab : public QWidget
     bool getPrintCompanyNameBold();
     bool getUseReportPrinter();
     bool getIsLogoRight();
+    bool getPrintQRCode();
     int getNumberCopies();
     int getpaperWidth();
     int getpaperHeight();
@@ -156,6 +157,7 @@ class ReceiptPrinterTab : public QWidget
     QCheckBox *printCompanyNameBoldCheck;
     QCheckBox *useReportPrinterCheck;
     QCheckBox *useLogoRightCheck;
+    QCheckBox *printQRCodeCheck;
     QSpinBox *numberCopiesSpin;
     QSpinBox *paperWidthSpin;
     QSpinBox *paperHeightSpin;

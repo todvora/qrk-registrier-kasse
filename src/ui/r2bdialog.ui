@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>269</height>
+    <height>281</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -109,10 +109,10 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
+        <item row="1" column="2">
          <widget class="QLineEdit" name="invoiceSum"/>
         </item>
-        <item row="2" column="1">
+        <item row="1" column="1">
          <widget class="QLabel" name="label_2">
           <property name="font">
            <font>
@@ -125,23 +125,6 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Betrag Netto</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLineEdit" name="invoiceNet">
-          <property name="toolTip">
-           <string extracomment="Netto Betrag für den Summenzähler"/>
           </property>
          </widget>
         </item>
@@ -199,7 +182,6 @@
  </widget>
  <tabstops>
   <tabstop>invoiceNum</tabstop>
-  <tabstop>invoiceNet</tabstop>
   <tabstop>invoiceSum</tabstop>
   <tabstop>pushButton</tabstop>
  </tabstops>
