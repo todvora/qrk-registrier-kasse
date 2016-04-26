@@ -51,8 +51,6 @@ class QrkDelegate : public QStyledItemDelegate
   signals:
 
   private slots:
-    void SpinBoxValueChanged(int val);
-    void SpinBoxValueChanged(double val);
     void commitAndCloseEditor() ;
 
   private:

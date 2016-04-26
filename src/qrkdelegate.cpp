@@ -243,16 +243,6 @@ void QrkDelegate::paint(QPainter *painter, const QStyleOptionViewItem & option, 
   QStyledItemDelegate::paint(painter, option, index);
 }
 
-
-void QrkDelegate::SpinBoxValueChanged(int val)
-{
-}
-
-void QrkDelegate::SpinBoxValueChanged(double val)
-{
-
-}
-
 void QrkDelegate::commitAndCloseEditor()
 {
   if (this->type == COMBO_TAX) {
