@@ -153,17 +153,20 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
   QPainter painter(&printer);
 
-  int id = QFontDatabase::addApplicationFont(":/font/LiberationMono-Regular.ttf");
-  QString family = QFontDatabase::applicationFontFamilies(id).at(0);
-  QFont font(family, fontsize);
+//  int id = QFontDatabase::addApplicationFont(":/font/Oxygen-Sans.ttf");
+//  QString family = QFontDatabase::applicationFontFamilies(id).at(0);
+
+  QFont font("Courier-New", fontsize);
+  // font.setFixedPitch(true);
   painter.setFont(font);
   QFontMetrics fontMetr = painter.fontMetrics();
+  qDebug() << "Font: " << font.family();
 
   QFont grossFont(font);
-  //  grossFont.setFixedPitch(true);
+  grossFont.setFixedPitch(true);
   QFontMetrics grossMetrics(grossFont, &printer);
 
-  QFont boldFont(family, boldsize, QFont::Bold);  // for sum
+  QFont boldFont("Courier-New", boldsize, QFont::Bold);  // for sum
   QFontMetrics boldMetr(boldFont);
 
   QPen pen(Qt::black);
@@ -503,7 +506,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
     painter.drawPixmap((WIDTH / 2) - (QR.width()/2) - 1, y, QR);
 
   } else {
-    if (Database::getTaxLocation() == "AT") {
+    if (Database::getTaxLocation() == "AT" && QDate::currentDate().year() > 2016) {
       y += 5;
       painter.drawLine(0, y, WIDTH, y);
       y += 5;

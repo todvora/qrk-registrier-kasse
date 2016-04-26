@@ -47,7 +47,7 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     spinbox->setMaximum(99999);
     spinbox->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 
-    // connect( spinbox , SIGNAL( valueChanged(int) ), this , SLOT( commitAndCloseEditor() ) ) ;
+    connect( spinbox , SIGNAL( valueChanged(int) ), this , SLOT( commitAndCloseEditor() ) ) ;
 
     return spinbox;
 
@@ -57,7 +57,7 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
       spinbox->setMaximum(99999);
       spinbox->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 
-      // connect( spinbox , SIGNAL( valueChanged(int) ), this , SLOT( commitAndCloseEditor() ) ) ;
+      connect( spinbox , SIGNAL( valueChanged(int) ), this , SLOT( commitAndCloseEditor() ) ) ;
 
       return spinbox;
 
@@ -149,14 +149,12 @@ void QrkDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
   if (this->type == SPINBOX) {
     // Get the value via index of the Model
     int value = index.model()->data(index, Qt::EditRole).toInt();
-
     // Put the value into the SpinBox
     QSpinBox *spinbox = static_cast<QSpinBox*>(editor);
     spinbox->setValue(value);
   } else if (this->type == DOUBLE_SPINBOX) {
       // Get the value via index of the Model
       double value = index.model()->data(index, Qt::EditRole).toDouble();
-
       // Put the value into the SpinBox
       QDoubleSpinBox *spinbox = static_cast<QDoubleSpinBox*>(editor);
       spinbox->setValue(value);
@@ -243,6 +241,16 @@ void QrkDelegate::paint(QPainter *painter, const QStyleOptionViewItem & option, 
   }
 
   QStyledItemDelegate::paint(painter, option, index);
+}
+
+
+void QrkDelegate::SpinBoxValueChanged(int val)
+{
+}
+
+void QrkDelegate::SpinBoxValueChanged(double val)
+{
+
 }
 
 void QrkDelegate::commitAndCloseEditor()

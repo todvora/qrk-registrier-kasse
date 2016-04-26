@@ -786,11 +786,21 @@ void QRKRegister::itemChangedSlot( const QModelIndex& i, const QModelIndex&)
     switch( col )
     {
     case REGISTER_COL_COUNT:
-        sum = s.toDouble() * d2;
-        //        sum = (long)(sum*100+0.5)/100.0;
+        if (s.toDouble() == 0) {
+          sum = 0;
+        } else {
+          sum =  s.toDouble() * d2;
+        }
 
         s = QString("%1").arg(sum);
+        if (s.toDouble() == 0)
+          orderListModel->blockSignals(true);
+
         orderListModel->item(row, REGISTER_COL_TOTAL)->setText( s );
+
+        if (s.toDouble() == 0)
+          orderListModel->blockSignals(false);
+
         break ;
     case REGISTER_COL_TAX:
         net = ui->orderList->model()->data(orderListModel->index(row, REGISTER_COL_NET, QModelIndex())).toDouble();

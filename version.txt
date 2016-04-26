@@ -17,6 +17,18 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+VERSION 0.16.0425
+ * noch kleinerer QR-Code (TEST)
+ * Wenn Artikel Anzahl "0" ist wurde der Einzelpreis durch "nan" ersetzt
+ * Beim auf/ab spinnen der Anzahl wird der Gesamtpreis Aktualisiert
+ * Wenn in den Einstellungen der QR-Code ausgeschalten ist wird vor 2017
+   bzw. vor einer Verwendung der Signatureinheit der OCR-Code nicht gedruckt
+
+
+VERSION 0.16.0411
+ * Fix Font für Bonausdruck
+ * QR-Code etwas kleiner gemacht
+
 VERSION 0.16.0410
  + QRCode wird jetzt erstellt und am BON gedruckt (Noch ohne Signatureinheit!)
    Einstellbar in den Einstellungen Bon-Drucker. Wenn der QRCode deaktiviert ist

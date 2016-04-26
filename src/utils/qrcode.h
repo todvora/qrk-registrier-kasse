@@ -30,7 +30,7 @@ class QRCode : public QObject
   public:
     QRCode(QObject *parent = 0);
     ~QRCode();
-    QPixmap encodeTextToPixmap( QString text, int size = 4, int margin = 3, int ErrCLevel = 0 );
+    QPixmap encodeTextToPixmap( QString text, int size = 2, int margin = 2, int ErrCLevel = 0 );
 
   private:
     QRcode *encode(const unsigned char *intext, int length, QRecLevel level = QR_ECLEVEL_L);

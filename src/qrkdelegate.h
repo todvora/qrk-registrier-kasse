@@ -48,10 +48,11 @@ class QrkDelegate : public QStyledItemDelegate
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex & index) const;
 
 
-
   signals:
 
   private slots:
+    void SpinBoxValueChanged(int val);
+    void SpinBoxValueChanged(double val);
     void commitAndCloseEditor() ;
 
   private:

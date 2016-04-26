@@ -58,6 +58,5 @@
         <file>font/ocra.ttf</file>
         <file>sql/QRK-sqlite-update-10.sql</file>
         <file>sql/QRK-mysql-update-10.sql</file>
-        <file>font/LiberationMono-Regular.ttf</file>
     </qresource>
 </RCC>

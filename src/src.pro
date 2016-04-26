@@ -117,10 +117,8 @@ TRANSLATIONS += tr/QRK_en.ts \
 
 # LIBS += -lqrencode
 # LIBS += -lpthread
-win32:INCLUDEPATH += $$PWD/QRencode-dll-mingw/
-win32:LIBS += $$PWD/QRencode-dll-mingw/libqrencode.a
-unix:LIBS  += -lqrencode
 
+LIBS  += -lqrencode
 LIBS += -lcryptopp
 LIBS += -lz
 # CONFIG += static
