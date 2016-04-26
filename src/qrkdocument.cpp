@@ -38,7 +38,7 @@ QRKDocument::QRKDocument(QProgressBar *progressBar, QWidget *parent)
     ui->cancelDocumentButton->setMinimumWidth(0);
     ui->cancellationButton->setMinimumWidth(0);
     ui->invoiceCompanyPrintcopyButton->setMinimumWidth(0);
-    ui->pushButton_2->setMinimumWidth(0);
+    ui->pushButton_free->setMinimumWidth(0);
   }
 
   connect(ui->cancelDocumentButton, SIGNAL(clicked()), this, SIGNAL(cancelDocumentButton_clicked()));
@@ -88,6 +88,10 @@ void QRKDocument::documentList()
   connect(ui->documentFilterEdit, SIGNAL (textChanged(QString)), documentListModel, SLOT (filter(QString)));
   connect(ui->documentList->selectionModel(), SIGNAL (selectionChanged ( const QItemSelection &, const QItemSelection &)),this, SLOT (onDocumentSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
+  ui->cancellationButton->setEnabled(false);
+  ui->printcopyButton->setEnabled(false);
+  ui->invoiceCompanyPrintcopyButton->setEnabled(false);
+
 }
 
 //----------------SLOTS-----------------------------------------------------------
@@ -111,8 +115,7 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     ui->textBrowser->setHidden(false);
     ui->cancellationButton->setEnabled(false);
     ui->invoiceCompanyPrintcopyButton->setEnabled(false);
-    ui->documentLabel->setText(QString("Beleg Nr: %1\t%2\t%3").arg(receiptNum).arg(payedByText).arg(QString::number(price, 'f', 2)));
-
+    ui->printcopyButton->setEnabled(false);
     ui->textBrowser->setHtml(Reports::getReport(receiptNum));
 
   } else {
@@ -121,6 +124,7 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     ui->textBrowser->setHidden(true);
     ui->cancellationButton->setEnabled(true);;
     ui->invoiceCompanyPrintcopyButton->setEnabled(true);
+    ui->printcopyButton->setEnabled(true);
 
     QString stornoText = "";
     if (Database::getStorno(receiptNum) == 1)
@@ -161,6 +165,9 @@ void QRKDocument::onCancellationButton_clicked()
 
   QModelIndex idx = ui->documentList->currentIndex();
   int row = idx.row();
+  if (row < 0)
+      return;
+
   int id = documentListModel->data(documentListModel->index(row, DOCUMENT_COL_RECEIPT, QModelIndex())).toInt();
 
   int storno = Database::getStorno(id);
@@ -168,7 +175,7 @@ void QRKDocument::onCancellationButton_clicked()
   {
     QString stornoText = "";
     if (storno == 1)
-      stornoText = tr("Beleg mit der Nummer %1 wurde bereits storniert. Siehe Beleg Nr: ").arg(id).arg(Database::getStornoId(id));
+      stornoText = tr("Beleg mit der Nummer %1 wurde bereits storniert. Siehe Beleg Nr: %2").arg(id).arg(Database::getStornoId(id));
     else
       stornoText = tr("Beleg mit der Nummer %1 ist ein Stornobeleg von Beleg Nummer %2 und kann nicht storniert werden. Erstellen Sie einen neuen Kassebon").arg(id).arg(Database::getStornoId(id));
 

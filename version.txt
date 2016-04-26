@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-VERSION 0.16.0425
+VERSION 0.16.0426
  * noch kleinerer QR-Code (TEST)
  * Wenn Artikel Anzahl "0" ist wurde der Einzelpreis durch "nan" ersetzt
  * Beim auf/ab spinnen der Anzahl wird der Gesamtpreis Aktualisiert
