@@ -25,7 +25,7 @@ VERSION 0.16.0502
  * Wenn ein Artikel auf unsichtbar gestellt wurde ist er auch in der Autovervollständigung
    nicht sichtbar. Ist eine Gruppe auf unsichtbar wird diese bei den QuickButtons nicht angezeigt.
    Artikel in dieser Gruppe werden bei der Autovervollständigung angezeigt.
-
+ * fix bei manueller Erstellung von Tages/Monatsabschluss wurde nicht automatisch gedruckt
 
 VERSION 0.16.0427
  * fix Tages/Monatsabschluß aus Dokumenten Modus drucken

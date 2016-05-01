@@ -207,6 +207,7 @@ bool QRK::endOfDaySlot()
   DEP *dep = new DEP(this);
   Reports *rep = new Reports(dep, this->progressBar, this);
   rep->endOfDay();
+  printDocument(rep->getCurrentId(), "Tagesabschluss");
   delete dep;
   delete rep;
   this->progressBar->reset();
@@ -221,6 +222,7 @@ bool QRK::endOfMonthSlot()
   DEP *dep = new DEP(this);
   Reports *rep = new Reports(dep, this->progressBar, this);
   bool ret = rep->endOfMonth();
+  printDocument(rep->getCurrentId(), "Monatsabschluss");
   lastEOD = Reports::getLastEOD();
   delete dep;
   delete rep;
@@ -321,4 +323,15 @@ void QRK::actionLeaveDemoMode()
 void QRK::actionResetDemoData()
 {
   Database::resetAllData();
+}
+
+/*fixme: move this to the right place in future*/
+void QRK::printDocument(int id, QString title)
+{
+  QString DocumentTitle = QString("BON_%1_%2").arg(id).arg(title);
+  QTextDocument doc;
+  doc.setHtml(Reports::getReport(id));
+  DocumentPrinter *p = new DocumentPrinter(this, progressBar);
+  p->printDocument(&doc, DocumentTitle);
+  delete p;
 }

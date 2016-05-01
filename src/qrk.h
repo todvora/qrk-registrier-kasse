@@ -98,6 +98,7 @@ class QRK : public QMainWindow
 
   private:
     Ui::MainWindow *ui;
+    void printDocument(int id, QString title);
 
     QTimer *timer;
 
