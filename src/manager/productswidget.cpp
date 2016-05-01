@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #include "productswidget.h"
 #include "productedit.h"
@@ -45,7 +48,9 @@ ProductsWidget::ProductsWidget(QWidget *parent)
   model = new QSqlRelationalTableModel(this, dbc);
   model->setTable("products");
   model->setRelation(model->fieldIndex("group"), QSqlRelation("groups", "id", "name"));
-  model->setFilter("\"group\" > 1");
+  // model->setFilter("\"group\" > 1");
+  model->setFilter("`group` > 1");
+
   model->setEditStrategy(QSqlTableModel::OnFieldChange);
 //  model->setEditStrategy(QSqlTableModel::OnRowChange);
   model->select();

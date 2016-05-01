@@ -1,26 +1,7 @@
-BEGIN TRANSACTION;
+SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
 
-CREATE TABLE `dep_backup` (
-    `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    `version`           text NOT NULL,
-    `cashregisterid`    int(11) NOT NULL,
-    `datetime`          datetime NOT NULL,
-    `text`              text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO dep_backup SELECT `id`,`version`,`cashregisterid`,`datetime`,`text` FROM `dep`;
-DROP TABLE `dep`;
-
-CREATE TABLE `dep` (
-    `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    `version`           text NOT NULL,
-    `cashregisterid`    text NOT NULL,
-    `datetime`          datetime NOT NULL,
-    `text`              text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO dep SELECT `id`,`version`,`cashregisterid`,`datetime`,`text` FROM `dep_backup`;
-UPDATE dep SET cashregisterid = (SELECT strValue FROM globals WHERE name = 'shopCashRegisterId');
-DROP TABLE `dep_backup`;
-
+SET FOREIGN_KEY_CHECKS=1;
 COMMIT;

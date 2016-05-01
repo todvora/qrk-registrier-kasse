@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #include "documentprinter.h"
 #include "database.h"
@@ -144,12 +147,12 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
   int fontsize = 8;
   int boldsize = 10;
-  /*
+
    if (smallPrinter) {
     fontsize = 6;
     boldsize = 8;
   }
-*/
+
 
   QPainter painter(&printer);
 
@@ -163,7 +166,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   qDebug() << "Font: " << font.family();
 
   QFont grossFont(font);
-  grossFont.setFixedPitch(true);
+  // grossFont.setFixedPitch(true);
   QFontMetrics grossMetrics(grossFont, &printer);
 
   QFont boldFont("Courier-New", boldsize, QFont::Bold);  // for sum

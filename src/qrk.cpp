@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #include "aboutdlg.h"
 #include "qrk.h"
@@ -41,7 +44,9 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QDesktopServices>
 #include <QDebug>
+
 
 //-----------------------------------------------------------------------
 
@@ -88,6 +93,7 @@ QRK::QRK()
   connect(ui->actionDEP_Exportieren, SIGNAL(triggered()), this, SLOT(actionDEP_Export()));
   connect(ui->actionAbout_QRK, SIGNAL(triggered()), this, SLOT(actionAbout_QRK()));
   connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+  connect(ui->actionQRK_Forum, SIGNAL(triggered()), this, SLOT(actionQRK_Forum()));
   connect(ui->actionDEMO_Daten_zur_cksetzen, SIGNAL(triggered()), this, SLOT(actionResetDemoData()));
   connect(ui->actionDEMOMODUS_Verlassen, SIGNAL(triggered()), this, SLOT(actionLeaveDemoMode()));
 
@@ -173,6 +179,13 @@ void QRK::actionAbout_QRK()
   delete dlg;
 }
 
+void QRK::actionQRK_Forum()
+{
+
+  QString link = "http://forum.ckvsoft.at/ubbthreads.php/category/16/QRK_Registrier_Kasse.html";
+  QDesktopServices::openUrl(QUrl(link));
+
+}
 //--------------------------------------------------------------------------------
 
 void QRK::actionDEP_Export()

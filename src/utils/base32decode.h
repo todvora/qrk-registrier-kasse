@@ -3,7 +3,6 @@
  *
  * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
  *
- * Based on Base32 code from Graham Bull.
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -16,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #ifndef BASE32DECODE_H
 #define BASE32DECODE_H

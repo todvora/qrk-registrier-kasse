@@ -15,14 +15,17 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #ifndef DEFINES
 #define DEFINES
 
 #define MIN_HEIGHT 60
 #define QRK_VERSION_MAJOR "0.16"
-#define QRK_VERSION_MINOR "0426"
+#define QRK_VERSION_MINOR "0502"
 
 enum REGISTER_COL
 {

@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #include "qrkregister.h"
 #include "givendialog.h"
@@ -197,7 +200,8 @@ void QRKRegister::quickProductButtons(int id)
     if (query.next())
         bordercolor = (query.value(0).toString() == "")?bordercolor: query.value(0).toString();
 
-    ok = query.prepare(QString("SELECT id, name, gross, color FROM products WHERE \"group\"=%1 AND visible=1").arg(id));
+//    ok = query.prepare(QString("SELECT id, name, gross, color FROM products WHERE \"group\"=%1 AND visible=1").arg(id));
+    ok = query.prepare(QString("SELECT id, name, gross, color FROM products WHERE `group`=%1 AND visible=1").arg(id));
 
     if (!ok)
         qDebug() << "QRKRegister::quickGroupButtons() error: " << query.lastError().text();
@@ -517,7 +521,7 @@ int QRKRegister::createReceipts()
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
 
-    int ok = query.exec(QString("INSERT INTO receipts (`timestamp`) VALUES('%1')")
+    int ok = query.exec(QString("INSERT INTO receipts (timestamp) VALUES('%1')")
                         .arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
     if (!ok)
         qDebug() << "QRK::createReceipts() " << query.lastError().text();

@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #include "qrkdocument.h"
 
@@ -115,7 +118,7 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     ui->textBrowser->setHidden(false);
     ui->cancellationButton->setEnabled(false);
     ui->invoiceCompanyPrintcopyButton->setEnabled(false);
-    ui->printcopyButton->setEnabled(false);
+    ui->printcopyButton->setEnabled(true);
     ui->textBrowser->setHtml(Reports::getReport(receiptNum));
 
   } else {

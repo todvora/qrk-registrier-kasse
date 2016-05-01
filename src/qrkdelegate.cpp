@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #include "qrkdelegate.h"
 #include "database.h"
@@ -83,7 +86,8 @@ QWidget* QrkDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     editor->setPlaceholderText(tr("Artikelname"));
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
-    query.prepare("SELECT name FROM products WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'");
+//    query.prepare("SELECT name FROM products WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'");
+    query.prepare("SELECT name FROM products WHERE visible = 1");
     query.exec();
 
     QStringList* list = new QStringList();

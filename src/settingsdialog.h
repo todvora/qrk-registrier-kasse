@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #ifndef TABDIALOG_H
 #define TABDIALOG_H
@@ -158,6 +161,8 @@ class ReceiptPrinterTab : public QWidget
     QCheckBox *useReportPrinterCheck;
     QCheckBox *useLogoRightCheck;
     QCheckBox *printQRCodeCheck;
+    QSpinBox *fontSizeSpin;
+    QSpinBox *grossFontSpin;
     QSpinBox *numberCopiesSpin;
     QSpinBox *paperWidthSpin;
     QSpinBox *paperHeightSpin;

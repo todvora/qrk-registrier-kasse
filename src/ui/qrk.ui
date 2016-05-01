@@ -37,7 +37,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>27</height>
+     <height>28</height>
     </rect>
    </property>
    <property name="font">
@@ -67,6 +67,8 @@
     </property>
     <addaction name="actionAbout_QRK"/>
     <addaction name="actionAbout_QT"/>
+    <addaction name="separator"/>
+    <addaction name="actionQRK_Forum"/>
    </widget>
    <widget class="QMenu" name="menuDEMOMODUS">
     <property name="title">
@@ -112,12 +114,17 @@
   </action>
   <action name="actionDEMO_Daten_zur_cksetzen">
    <property name="text">
-    <string>DEMO Daten zurücksetzen</string>
+    <string>&amp;DEMO Daten zurücksetzen</string>
    </property>
   </action>
   <action name="actionDEMOMODUS_Verlassen">
    <property name="text">
-    <string>DEMOMODUS Verlassen</string>
+    <string>DEMOMODUS &amp;Verlassen</string>
+   </property>
+  </action>
+  <action name="actionQRK_Forum">
+   <property name="text">
+    <string>QRK Forum</string>
    </property>
   </action>
  </widget>

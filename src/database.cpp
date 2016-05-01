@@ -15,7 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ *
+ * Button Design, and Idea for the Layout are lean out from LillePOS, Copyright 2010, Martin Koller, kollix@aon.at
+ *
+*/
 
 #include "database.h"
 #include "utils/demomode.h"
@@ -234,7 +237,7 @@ bool Database::addCustomerText(int id, QString text)
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
-  QString q = QString("INSERT INTO customer ('receiptNum', 'text') VALUES (%1, '%2')")
+  QString q = QString("INSERT INTO customer (receiptNum, text) VALUES (%1, '%2')")
           .arg(id)
           .arg(text);
 
@@ -307,7 +310,7 @@ bool Database::addProduct(const QList<QVariant> &data)
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery query(dbc);
-  QString q = QString("INSERT INTO products ('name', 'tax', 'net', 'gross', 'visible', 'group') VALUES ('%1', %2, %3, %4, %5, %6)")
+  QString q = QString("INSERT INTO products (name, tax, net, gross, visible, `group`) VALUES ('%1', %2, %3, %4, %5, %6)")
           .arg(data.at(0).toString())
           .arg(data.at(1).toInt())
           .arg(data.at(2).toDouble())
@@ -318,8 +321,8 @@ bool Database::addProduct(const QList<QVariant> &data)
   bool ok = query.prepare(q);
 
   if (!ok) {
-    qDebug() << "Error: " << query.lastError().text();
-    qDebug() << "Query: " << q;
+    qDebug() << "Database::addProduct Error: " << query.lastError().text();
+    qDebug() << "Database::addProduct Query: " << q;
   }
 
   if( query.exec() ){
@@ -533,7 +536,8 @@ bool Database::open(bool dbSelect)
 
   if ( dbType == "QMYSQL" )
   {
-    QSqlQuery query("SHOW DATABASES LIKE 'QRK'");
+    QSqlQuery query(currentConnection);
+    query.exec("SHOW DATABASES LIKE 'QRK'");
     if ( !query.next() )  // db does not exist
       query.exec("CREATE DATABASE QRK");
 
@@ -576,9 +580,9 @@ bool Database::open(bool dbSelect)
     query.exec(QString("INSERT INTO globals (name, value) VALUES('schemaVersion', %1)")
                .arg(CURRENT_SCHEMA_VERSION));
 
-    query.exec(QString("INSERT INTO `dep`(`id`,`version`,`cashregisterid`,`datetime`,`text`) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tProduktposition\tBeschreibung\tMenge\tEinzelpreis\tGesamtpreis\tUSt. Satz\tErstellungsdatum')"));
-    query.exec(QString("INSERT INTO `dep`(`id`,`version`,`cashregisterid`,`datetime`,`text`) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tBeleg\tBelegtyp\tBemerkung\tNachbonierung\tBelegnummer\tDatum\tUmsatz Normal\tUmsatz Ermaessigt1\tUmsatz Ermaessigt2\tUmsatz Null\tUmsatz Besonders\tJahresumsatz bisher\tErstellungsdatum')"));
-    query.exec(QString("INSERT INTO `dep`(`id`,`version`,`cashregisterid`,`datetime`,`text`) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tBeleg-Textposition\tText\tErstellungsdatum')"));
+    query.exec(QString("INSERT INTO `dep`(id,version,cashregisterid,datetime,text) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tProduktposition\tBeschreibung\tMenge\tEinzelpreis\tGesamtpreis\tUSt. Satz\tErstellungsdatum')"));
+    query.exec(QString("INSERT INTO `dep`(id,version,cashregisterid,datetime,text) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tBeleg\tBelegtyp\tBemerkung\tNachbonierung\tBelegnummer\tDatum\tUmsatz Normal\tUmsatz Ermaessigt1\tUmsatz Ermaessigt2\tUmsatz Null\tUmsatz Besonders\tJahresumsatz bisher\tErstellungsdatum')"));
+    query.exec(QString("INSERT INTO `dep`(id,version,cashregisterid,datetime,text) VALUES (NULL,'0.15.1222',0,CURRENT_TIMESTAMP, 'Id\tProgrammversion\tKassen-Id\tBeleg-Textposition\tText\tErstellungsdatum')"));
 
   }
   else  // db already exists; check if we need to run an update
@@ -618,10 +622,11 @@ bool Database::open(bool dbSelect)
       // changes which are not possible in sql file needed for update-7
       if ( i == 7 )
       {
-          query.exec(QString("UPDATE products SET \"group\"=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
-          query.exec(QString("UPDATE products SET \"group\"=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
+//          query.exec(QString("UPDATE products SET \"group\"=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
+//          query.exec(QString("UPDATE products SET \"group\"=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
+          query.exec(QString("UPDATE products SET `group`=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
+          query.exec(QString("UPDATE products SET `group`=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
       }
-
     }
 
     if ( schemaVersion != CURRENT_SCHEMA_VERSION )
@@ -775,19 +780,19 @@ void Database::resetAllData()
   QSqlDatabase dbc = QSqlDatabase::database("CN");
   QSqlQuery q(dbc);
 
-  q.prepare("DELETE FROM 'dep';");
+  q.prepare("DELETE FROM dep;");
   q.exec();
 
-  q.prepare("DELETE FROM 'orders';");
+  q.prepare("DELETE FROM orders;");
   q.exec();
 
-  q.prepare("DELETE FROM 'receipts';");
+  q.prepare("DELETE FROM receipts;");
   q.exec();
 
-  q.prepare("DELETE FROM 'reports';");
+  q.prepare("DELETE FROM reports;");
   q.exec();
 
-  q.prepare("DELETE FROM 'products' WHERE `group`=1;");
+  q.prepare("DELETE FROM products WHERE `group`=1;");
   q.exec();
 
   q.prepare("UPDATE globals SET value = 0 WHERE name = 'lastReceiptNum';");
@@ -806,7 +811,7 @@ void Database::resetAllData()
     q.prepare("ALTER TABLE orders AUTO_INCREMENT = 1;");
     q.exec();
 
-    q.prepare("ALTER TABLE receipt AUTO_INCREMENT = 1;");
+    q.prepare("ALTER TABLE receipts AUTO_INCREMENT = 1;");
     q.exec();
 
   } else {

@@ -77,7 +77,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Dieses Version überspringen</string>
+          <string>Diese Version überspringen</string>
          </property>
         </widget>
        </item>
