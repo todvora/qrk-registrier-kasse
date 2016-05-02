@@ -68,7 +68,8 @@ SOURCES += main.cpp\
     import/import.cpp \
     utils/demomode.cpp \
     qrkdialog.cpp \
-    utils/qrcode.cpp
+    utils/qrcode.cpp \
+    font/fontselector.cpp
 
 HEADERS  += \
     databasedefinition.h \
@@ -103,7 +104,8 @@ HEADERS  += \
     import/import.h \
     utils/demomode.h \
     qrkdialog.h \
-    utils/qrcode.h
+    utils/qrcode.h \
+    font/fontselector.h
 
 FORMS += \
     ui/qrk.ui \
@@ -118,7 +120,8 @@ FORMS += \
     manager/groupedit.ui \
     manager/groupwidget.ui \
     manager/productedit.ui \
-    manager/productswidget.ui
+    manager/productswidget.ui \
+    font/fontselector.ui
 
 RESOURCES += \
     qrk.qrc

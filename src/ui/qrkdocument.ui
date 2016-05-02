@@ -36,14 +36,6 @@
           </item>
           <item>
            <widget class="QLabel" name="documentFilterLabel">
-            <property name="font">
-             <font>
-              <family>Arial</family>
-              <pointsize>11</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
             <property name="text">
              <string>Filter</string>
             </property>
@@ -61,12 +53,6 @@
             <width>0</width>
             <height>0</height>
            </size>
-          </property>
-          <property name="font">
-           <font>
-            <family>Arial</family>
-            <italic>true</italic>
-           </font>
           </property>
           <property name="alternatingRowColors">
            <bool>true</bool>
@@ -93,14 +79,6 @@
         </item>
         <item>
          <widget class="QLabel" name="documentLabel">
-          <property name="font">
-           <font>
-            <family>Arial</family>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
           <property name="text">
            <string/>
           </property>

@@ -38,6 +38,7 @@
 #include "qrkdocument.h"
 #include "manager/managerdialog.h"
 #include "utils/demomode.h"
+#include "font/fontselector.h"
 
 #include <QStackedWidget>
 #include <QLCDNumber>
@@ -323,6 +324,14 @@ void QRK::actionLeaveDemoMode()
 void QRK::actionResetDemoData()
 {
   Database::resetAllData();
+}
+
+void QRK::setApplicationFont()
+{
+  FontSelector *fs = new FontSelector();
+  if (fs->exec() == FontSelector::Accepted) {
+    QApplication::setFont(fs->getFont());
+  }
 }
 
 /*fixme: move this to the right place in future*/

@@ -92,6 +92,7 @@ class QRK : public QMainWindow
 
   private:
     void closeEvent (QCloseEvent *event);
+    void setApplicationFont();
 
     QString shopname();
     QLCDNumber *dateLcd;
