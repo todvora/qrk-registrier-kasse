@@ -320,7 +320,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
   useLogo->setChecked(settings.value("useLogo", false).toBool());
   logoEdit->setText(settings.value("logo", "./logo.png").toString());
   importDirectoryEdit->setText(settings.value("importDirectory", qApp->applicationDirPath() + "/import").toString());
-  backupDirectoryEdit->setText(settings.value("backupDirectory", qApp->applicationDirPath()).toString());
+  backupDirectoryEdit->setText(settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
 
 }
 

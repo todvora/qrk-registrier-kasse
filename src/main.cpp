@@ -33,7 +33,7 @@
 
 #include <QTranslator>
 #include <QLibraryInfo>
-#include <QApplication>
+#include <QStandardPaths>
 #include <QMessageBox>
 #include <QSharedMemory>
 #include <QStyleFactory>
@@ -64,7 +64,8 @@ void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString
         txt = QString("%1 %2 Fatal: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
     }
-    QFile outFile(qApp->applicationDirPath() + "/qrk.log");
+
+    QFile outFile( QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/qrk.log");
     if (outFile.size() > 20000000) /*20 Mega*/
         Backup::pakLogFile();
 

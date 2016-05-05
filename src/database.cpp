@@ -22,6 +22,7 @@
 
 #include "database.h"
 #include "utils/demomode.h"
+#include "backup.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -31,6 +32,8 @@
 #include <QSqlError>
 #include <QDir>
 #include <QDate>
+#include <QStandardPaths>
+
 
 Database::Database(QObject *parent)
   : QObject(parent)
@@ -492,15 +495,39 @@ bool Database::open(bool dbSelect)
 
   QDate date = QDate::currentDate();
 
-  QString dataDir = qApp->applicationDirPath() + "/data";
+  QString olddataDir = qApp->applicationDirPath() + "/data";
+  QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data";
+
+  QDir olddir(olddataDir);
   QDir dir(dataDir);
+
   if (!dir.exists()) {
     dir.mkpath(".");
   }
 
-  if (QFile::exists(QString(dataDir + "/%1-QRK.db").arg(date.year() -1)))
-    QFile::copy(QString(dataDir + "/%1-QRK.db").arg(date.year() -1),QString(dataDir + "/%1-QRK.db").arg(date.year()));
+  if (olddir.exists()) {
+    dir.rmdir(dataDir);
+    Backup::create(olddataDir);
 
+    if (!olddir.rename(olddataDir, dataDir)) {
+      qDebug() << "datadir rename failed: " << olddataDir << " -> " << dataDir;
+      dir.mkpath(".");
+
+      QMessageBox errorDialog;
+      errorDialog.setIcon(QMessageBox::Critical);
+      errorDialog.addButton(QMessageBox::Ok);
+      errorDialog.setText(tr("Ihr Datenverzeichnispfad wurde geändert.\nVerschieben Sie bitte ihre Daten von %1 nach %2.\n Ein Backup der Daten wurde erstellt.").arg(olddataDir).arg(dataDir));
+      errorDialog.setWindowTitle(QObject::tr("Datenverzeichnispfad geändert"));
+      errorDialog.exec();
+      return false;
+
+    }
+  }
+
+  if (!QFile::exists(QString(dataDir + "/%1-QRK.db").arg(date.year()))) {
+    if (QFile::exists(QString(dataDir + "/%1-QRK.db").arg(date.year() -1)))
+      QFile::copy(QString(dataDir + "/%1-QRK.db").arg(date.year() -1),QString(dataDir + "/%1-QRK.db").arg(date.year()));
+  }
 
   QSqlDatabase currentConnection;
   // setup database connection

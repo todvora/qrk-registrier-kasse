@@ -34,6 +34,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QAbstractTextDocumentLayout>
+#include <QStandardPaths>
 #include <QDebug>
 
 DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, bool noPrinter)
@@ -86,7 +87,7 @@ void DocumentPrinter::printDocument(QTextDocument *document, QString title)
   bool usePDF = settings.value("reportPrinterPDF", false).toBool();
   if (usePDF) {
     printer.setOutputFormat(QPrinter::PdfFormat);
-    QDir dir("./pdf");
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/pdf");
     if (!dir.exists()) {
       dir.mkpath(".");
     }
@@ -94,7 +95,7 @@ void DocumentPrinter::printDocument(QTextDocument *document, QString title)
 
   if ( noPrinter || printer.outputFormat() == QPrinter::PdfFormat) {
     initAlternatePrinter(printer);
-    printer.setOutputFileName(QString("pdf/QRK-REPORT_%1.pdf").arg( title ));
+    printer.setOutputFileName(QString(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/pdf/QRK-REPORT_%1.pdf").arg( title ));
     document->adjustSize();
 
   } else {
@@ -548,7 +549,7 @@ bool DocumentPrinter::initPrinter(QPrinter &printer)
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
 
   if ( noPrinter || printer.outputFormat() == QPrinter::PdfFormat)
-    printer.setOutputFileName(QString("QRK-BON%1.pdf").arg( receiptNum ));
+    printer.setOutputFileName(QString(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/pdf/QRK-BON%1.pdf").arg( receiptNum ));
   else
     printer.setPrinterName(settings.value("receiptPrinter").toString());
 

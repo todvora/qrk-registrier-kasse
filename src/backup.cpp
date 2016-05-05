@@ -24,15 +24,20 @@
 #include "JlCompress.h"
 
 #include <QSettings>
-#include <QApplication>
+#include <QStandardPaths>
 #include <QDebug>
 
 void Backup::create()
 {
+  QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data";
+  create(dataDir);
+}
+
+void Backup::create(QString dataDir)
+{
 
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
-  QString backupDir = settings.value("backupDirectory", qApp->applicationDirPath()).toString();
-  QString dataDir = qApp->applicationDirPath() + "/data";
+  QString backupDir = settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/backup").toString();
 
   QString infile = QString("%1/%2-QRK.db").arg(dataDir).arg(QDate::currentDate().year());
 
@@ -51,9 +56,9 @@ void Backup::pakLogFile()
 {
 
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
-  QString backupDir = settings.value("backupDirectory", qApp->applicationDirPath()).toString();
+  QString backupDir = settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString();
 
-  QString infile = QString("%1/%2-QRK.db").arg(qApp->applicationDirPath() + "/qrk.log");
+  QString infile = QString("%1/%2-QRK.db").arg(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/qrk.log");
 
   QString outfile = QString("%1/qrk_log_%2.zip").arg(backupDir).arg(QDateTime::currentDateTime().toString("yyyyMMdd-hhmmss"));
 

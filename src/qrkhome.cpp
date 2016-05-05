@@ -27,6 +27,7 @@
 #include <QMessageBox>
 #include <QDesktopWidget>
 #include <QSettings>
+#include <QStandardPaths>
 
 #include <QDebug>
 
@@ -126,10 +127,10 @@ void QRKHome::init()
     ui->backupDirIconLabel->setPixmap(pixmap);
     ui->backupDirLabel->setText(tr("n/a"));
   } else {
-    ui->backupDirLabel->setText(settings.value("backupDirectory", qApp->applicationDirPath()).toString());
+    ui->backupDirLabel->setText(settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
   }
 
-  ui->dataDirlabel->setText(qApp->applicationDirPath() + "/data");
+  ui->dataDirlabel->setText(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data");
 
   ui->lcdNumberDay->display(Database::getDayCounter());
   ui->lcdNumberMonth->display(Database::getMonthCounter());

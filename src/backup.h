@@ -28,6 +28,7 @@ class QString;
 class Backup
 {
   public:
+    static void create(QString dataDir);
     static void create();
     static void pakLogFile();
     static void cleanUp();
