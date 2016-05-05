@@ -409,6 +409,11 @@ MasterDataTab::MasterDataTab(QSettings &, QWidget *parent)
   taxlocation = new QComboBox;
   currency = new QComboBox;
 
+  QRegExp re("^[^_]+$");
+  QRegExpValidator *v = new QRegExpValidator(re);
+  shopCashRegisterId->setValidator(v);
+  shopCashRegisterId->setPlaceholderText(tr("z.B. Firmenname-1, QRK1, oder FN-1 ..."));
+
   query.prepare("SELECT strValue FROM globals WHERE name='shopName'");
   query.exec();
   if (query.next())

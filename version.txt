@@ -20,6 +20,10 @@
 #
 #
 
+VERSION 0.16.0505
+ * fix Linuxpfade / keine Berechtigung
+ * fix Eingabemöglichkeit von "_" (Unterstrich) bei KassenID entfernt
+
 VERSION 0.16.0502
  * fix MySql - Database
  * Wenn ein Artikel auf unsichtbar gestellt wurde ist er auch in der Autovervollständigung
