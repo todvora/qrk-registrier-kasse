@@ -501,12 +501,7 @@ bool Database::open(bool dbSelect)
   QDir olddir(olddataDir);
   QDir dir(dataDir);
 
-  if (!dir.exists()) {
-    dir.mkpath(".");
-  }
-
   if (olddir.exists()) {
-    dir.rmdir(dataDir);
     Backup::create(olddataDir);
 
     if (!olddir.rename(olddataDir, dataDir)) {
@@ -522,6 +517,10 @@ bool Database::open(bool dbSelect)
       return false;
 
     }
+  }
+
+  if (!dir.exists()) {
+    dir.mkpath(".");
   }
 
   if (!QFile::exists(QString(dataDir + "/%1-QRK.db").arg(date.year()))) {

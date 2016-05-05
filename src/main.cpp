@@ -31,13 +31,14 @@
 #include "stdio.h"
 #include "signal.h"
 
+#include <QDir>
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QSharedMemory>
 #include <QStyleFactory>
-#include <QtPlugin>
+#include <QStandardPaths>
 
 //--------------------------------------------------------------------------------
 #include <QFile>
@@ -74,6 +75,12 @@ void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString
     ts << txt.simplified() << endl;
 }
 
+void createAppDataLocation()
+{
+  QDir dir;
+  dir.mkpath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+}
+
 void printHelp()
 {
     printf("QRK understands:\n"
@@ -94,6 +101,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     QApplication::setStyle(QStyleFactory::create("Fusion"));
+    createAppDataLocation();
 
     qInstallMessageHandler(QRKMessageHandler);
 

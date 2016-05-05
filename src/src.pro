@@ -33,7 +33,7 @@ QT += printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = ../bin/QRK
+TARGET = ../bin/qrk
 # TEMPLATE = app
 
 SOURCES += main.cpp\
