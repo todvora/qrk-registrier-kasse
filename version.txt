@@ -20,7 +20,7 @@
 #
 #
 
-VERSION 0.16.0505
+VERSION 0.16.0507
  * fix Linuxpfade / keine Berechtigung
  * fix Eingabemöglichkeit von "_" (Unterstrich) bei KassenID entfernt
 
