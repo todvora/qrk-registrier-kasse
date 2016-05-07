@@ -20,9 +20,12 @@
  *
 */
 
+#ifdef _WIN32
+#include "fvupdater.h"
+#endif
+
 #include "qrk.h"
 #include "settingsdialog.h"
-#include "fvupdater.h"
 #include "utils/demomode.h"
 #include "backup.h"
 
@@ -111,6 +114,7 @@ int main(int argc, char *argv[])
     QApplication::setApplicationName("QRK");
     QApplication::setApplicationVersion(QString("%1.%2").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR));
 
+#ifdef _WIN32
     // Set feed URL before doing anything else
     FvUpdater::sharedUpdater()->SetFeedURL("http://service.ckvsoft.at/swupdates/Appcast.xml");
     FvUpdater::sharedUpdater()->setRequiredSslFingerPrint("c3b038cb348c7d06328579fb950a48eb");	// Optional
@@ -122,6 +126,7 @@ int main(int argc, char *argv[])
 
     // Check for updates automatically
     FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
+#endif
 
     /*
   QSharedMemory mem("QRK");

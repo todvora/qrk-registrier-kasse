@@ -134,10 +134,12 @@ TRANSLATIONS += tr/QRK_en.ts \
 <------>error("Unable to include quazip.")
 }
 
+win32 {
 # Fervor autoupdater
 # (set TARGET and VERSION of your app before including Fervor.pri)
 !include("3rdparty/fervor-autoupdate/Fervor.pri") {
 <------>error("Unable to include Fervor autoupdater.")
+}
 }
 
 # LIBS += -lqrencode
