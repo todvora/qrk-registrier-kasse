@@ -104,15 +104,16 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     QApplication::setStyle(QStyleFactory::create("Fusion"));
-    createAppDataLocation();
 
     qInstallMessageHandler(QRKMessageHandler);
 
-    // Prerequisite for the Fervor updater
     QApplication::setOrganizationName("ckvsoft");
     QApplication::setOrganizationDomain("ckvsoft.at");
     QApplication::setApplicationName("QRK");
     QApplication::setApplicationVersion(QString("%1.%2").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR));
+
+    createAppDataLocation();
+
 
 #ifdef _WIN32
     // Set feed URL before doing anything else
