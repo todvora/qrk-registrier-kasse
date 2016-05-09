@@ -511,7 +511,10 @@ bool Database::open(bool dbSelect)
       QMessageBox errorDialog;
       errorDialog.setIcon(QMessageBox::Critical);
       errorDialog.addButton(QMessageBox::Ok);
-      errorDialog.setText(tr("Ihr Datenverzeichnispfad wurde geändert.\nVerschieben Sie bitte ihre Daten von %1 nach %2.\n Ein Backup der Daten wurde erstellt.").arg(olddataDir).arg(dataDir));
+      errorDialog.setText(tr("Ihr Datenverzeichnispfad wurde geändert.\n"
+                             "VERSCHIEBEN Sie bitte den Daten-Ordner %1 nach %2.\n\n"
+                             "Der Datenverzeichnispfad ist: %3\n"
+                             "Ein Backup der Daten wurde erstellt.").arg(olddataDir).arg(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).arg(dataDir));
       errorDialog.setWindowTitle(QObject::tr("Datenverzeichnispfad geändert"));
       errorDialog.exec();
       return false;
