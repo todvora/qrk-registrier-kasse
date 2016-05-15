@@ -55,9 +55,11 @@ void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString
     case QtDebugMsg:
         txt = QString("%1 %2 Debug: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
+#ifdef QtInfoMsg
     case QtInfoMsg:
         txt = QString("%1 %2 Info: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
+#endif
     case QtWarningMsg:
         txt = QString("%1 %2 Warning: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;

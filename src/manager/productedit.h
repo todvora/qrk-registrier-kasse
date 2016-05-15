@@ -43,6 +43,7 @@ class ProductEdit : public QDialog
     void taxComboChanged(int);
     void netChanged();
     void grossChanged();
+    void colorComboChanged(int);
     virtual void accept();
 
   private:

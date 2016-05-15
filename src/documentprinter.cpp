@@ -470,7 +470,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
     QString printFooter = tr("Dient als Steuerbeleg für ihr Finanzamt.\n"
                              "Wichtig: Beleg bitte aufbewahren.\n"
                              "Diese Rechnung ist nur in Verbindung\n"
-                             "Mit dem angehefteten Kassenbon gültig.\n"
+                             "mit dem angehefteten Kassenbon gültig.\n"
                              ">> Datum = Liefer- und Rechnungsdatum <<\n");
 
     int headerTextHeight = printFooter.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();

@@ -101,22 +101,34 @@ ProductEdit::ProductEdit(QWidget *parent, int theId)
         if (i > ui->colorComboBox->count())
           i = 0;
 
-        ui->colorComboBox->setCurrentIndex(i);
+        QString colorValue = query.value(6).toString().trimmed();
         QPalette palette(ui->colorComboBox->palette());
-        QColor color(query.value(6).toString());
+        QColor color(colorValue);
         palette.setColor(QPalette::Active,QPalette::Button, color);
         palette.setColor(QPalette::Highlight, color);
-//        palette.setColor(QPalette::ButtonText, Qt::gray);
         ui->colorComboBox->setPalette(palette);
+        ui->colorComboBox->setCurrentIndex(i);
 
     }
     connect (ui->taxComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(taxComboChanged(int)));
     connect (ui->net, SIGNAL(editingFinished()), this, SLOT(netChanged()));
     connect (ui->gross, SIGNAL(editingFinished()), this, SLOT(grossChanged()));
+    connect (ui->colorComboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(colorComboChanged(int)));
 
 }
 
 //--------------------------------------------------------------------------------
+
+void ProductEdit::colorComboChanged(int idx)
+{
+
+    QString colorValue = ui->colorComboBox->itemData(idx, Qt::BackgroundColorRole).toString(); // ->itemText(idx); //   ->model()->index(ui->colorComboBox->currentIndex(), 0).data(Qt::BackgroundColorRole).toString();
+    QPalette palette(ui->colorComboBox->palette());
+    QColor color(colorValue);
+    palette.setColor(QPalette::Active,QPalette::Button, color);
+    palette.setColor(QPalette::Highlight, color);
+    ui->colorComboBox->setPalette(palette);
+}
 
 void ProductEdit::taxComboChanged(int)
 {
