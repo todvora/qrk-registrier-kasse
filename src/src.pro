@@ -142,10 +142,12 @@ win32 {
 }
 }
 
-# LIBS += -lqrencode
-# LIBS += -lpthread
+macx {
+ INCLUDEPATH += /usr/local/include
+ LIBS += -L/usr/local/lib -lqrencode
+} else {
+ LIBS += -lqrencode
+}
 
-LIBS  += -lqrencode
 LIBS += -lcryptopp
 LIBS += -lz
-# CONFIG += static
