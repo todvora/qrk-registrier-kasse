@@ -23,13 +23,20 @@
 #include "fontselector.h"
 #include "ui_fontselector.h"
 
-FontSelector::FontSelector(QWidget *parent) :
-  QDialog(parent), ui(new Ui::FontSelector)
+FontSelector::FontSelector(QFont font, QWidget *parent) :
+  QDialog(parent), ui(new Ui::FontSelector), font(&font)
 {
   ui->setupUi(this);
 
   connect(ui->OKButton, SIGNAL(clicked(bool)),this,SLOT(accept()));
   connect(ui->CancelButton, SIGNAL(clicked(bool)),this,SLOT(close()));
+
+  ui->fontComboBox->setCurrentFont(font);
+  ui->fontComboBox->setCurrentText(font.family());
+  ui->pointSizeSpinBox->setValue(font.pointSize());
+  ui->stretchSpinBox->setValue(font.stretch());
+  ui->weightLabel->setHidden(true);
+  ui->weight_check->setHidden(true);
 
 }
 
@@ -86,7 +93,6 @@ void FontSelector::on_fontComboBox_currentFontChanged(const QFont &f)
 void FontSelector::update()
 {
   const QFont &f = ui->sampleText->font();
-  QFontInfo fi(f);
   ui->stretchSpinBox->setValue(f.stretch());
   ui->stretchSlider->setValue(f.stretch());
   ui->weight_check->setChecked(f.bold());

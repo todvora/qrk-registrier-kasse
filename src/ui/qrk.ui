@@ -32,13 +32,8 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>27</height>
+     <height>29</height>
     </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Arial</family>
-    </font>
    </property>
    <widget class="QMenu" name="menuDatei">
     <property name="title">

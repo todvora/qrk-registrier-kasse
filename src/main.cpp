@@ -55,7 +55,7 @@ void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString
     case QtDebugMsg:
         txt = QString("%1 %2 Debug: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
-#ifdef QtInfoMsg
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
     case QtInfoMsg:
         txt = QString("%1 %2 Info: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
@@ -86,6 +86,21 @@ void createAppDataLocation()
   dir.mkpath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
+void setApplicationFont()
+{
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+  QList<QString> systemFontList = settings.value("systemfont").toString().split(",");
+  if (systemFontList.count() < 3)
+    return;
+
+  QFont sysFont(systemFontList.at(0));
+  sysFont.setPointSize(systemFontList.at(1).toInt());
+  sysFont.setStretch(systemFontList.at(2).toInt());
+
+  QApplication::setFont(sysFont);
+
+}
+
 void printHelp()
 {
     printf("QRK understands:\n"
@@ -104,6 +119,8 @@ void sighandler(int /*sig*/)
 
 int main(int argc, char *argv[])
 {
+
+
     QApplication app(argc, argv);
     QApplication::setStyle(QStyleFactory::create("Fusion"));
 
@@ -115,6 +132,10 @@ int main(int argc, char *argv[])
     QApplication::setApplicationVersion(QString("%1.%2").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR));
 
     createAppDataLocation();
+
+    setApplicationFont();
+
+
 
 
 #ifdef _WIN32
@@ -182,11 +203,6 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-
-    // Global
-    mainWidget->statusBar()->setStyleSheet(
-                "QStatusBar::item { border: 1px solid lightgrey; border-radius: 3px;} "
-                );
 
     mainWidget->show();
 

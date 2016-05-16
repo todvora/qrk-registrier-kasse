@@ -25,7 +25,10 @@
 #include <QSqlQuery>
 #include <QPrinterInfo>
 
+#include "font/fontselector.h"
+#include "documentprinter.h"
 #include "settingsdialog.h"
+#include "qrkregister.h"
 
 SettingsDialog::SettingsDialog(QSettings &s, QWidget *parent)
   : QDialog(parent), settings(s)
@@ -36,7 +39,6 @@ SettingsDialog::SettingsDialog(QSettings &s, QWidget *parent)
   printer = new PrinterTab(settings);
   receiptprinter = new ReceiptPrinterTab(settings);
   extra = new ExtraTab(settings);
-  signature = new SignaturTab(settings);
 
   tabWidget = new QTabWidget;
   tabWidget->addTab(master, tr("Stammdaten"));
@@ -44,7 +46,6 @@ SettingsDialog::SettingsDialog(QSettings &s, QWidget *parent)
   tabWidget->addTab(receiptprinter, tr("BON Drucker"));
   tabWidget->addTab(general, tr("Allgemein"));
   tabWidget->addTab(extra, tr("Extra"));
-  tabWidget->addTab(signature, tr("Signatureinheit"));
 
   QPushButton *pushButton = new QPushButton;
   pushButton->setMinimumHeight(60);
@@ -92,6 +93,17 @@ void SettingsDialog::accept()
   settings.setValue("logo", general->getLogo());
   settings.setValue("importDirectory", general->getImportDirectory());
   settings.setValue("backupDirectory", general->getBackupDirectory());
+
+  if (extra->isFontsGroup()) {
+    settings.setValue("systemfont", extra->getSystemFont());
+    settings.setValue("printerfont", extra->getPrinterFont());
+    settings.setValue("receiptprinterfont", extra->getReceiptPrinterFont());
+  } else {
+    settings.remove("systemfont");
+    settings.remove("printerfont");
+    settings.remove("receiptprinterfont");
+  }
+
   settings.setValue("useInputNetPrice", extra->getInputNetPrice());
   settings.setValue("useMaximumItemSold", extra->getMaximumItemSold());
 
@@ -127,48 +139,6 @@ void SettingsDialog::accept()
 
 }
 
-SignaturTab::SignaturTab(QSettings &s, QWidget *parent)
-  : QWidget(parent)
-{
-
-  Q_UNUSED(s);
-
-  mobileCombo = new QComboBox();
-  mobileCombo->addItem("A-Trust Mobile");
-
-  smartCardCombo = new QComboBox();
-
-  QFormLayout *mobileLayout = new QFormLayout;
-  QFormLayout *smartCardLayout = new QFormLayout;
-
-  QGroupBox *mobileGroup = new QGroupBox(tr("Mobile Signatureinheit"));
-  mobileGroup->setStyleSheet("QGroupBox::title {top: 5px; left: 10px;}");
-  mobileGroup->setAlignment(Qt::AlignLeft);
-  mobileGroup->setCheckable(true);
-  mobileGroup->setChecked(false);
-
-  mobileLayout->addRow("Mobile Anbieter",mobileCombo);
-  mobileGroup->setLayout(mobileLayout);
-
-  QGroupBox *smartCardGroup = new QGroupBox(tr("SmartCard"));
-  smartCardGroup->setStyleSheet("QGroupBox::title {top: 5px; left: 10px;}");
-  smartCardGroup->setAlignment(Qt::AlignLeft);
-  smartCardGroup->setCheckable(true);
-  smartCardGroup->setChecked(false);
-  smartCardLayout->addRow("SmartCard Lesegeräte",smartCardCombo);
-
-  smartCardGroup->setLayout(smartCardLayout);
-
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(mobileGroup);
-
-  mainLayout->addWidget(smartCardGroup);
-
-  mainLayout->addStretch(1);
-  setLayout(mainLayout);
-
-}
-
 ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   : QWidget(parent)
 {
@@ -185,6 +155,21 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   useGivenDialogCheck = new QCheckBox;
   useGivenDialogCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);;
 
+  /* Fonts */
+
+  systemFont = new QFont(QApplication::font());
+
+  QList<QString> printerFontList = settings.value("printerfont", "Courier-New,10,100").toString().split(",");
+  QList<QString> receiptPrinterFontList = settings.value("receiptprinterfont", "Courier-New,8,100").toString().split(",");
+
+  printerFont = new QFont(printerFontList.at(0));
+  printerFont->setPointSize(printerFontList.at(1).toInt());
+  printerFont->setStretch(printerFontList.at(2).toInt());
+
+  receiptPrinterFont = new QFont(receiptPrinterFontList.at(0));
+  receiptPrinterFont->setPointSize(receiptPrinterFontList.at(1).toInt());
+  receiptPrinterFont->setStretch(receiptPrinterFontList.at(2).toInt());
+
   QGroupBox *registerGroup = new QGroupBox();
   registerGroup->setTitle(tr("Kasse"));
   QFormLayout *extraLayout = new QFormLayout;
@@ -195,8 +180,66 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   extraLayout->addRow(tr("Betrag gegeben Dialog:"),useGivenDialogCheck);
   registerGroup->setLayout(extraLayout);
 
+  fontsGroup = new QGroupBox();
+  fontsGroup->setCheckable(true);
+  fontsGroup->setTitle(tr("Schriftarten"));
+  if (settings.value("systemfont").isNull())
+    fontsGroup->setChecked(false);
+
+  QGridLayout *fontsLayout = new QGridLayout;
+  fontsLayout->setAlignment(Qt::AlignLeft);
+
+  fontsLayout->addWidget( new QLabel(tr("Systemschrift:")), 1,1,1,1);
+  fontsLayout->addWidget( new QLabel(tr("Druckerschrift:")), 2,1,1,1);
+  fontsLayout->addWidget( new QLabel(tr("BON - Druckerschrift:")), 3,1,1,1);
+
+  systemFontButton = new QPushButton(systemFont->family());
+  systemFontButton->setFont(*systemFont);
+  systemFontSizeLabel = new QLabel(QString::number(systemFont->pointSize()));
+  systemFontStretchLabel = new QLabel(QString::number(systemFont->stretch()));
+
+  printerFontButton = new QPushButton(printerFont->family());
+  printerFontButton->setFont(*printerFont);
+  printerFontSizeLabel = new QLabel(QString::number(printerFont->pointSize()));
+  printerFontStretchLabel = new QLabel(QString::number(printerFont->stretch()));
+
+  receiptPrinterFontButton = new QPushButton(receiptPrinterFont->family());
+  receiptPrinterFontButton->setFont(*receiptPrinterFont);
+  receiptPrinterFontSizeLabel = new QLabel(QString::number(receiptPrinterFont->pointSize()));
+  receiptPrinterFontStretchLabel = new QLabel(QString::number(receiptPrinterFont->stretch()));
+
+  QPushButton *printerTestButton = new QPushButton(tr("Drucktest"));
+  QPushButton *receiptPrinterTestButton = new QPushButton(tr("Drucktest"));
+
+  fontsLayout->addWidget( systemFontButton, 1,2,1,1);
+  fontsLayout->addWidget( printerFontButton, 2,2,1,1);
+  fontsLayout->addWidget( receiptPrinterFontButton, 3,2,1,1);
+
+  fontsLayout->addWidget( new QLabel("Größe:"), 1,3,1,1);
+  fontsLayout->addWidget( new QLabel("Größe:"), 2,3,1,1);
+  fontsLayout->addWidget( new QLabel("Größe:"), 3,3,1,1);
+
+  fontsLayout->addWidget( systemFontSizeLabel, 1,4,1,1);
+  fontsLayout->addWidget( printerFontSizeLabel, 2,4,1,1);
+  fontsLayout->addWidget( receiptPrinterFontSizeLabel, 3,4,1,1);
+
+  fontsLayout->addWidget( new QLabel("Stretch:"), 1,5,1,1);
+  fontsLayout->addWidget( new QLabel("Stretch:"), 2,5,1,1);
+  fontsLayout->addWidget( new QLabel("Stretch:"), 3,5,1,1);
+
+  fontsLayout->addWidget( systemFontStretchLabel, 1,6,1,1);
+  fontsLayout->addWidget( printerFontStretchLabel, 2,6,1,1);
+  fontsLayout->addWidget( receiptPrinterFontStretchLabel, 3,6,1,1);
+
+  fontsLayout->addWidget( printerTestButton, 2,7,1,1);
+  fontsLayout->addWidget( receiptPrinterTestButton, 3,7,1,1);
+
+  fontsGroup->setLayout(fontsLayout);
+
+
   QVBoxLayout *mainLayout = new QVBoxLayout;
   mainLayout->addWidget(registerGroup);
+  mainLayout->addWidget(fontsGroup);
 
   mainLayout->addStretch(1);
   setLayout(mainLayout);
@@ -205,6 +248,114 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   useMaximumItemSoldCheck->setChecked(settings.value("useMaximumItemSold", false).toBool());
   useDecimalQuantityCheck->setChecked(settings.value("useDecimalQuantity", false).toBool());
   useGivenDialogCheck->setChecked(settings.value("useGivenDialog", false).toBool());
+
+  connect(systemFontButton, SIGNAL(clicked(bool)), this, SLOT(systemFontButton_clicked(bool)));
+  connect(printerFontButton, SIGNAL(clicked(bool)), this, SLOT(printerFontButton_clicked(bool)));
+  connect(receiptPrinterFontButton, SIGNAL(clicked(bool)), this, SLOT(receiptPrinterFontButton_clicked(bool)));
+
+  connect(printerTestButton, SIGNAL(clicked(bool)), this, SLOT(printerTestButton_clicked(bool)));
+  connect(receiptPrinterTestButton, SIGNAL(clicked(bool)), this, SLOT(receiptPrinterTestButton_clicked(bool)));
+
+  connect(fontsGroup, SIGNAL(toggled(bool)), this, SLOT(fontsGroup_toggled(bool)));
+
+}
+
+void ExtraTab::fontsGroup_toggled(bool toggled)
+{
+
+  if (toggled) {
+
+  } else {
+    QFont font;
+    font.setFamily(font.defaultFamily());
+    QApplication::setFont(font);
+  }
+
+}
+
+bool ExtraTab::isFontsGroup()
+{
+  return fontsGroup->isChecked();
+}
+
+QString ExtraTab::getSystemFont()
+{
+  return QString("%1,%2,%3").arg(systemFont->family()).arg(systemFont->pointSize()).arg(systemFont->stretch());
+}
+
+QString ExtraTab::getPrinterFont()
+{
+  return QString("%1,%2,%3").arg(printerFont->family()).arg(printerFont->pointSize()).arg(printerFont->stretch());
+}
+
+QString ExtraTab::getReceiptPrinterFont()
+{
+  return QString("%1,%2,%3").arg(receiptPrinterFont->family()).arg(receiptPrinterFont->pointSize()).arg(receiptPrinterFont->stretch());
+}
+
+void ExtraTab::printerTestButton_clicked(bool)
+{
+  DocumentPrinter *p = new DocumentPrinter();
+  p->printTestDocument(*printerFont);
+}
+
+void ExtraTab::receiptPrinterTestButton_clicked(bool)
+{
+  QRKRegister *reg = new QRKRegister(new QProgressBar());
+
+  int id = Database::getLastReceiptNum();
+  reg->setCurrentReceiptNum(id);
+
+  QJsonObject data = reg->compileData();
+
+  data["isTestPrint"] = true;
+  data["comment"] = "DRUCKTEST BELEG";
+  data["headerText"] = Database::getCustomerText(id);
+
+  DocumentPrinter *p = new DocumentPrinter();
+  p->printReceipt(data);
+  delete p;
+
+}
+
+void ExtraTab::systemFontButton_clicked(bool)
+{
+  FontSelector *fontSelect = new FontSelector(*systemFont);
+  if ( fontSelect->exec() == FontSelector::Accepted ) {
+    systemFont = new QFont(fontSelect->getFont());
+    systemFontButton->setText(systemFont->family());
+    systemFontSizeLabel->setText(QString::number(systemFont->pointSize()));
+    systemFontStretchLabel->setText(QString::number(systemFont->stretch()));
+    QApplication::setFont(*systemFont);
+
+  }
+
+}
+
+void ExtraTab::printerFontButton_clicked(bool)
+{
+  FontSelector *fontSelect = new FontSelector(*printerFont);
+  if ( fontSelect->exec() == FontSelector::Accepted ) {
+    printerFont = new QFont(fontSelect->getFont());
+    printerFontButton->setText(printerFont->family());
+    printerFontButton->setFont(*printerFont);
+    printerFontSizeLabel->setText(QString::number(printerFont->pointSize()));
+    printerFontStretchLabel->setText(QString::number(printerFont->stretch()));
+  }
+
+}
+
+void ExtraTab::receiptPrinterFontButton_clicked(bool)
+{
+  FontSelector *fontSelect = new FontSelector(*receiptPrinterFont);
+  if ( fontSelect->exec() == FontSelector::Accepted ) {
+    receiptPrinterFont = new QFont(fontSelect->getFont());
+    receiptPrinterFontButton->setText(receiptPrinterFont->family());
+    receiptPrinterFontButton->setFont(*receiptPrinterFont);
+    receiptPrinterFontSizeLabel->setText(QString::number(receiptPrinterFont->pointSize()));
+    receiptPrinterFontStretchLabel->setText(QString::number(receiptPrinterFont->stretch()));
+
+  }
 
 }
 

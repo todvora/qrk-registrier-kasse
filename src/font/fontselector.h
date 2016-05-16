@@ -34,7 +34,7 @@ class FontSelector : public QDialog
     Q_OBJECT
 
   public:
-    explicit FontSelector(QWidget *parent = 0);
+    explicit FontSelector(QFont font, QWidget *parent = 0);
     ~FontSelector();
     QFont getFont();
 
@@ -53,6 +53,7 @@ class FontSelector : public QDialog
 
   private:
     Ui::FontSelector *ui;
+    QFont *font;
 
 };
 

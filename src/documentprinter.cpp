@@ -24,6 +24,7 @@
 #include "database.h"
 #include "utils/utils.h"
 #include "utils/qrcode.h"
+#include "reports.h"
 
 #include <QSettings>
 #include <QJsonObject>
@@ -37,11 +38,23 @@
 #include <QStandardPaths>
 #include <QDebug>
 
+
 DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, bool noPrinter)
   :QObject(parent), noPrinter(noPrinter)
 {
 
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+
+  QList<QString> printerFontList = settings.value("printerfont", "Courier-New,10,100").toString().split(",");
+  QList<QString> receiptPrinterFontList = settings.value("receiptprinterfont", "Courier-New,8,100").toString().split(",");
+
+  printerFont = new QFont(printerFontList.at(0));
+  printerFont->setPointSize(printerFontList.at(1).toInt());
+  printerFont->setStretch(printerFontList.at(2).toInt());
+
+  receiptPrinterFont = new QFont(receiptPrinterFontList.at(0));
+  receiptPrinterFont->setPointSize(receiptPrinterFontList.at(1).toInt());
+  receiptPrinterFont->setStretch(receiptPrinterFontList.at(2).toInt());
 
   printCompanyNameBold = settings.value("printCompanyNameBold", false).toBool();
   printQRCode = settings.value("qrcode", true).toBool();
@@ -66,6 +79,9 @@ DocumentPrinter::DocumentPrinter(QObject *parent, QProgressBar *progressBar, boo
     }
   }
 
+  if(!progressBar)
+    progressBar = new QProgressBar();
+
   pb = progressBar;
   pb->setValue(0);
 }
@@ -80,6 +96,14 @@ DocumentPrinter::~DocumentPrinter()
 
 //--------------------------------------------------------------------------------
 
+void DocumentPrinter::printTestDocument(QFont font)
+{
+  QTextDocument *testDoc = new QTextDocument();
+  testDoc->setHtml(Reports::getReport(2, true));
+  testDoc->setDefaultFont(font);
+  printDocument(testDoc, "TEST DRUCK");
+}
+
 void DocumentPrinter::printDocument(QTextDocument *document, QString title)
 {
   QPrinter printer;
@@ -92,6 +116,8 @@ void DocumentPrinter::printDocument(QTextDocument *document, QString title)
       dir.mkpath(".");
     }
   }
+
+  document->setDefaultFont(*printerFont);
 
   if ( noPrinter || printer.outputFormat() == QPrinter::PdfFormat) {
     initAlternatePrinter(printer);
@@ -146,21 +172,25 @@ void DocumentPrinter::printReceipt(QJsonObject data)
 void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 {
 
-  int fontsize = 8;
-  int boldsize = 10;
+
+  int fontsize = receiptPrinterFont->pointSize();
+/*  int boldsize = 10;
 
    if (smallPrinter) {
     fontsize = 6;
     boldsize = 8;
   }
-
+*/
 
   QPainter painter(&printer);
 
 //  int id = QFontDatabase::addApplicationFont(":/font/Oxygen-Sans.ttf");
 //  QString family = QFontDatabase::applicationFontFamilies(id).at(0);
 
-  QFont font("Courier-New", fontsize);
+  // QFont font("Courier-New", fontsize);
+
+  QFont font(*receiptPrinterFont);
+
   // font.setFixedPitch(true);
   painter.setFont(font);
   QFontMetrics fontMetr = painter.fontMetrics();
@@ -170,7 +200,11 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   // grossFont.setFixedPitch(true);
   QFontMetrics grossMetrics(grossFont, &printer);
 
-  QFont boldFont("Courier-New", boldsize, QFont::Bold);  // for sum
+  // QFont boldFont("Courier-New", boldsize, QFont::Bold);  // for sum
+  QFont boldFont(*receiptPrinterFont);
+  boldFont.setBold(true);
+  boldFont.setPointSize(receiptPrinterFont->pointSize() + 2);
+
   QFontMetrics boldMetr(boldFont);
 
   QPen pen(Qt::black);
@@ -306,6 +340,11 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   if (data.value("isCopy").toBool())
     copy = tr("( Kopie )");
 
+  if (data.value("isTestPrint").toBool()) {
+    data["kassa"] = "DEMO-PRINT-1";
+    data["receiptNum"] = 0;
+    data["typeText"] = "DEMO";
+  }
 
   if (smallPrinter) {
     painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignLeft,
@@ -388,6 +427,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
   foreach (const QJsonValue & item, Orders)
   {
+
     pb->setValue(progress++);
 
     const QJsonObject& order = item.toObject();
@@ -395,8 +435,14 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
     double count = order.value("count").toDouble();
     QString grossText = QString("%1").arg(QString::number(order.value("gross").toDouble(), 'f', 2));
     QString singleGrossText = QString("%1 x %2").arg(QString::number(count)).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2));
-    int grossWidth = grossMetrics.boundingRect(grossText).width();
 
+    if (data.value("isTestPrint").toBool()) {
+      count = 0.0;
+      grossText = "0,0";
+      singleGrossText = "0 x 0,0";
+    }
+
+    int grossWidth = grossMetrics.boundingRect(grossText).width();
     QString product = order.value("product").toString();
     product = wordWrap(product, WIDTH - grossWidth - 5, font);
     int productHeight = product.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
@@ -437,10 +483,16 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
   pb->setValue(progress + 10);
 
+  QString sum = QString::number(data.value("sum").toDouble(), 'f', 2);
+
+  if (data.value("isTestPrint").toBool()) {
+    sum = "0,0";
+  }
+
   painter.save();
   painter.setFont(boldFont);
   painter.drawText(0, y, WIDTH, boldMetr.height(), Qt::AlignRight,
-                   tr("Gesamt: %1").arg(QString::number(data.value("sum").toDouble(), 'f', 2)));
+                   tr("Gesamt: %1").arg(sum));
   painter.restore();
 
   y += 5 + boldMetr.height();
@@ -449,10 +501,16 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
   foreach (const QJsonValue & item, Taxes)
   {
     const QJsonObject& tax = item.toObject();
+
+    QString taxSum = QString::number(tax.value("t2").toString().toDouble(), 'f', 2);
+    if (data.value("isTestPrint").toBool()) {
+      taxSum = "0,0";
+    }
+
     painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignRight,
                      tr("MwSt %1: %2")
                      .arg(tax.value("t1").toString())
-                     .arg(QString::number(tax.value("t2").toString().toDouble(), 'f', 2)));
+                     .arg(taxSum));
 
     y += 5 + fontMetr.height();
   }

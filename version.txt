@@ -20,6 +20,10 @@
 #
 #
 
+VERSION 0.16.0517
+ + Schriftarten für System,Drucker und BON Drucker einstellbar
+ + SmardCard Libs
+
 VERSION 0.16.0515
  * fix compile for older Linux (QT < 5.4)
  * fix compile OSX Version

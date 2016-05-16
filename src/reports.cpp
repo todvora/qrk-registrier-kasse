@@ -509,7 +509,7 @@ QStringList Reports::createYearStat(int id, QDate date)
 
 //--------------------------------------------------------------------------------
 
-QString Reports::getReport(int id)
+QString Reports::getReport(int id, bool test)
 {
 
   QSqlDatabase dbc = QSqlDatabase::database("CN");
@@ -521,7 +521,12 @@ QString Reports::getReport(int id)
 
   int type = q.value(0).toInt();
   QString format = (type == 4)? "MMMM yyyy": "dd MMMM yyyy";
-  QString header = QString("BON # %1, %2 - %3").arg(id).arg(Database::getActionType(type)).arg(q.value(1).toDate().toString(format));
+
+  QString header;
+  if (test)
+    header = QString("TESTDRUCK für SCHRIFTART");
+  else
+    header = QString("BON # %1, %2 - %3").arg(id).arg(Database::getActionType(type)).arg(q.value(1).toDate().toString(format));
 
   q.prepare(QString("SELECT text FROM reports WHERE receiptNum=%1").arg(id));
   q.exec();
@@ -567,7 +572,10 @@ QString Reports::getReport(int id)
       list = t.split(":");
       span = span - list.count();
       foreach (const QString &str, list) {
-        text.append(QString("<td align=\"right\" colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg(str));
+        if (test)
+          text.append(QString("<td align=\"right\" colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg("0,00"));
+        else
+          text.append(QString("<td align=\"right\" colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg(str));
         span = 1;
       }
       needOneMoreCol = true;
@@ -579,7 +587,11 @@ QString Reports::getReport(int id)
       QString align = "left";
       foreach (const QString &str, list) {
         if (count > 1) align="right";
-        text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg(str));
+        if (test && count > 1)
+          text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg("0,00"));
+        else
+          text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg(str));
+
         count++;
         span = 1;
       }
@@ -592,7 +604,11 @@ QString Reports::getReport(int id)
       QString align = "left";
       foreach (const QString &str, list) {
         if (count > 0) align="right";
-        text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg(str));
+        if (test && count > 0)
+          text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg("0,00"));
+        else
+          text.append(QString("<td align=\"%1\" colspan=\"%2\" %3>%4</td>").arg(align).arg(span).arg(color).arg(str));
+
         count++;
         span = 1;
       }

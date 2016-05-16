@@ -34,19 +34,8 @@ class QCheckBox;
 class QSpinBox;
 class QLineEdit;
 class QRadioButton;
-
-class SignaturTab : public QWidget
-{
-    Q_OBJECT
-
-  public:
-    explicit SignaturTab(QSettings &s, QWidget *parent = 0);
-
-  private:
-    QComboBox *mobileCombo;
-    QComboBox *smartCardCombo;
-
-};
+class QLabel;
+class QGroupBox;
 
 class ExtraTab : public QWidget
 {
@@ -58,14 +47,44 @@ class ExtraTab : public QWidget
     bool getMaximumItemSold();
     bool getDecimalQuantity();
     bool getGivenDialog();
+    bool isFontsGroup();
+    QString getSystemFont();
+    QString getPrinterFont();
+    QString getReceiptPrinterFont();
 
   private slots:
+    void systemFontButton_clicked(bool);
+    void printerFontButton_clicked(bool);
+    void receiptPrinterFontButton_clicked(bool);
+    void printerTestButton_clicked(bool);
+    void receiptPrinterTestButton_clicked(bool);
+    void fontsGroup_toggled(bool toggled);
+
 
   private:
     QCheckBox *useInputNetPriceCheck;
     QCheckBox *useMaximumItemSoldCheck;
     QCheckBox *useDecimalQuantityCheck;
     QCheckBox *useGivenDialogCheck;
+
+    QGroupBox *fontsGroup;
+
+    QPushButton *systemFontButton;
+    QPushButton *printerFontButton;
+    QPushButton *receiptPrinterFontButton;
+
+    QLabel *systemFontSizeLabel;
+    QLabel *printerFontSizeLabel;
+    QLabel *receiptPrinterFontSizeLabel;
+
+    QLabel *systemFontStretchLabel;
+    QLabel *printerFontStretchLabel;
+    QLabel *receiptPrinterFontStretchLabel;
+
+
+    QFont *systemFont;
+    QFont *printerFont;
+    QFont *receiptPrinterFont;
 
 };
 
@@ -218,7 +237,6 @@ class SettingsDialog : public QDialog
     PrinterTab *printer;
     ReceiptPrinterTab *receiptprinter;
     ExtraTab *extra;
-    SignaturTab *signature;
 
 };
 

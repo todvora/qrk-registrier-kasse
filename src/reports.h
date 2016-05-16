@@ -50,7 +50,7 @@ class Reports : public QObject
     void fixMonth(int);
 
 
-    static QString getReport(int);
+    static QString getReport(int id, bool test = false);
 
   signals:
 

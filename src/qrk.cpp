@@ -285,7 +285,6 @@ void QRK::fullScreenSlot()
   if ( isFullScreen() )
   {
     showNormal();
-    // WeTab does not reparent/show with window frame if not resized
     resize(width() - 150, height());
     showMaximized();
   }
@@ -324,14 +323,6 @@ void QRK::actionLeaveDemoMode()
 void QRK::actionResetDemoData()
 {
   Database::resetAllData();
-}
-
-void QRK::setApplicationFont()
-{
-  FontSelector *fs = new FontSelector();
-  if (fs->exec() == FontSelector::Accepted) {
-    QApplication::setFont(fs->getFont());
-  }
 }
 
 /*fixme: move this to the right place in future*/
