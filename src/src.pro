@@ -152,7 +152,8 @@ macx {
 LIBS += -lcryptopp
 LIBS += -lz
 
-CONFIG += link_pkgconfig
-unix:PKGCONFIG += libpcsclite
-macx:PKGCONFIG += libpcsclite
-win32:LIBS += libwinscard
+win32 {
+ LIBS += libwinscard
+} else {
+ LIBS += -lpcsclite
+}
