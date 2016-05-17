@@ -198,12 +198,18 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   systemFontSizeLabel = new QLabel(QString::number(systemFont->pointSize()));
   systemFontStretchLabel = new QLabel(QString::number(systemFont->stretch()));
 
-  printerFontButton = new QPushButton(printerFont->family());
+  QFontInfo printerFontInfo(*printerFont);
+  QString sPrinterFontInfo = printerFontInfo.family();
+
+  printerFontButton = new QPushButton(sPrinterFontInfo);
   printerFontButton->setFont(*printerFont);
   printerFontSizeLabel = new QLabel(QString::number(printerFont->pointSize()));
   printerFontStretchLabel = new QLabel(QString::number(printerFont->stretch()));
 
-  receiptPrinterFontButton = new QPushButton(receiptPrinterFont->family());
+  QFontInfo receiptPrinterFontInfo(*receiptPrinterFont);
+  QString sReceiptPrinterFontInfo = receiptPrinterFontInfo.family();
+
+  receiptPrinterFontButton = new QPushButton(sReceiptPrinterFontInfo);
   receiptPrinterFontButton->setFont(*receiptPrinterFont);
   receiptPrinterFontSizeLabel = new QLabel(QString::number(receiptPrinterFont->pointSize()));
   receiptPrinterFontStretchLabel = new QLabel(QString::number(receiptPrinterFont->stretch()));
