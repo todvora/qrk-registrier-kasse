@@ -511,7 +511,8 @@ verlassen</string>
              </size>
             </property>
             <property name="text">
-             <string>BON zu Beleg #</string>
+             <string>BON
+zu Rechnung #</string>
             </property>
             <property name="icon">
              <iconset resource="../qrk.qrc">
