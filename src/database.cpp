@@ -496,8 +496,7 @@ bool Database::open(bool dbSelect)
   QDate date = QDate::currentDate();
 
   QString olddataDir = qApp->applicationDirPath() + "/data";
-  QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data";
-
+  QString dataDir = settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString();
   QDir olddir(olddataDir);
   QDir dir(dataDir);
 

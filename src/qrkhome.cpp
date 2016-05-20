@@ -130,7 +130,8 @@ void QRKHome::init()
     ui->backupDirLabel->setText(settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
   }
 
-  ui->dataDirlabel->setText(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data");
+  QString dataDir = settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString();
+  ui->dataDirlabel->setText(dataDir);
 
   ui->lcdNumberDay->display(Database::getDayCounter());
   ui->lcdNumberMonth->display(Database::getMonthCounter());

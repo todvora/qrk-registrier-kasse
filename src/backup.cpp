@@ -29,7 +29,8 @@
 
 void Backup::create()
 {
-  QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data";
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+  QString dataDir = settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString();
   create(dataDir);
 }
 

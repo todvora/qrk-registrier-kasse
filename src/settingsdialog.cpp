@@ -91,7 +91,7 @@ void SettingsDialog::accept()
 
   settings.setValue("useLogo", general->getUseLogo());
   settings.setValue("logo", general->getLogo());
-  settings.setValue("dataDirectory", general->getDataDirectory());
+  settings.setValue("sqliteDataDirectory", general->getDataDirectory());
   settings.setValue("importDirectory", general->getImportDirectory());
   settings.setValue("backupDirectory", general->getBackupDirectory());
 
@@ -135,6 +135,9 @@ void SettingsDialog::accept()
   settings.setValue("marginTop", receiptprinter->getmarginTop());
   settings.setValue("marginRight", receiptprinter->getmarginRight());
   settings.setValue("marginBottom", receiptprinter->getmarginBottom());
+
+  /* remove unused settings*/
+  settings.remove("dataDirectory");
 
   QDialog::accept();
 
@@ -491,7 +494,7 @@ GeneralTab::GeneralTab(QSettings &settings, QWidget *parent)
 
   useLogo->setChecked(settings.value("useLogo", false).toBool());
   logoEdit->setText(settings.value("logo", "./logo.png").toString());
-  dataDirectoryEdit->setText(settings.value("dataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString());
+  dataDirectoryEdit->setText(settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString());
   importDirectoryEdit->setText(settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/import").toString());
   backupDirectoryEdit->setText(settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
 }
@@ -532,13 +535,21 @@ void GeneralTab::backupDirectoryButton_clicked()
 void GeneralTab::dataDirectoryButton_clicked()
 {
 
+  QMessageBox::critical(this,"Änderung des Daten Verzeichnis!",
+                        "Achtung!\n"
+                        "Wenn Sie das Datenverzeichnis ändern müssen Sie\n"
+                        "dafür sorgen das alle Daten in den ausgewählten Ordner\n"
+                        "verschoben werden. QRK muss neu gestartet werden."
+                        , "Ok");
+
+
   QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
                                                    getDataDirectory(),
                                                    QFileDialog::ShowDirsOnly
                                                    | QFileDialog::DontResolveSymlinks);
 
   if (!path.isEmpty())
-    importDirectoryEdit->setText(path);
+    dataDirectoryEdit->setText(path);
 
 }
 
