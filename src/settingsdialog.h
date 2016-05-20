@@ -98,12 +98,14 @@ class GeneralTab : public QWidget
     QString getFooter();
     QString getBackupDirectory();
     QString getImportDirectory();
+    QString getDataDirectory();
     QString getLogo();
     bool getUseLogo();
 
   private slots:
     void backupDirectoryButton_clicked();
     void importDirectoryButton_clicked();
+    void dataDirectoryButton_clicked();
     void logoButton_clicked();
     void useLogoCheck_toggled(bool);
 
@@ -112,6 +114,7 @@ class GeneralTab : public QWidget
     QTextEdit *printFooterEdit;
     QLineEdit *backupDirectoryEdit;
     QLineEdit *importDirectoryEdit;
+    QLineEdit *dataDirectoryEdit;
     QLineEdit *logoEdit;
     QCheckBox *useLogo;
     QPushButton *logoButton;
