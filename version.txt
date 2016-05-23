@@ -20,6 +20,11 @@
 #
 #
 
+VERSION 0.16.0523
+ + Benutzerdefinierbares Datenverzeichnis
+ * fix für TerminalServer wenn <Applikationspfad>/data
+   schon vorhanden ist wird dieser weiterhin verwendet.
+
 VERSION 0.16.0517
  + Schriftarten für System,Drucker und BON Drucker einstellbar
  + SmardCard Libs
