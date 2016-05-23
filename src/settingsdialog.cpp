@@ -212,6 +212,7 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   QFontInfo printerFontInfo(*printerFont);
   QString sPrinterFontInfo = printerFontInfo.family();
 
+  printerFont->setFamily(sPrinterFontInfo);
   printerFontButton = new QPushButton(sPrinterFontInfo);
   printerFontButton->setFont(*printerFont);
   printerFontSizeLabel = new QLabel(QString::number(printerFont->pointSize()));
@@ -220,6 +221,7 @@ ExtraTab::ExtraTab(QSettings &settings, QWidget *parent)
   QFontInfo receiptPrinterFontInfo(*receiptPrinterFont);
   QString sReceiptPrinterFontInfo = receiptPrinterFontInfo.family();
 
+  receiptPrinterFont->setFamily(sReceiptPrinterFontInfo);
   receiptPrinterFontButton = new QPushButton(sReceiptPrinterFontInfo);
   receiptPrinterFontButton->setFont(*receiptPrinterFont);
   receiptPrinterFontSizeLabel = new QLabel(QString::number(receiptPrinterFont->pointSize()));
