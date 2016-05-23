@@ -110,6 +110,8 @@ class GeneralTab : public QWidget
     void useLogoCheck_toggled(bool);
 
   private:
+    bool moveDataFiles( QString fromDir, QString toDir);
+
     QTextEdit *printHeaderEdit;
     QTextEdit *printFooterEdit;
     QLineEdit *backupDirectoryEdit;

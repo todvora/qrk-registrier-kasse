@@ -91,7 +91,14 @@ void SettingsDialog::accept()
 
   settings.setValue("useLogo", general->getUseLogo());
   settings.setValue("logo", general->getLogo());
+
+  QString oldDataDir = settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString();
   settings.setValue("sqliteDataDirectory", general->getDataDirectory());
+
+  if (oldDataDir != settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString()) {
+    Database::reopen();
+  }
+
   settings.setValue("importDirectory", general->getImportDirectory());
   settings.setValue("backupDirectory", general->getBackupDirectory());
 
@@ -535,22 +542,49 @@ void GeneralTab::backupDirectoryButton_clicked()
 void GeneralTab::dataDirectoryButton_clicked()
 {
 
-  QMessageBox::critical(this,"Änderung des Daten Verzeichnis!",
-                        "Achtung!\n"
-                        "Wenn Sie das Datenverzeichnis ändern müssen Sie\n"
-                        "dafür sorgen das alle Daten in den ausgewählten Ordner\n"
-                        "verschoben werden. QRK muss neu gestartet werden."
-                        , "Ok");
-
-
   QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
                                                    getDataDirectory(),
                                                    QFileDialog::ShowDirsOnly
                                                    | QFileDialog::DontResolveSymlinks);
 
-  if (!path.isEmpty())
-    dataDirectoryEdit->setText(path);
+  if (!path.isEmpty()) {
+    if ( !moveDataFiles( getDataDirectory(), path)) {
+      QMessageBox::critical(this,"Änderung des Daten Verzeichnis!",
+                            "Achtung!\n"
+                            "Das Verschieben der Daten ist Fehlgeschlagen.\n"
+                            "Sie müssen die Daten manuell verschieben und danach QRK neu starten."
+                            , "Ok");
 
+    }
+
+    dataDirectoryEdit->setText(path);
+  }
+
+}
+
+bool GeneralTab::moveDataFiles( QString fromDir, QString toDir)
+{
+
+  QDir from(fromDir);
+  QDir to(toDir);
+
+  QStringList filter;
+  filter << "*.db";
+  QStringList fileList = from.entryList(filter, QDir::Files);
+  foreach(QString fileName, fileList)
+  {
+    QFileInfo fi(from, fileName);
+    if (fi.isFile())  {
+      if (QFile::copy(fi.absoluteFilePath(), to.absoluteFilePath(fi.fileName()))) {
+        if (!QFile::remove(fi.absoluteFilePath ())) {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 void GeneralTab::importDirectoryButton_clicked()

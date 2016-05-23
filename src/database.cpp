@@ -469,6 +469,14 @@ QString Database::getShopMasterData()
 }
 
 //--------------------------------------------------------------------------------
+void Database::reopen()
+{
+
+  QSqlDatabase dbc = QSqlDatabase::database("CN");
+  dbc.close();
+  open(false);
+
+}
 
 bool Database::open(bool dbSelect)
 {
@@ -495,31 +503,17 @@ bool Database::open(bool dbSelect)
 
   QDate date = QDate::currentDate();
 
-  QString olddataDir = qApp->applicationDirPath() + "/data";
-  QString dataDir = settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString();
-  QDir olddir(olddataDir);
-  QDir dir(dataDir);
+  QString standardDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data";
 
-  if (olddir.exists()) {
-    Backup::create(olddataDir);
-
-    if (!olddir.rename(olddataDir, dataDir)) {
-      qDebug() << "datadir rename failed: " << olddataDir << " -> " << dataDir;
-      dir.mkpath(".");
-
-      QMessageBox errorDialog;
-      errorDialog.setIcon(QMessageBox::Critical);
-      errorDialog.addButton(QMessageBox::Ok);
-      errorDialog.setText(tr("Ihr Datenverzeichnispfad wurde geändert.\n"
-                             "VERSCHIEBEN Sie bitte den Daten-Ordner %1 nach %2.\n\n"
-                             "Der Datenverzeichnispfad ist: %3\n"
-                             "Ein Backup der Daten wurde erstellt.").arg(olddataDir).arg(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).arg(dataDir));
-      errorDialog.setWindowTitle(QObject::tr("Datenverzeichnispfad geändert"));
-      errorDialog.exec();
-      return false;
-
-    }
+  QDir t(qApp->applicationDirPath() + "/data");
+  QStringList filter;
+  filter << "*.db";
+  if ( ! t.entryList(filter, QDir::NoDotAndDotDot).empty() ) {
+    settings.setValue("sqliteDataDirectory", qApp->applicationDirPath() + "/data");
   }
+
+  QString dataDir = settings.value("sqliteDataDirectory", standardDataDir).toString();
+  QDir dir(dataDir);
 
   if (!dir.exists()) {
     dir.mkpath(".");
@@ -650,8 +644,6 @@ bool Database::open(bool dbSelect)
       // changes which are not possible in sql file needed for update-7
       if ( i == 7 )
       {
-//          query.exec(QString("UPDATE products SET \"group\"=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
-//          query.exec(QString("UPDATE products SET \"group\"=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
           query.exec(QString("UPDATE products SET `group`=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
           query.exec(QString("UPDATE products SET `group`=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
       }

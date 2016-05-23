@@ -34,6 +34,7 @@ class Database : public QObject
     ~Database();
 
     static bool open(bool dbSelect);
+    static void reopen();
     static QString getShopName();
     static QString getShopMasterData();
     static QStringList getLastReceipt();
