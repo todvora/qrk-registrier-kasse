@@ -30,6 +30,7 @@
 #include <QJsonArray>
 #include <QDesktopWidget>
 #include <QToolButton>
+#include <QTimer>
 #include <QDebug>
 
 QRKRegister::QRKRegister(QProgressBar *progressBar, QWidget *parent)
@@ -463,8 +464,20 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
     delete dep;
     QApplication::setOverrideCursor(Qt::ArrowCursor);
 
-    if (!servermode)
-      QMessageBox::information(0, QObject::tr("Drucker"), QObject::tr("%1 %2 wurde gedruckt. Nächster Vorgang wird gestartet.").arg(data.value("comment").toString()).arg(receiptNum));
+    if (!servermode) {
+        QMessageBox *msgBox  = new QMessageBox();
+        msgBox->setWindowTitle(tr("Drucker"));
+        msgBox->setText(tr("%1 %2 wurde gedruckt. Nächster Vorgang wird gestartet.").arg(data.value("comment").toString()).arg(receiptNum));
+
+        QTimer *msgBoxCloseTimer = new QTimer(this);
+        msgBoxCloseTimer->setInterval(3000);
+        msgBoxCloseTimer->setSingleShot(true);
+        connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject())); // or accept()
+        msgBoxCloseTimer->start();
+        // QMessageBox::information(0, QObject::tr("Drucker"), QObject::tr("%1 %2 wurde gedruckt. Nächster Vorgang wird gestartet.").arg(data.value("comment").toString()).arg(receiptNum));
+
+        msgBox->show();
+    }
 
     return true;
 
