@@ -469,8 +469,8 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
         msgBox->setWindowTitle(tr("Drucker"));
         msgBox->setText(tr("%1 %2 wurde gedruckt. Nächster Vorgang wird gestartet.").arg(data.value("comment").toString()).arg(receiptNum));
 
-        QTimer *msgBoxCloseTimer = new QTimer(this);
-        msgBoxCloseTimer->setInterval(3000);
+        QTimer *msgBoxCloseTimer = new QTimer(msgBox);
+        msgBoxCloseTimer->setInterval(10000);
         msgBoxCloseTimer->setSingleShot(true);
         connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject())); // or accept()
         msgBoxCloseTimer->start();
