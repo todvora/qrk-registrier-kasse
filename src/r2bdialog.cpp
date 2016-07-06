@@ -57,7 +57,7 @@ QString R2BDialog::getInvoiceNum()
   if (invoiceNum.isEmpty())
     return "Zahlungsbeleg für Rechnung 1 - nicht für den Vorsteuerabzug geeignet";
 
-  return QString("Zahlungsbeleg für Rechnung %1 - nicht für den Vorsteuerabzug geeignet" ).arg(invoiceNum);
+  return QString("Zahlungsbeleg für Rechnung %1 - nicht für den Vorsteuerabzug geeignet" ).arg(invoiceNum.toUpper());
 }
 
 QString R2BDialog::getInvoiceSum()
@@ -66,6 +66,6 @@ QString R2BDialog::getInvoiceSum()
   if (invoiceSum.isEmpty())
     return "0.0";
 
-  QString text = QString::number(invoiceSum.toDouble(),'f',2).toUpper();
+  QString text = QString::number(invoiceSum.toDouble(),'f',2);
   return text;
 }

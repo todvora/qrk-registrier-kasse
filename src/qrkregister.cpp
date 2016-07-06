@@ -470,6 +470,8 @@ bool QRKRegister::finishReceipts(int payedBy, int id, bool isReport)
         msgBox->setText(tr("%1 %2 wurde gedruckt. Nächster Vorgang wird gestartet.").arg(data.value("comment").toString()).arg(receiptNum));
 
         QTimer *msgBoxCloseTimer = new QTimer(msgBox);
+        // The timer gets deleted when we delete the message box.
+
         msgBoxCloseTimer->setInterval(10000);
         msgBoxCloseTimer->setSingleShot(true);
         connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject())); // or accept()
@@ -1088,9 +1090,11 @@ void QRKRegister::receiptToInvoiceSlot()
 
         if (rc == 1) {
             isR2B = true;
+            ui->orderList->model()->blockSignals(true);
             orderListModel->item(0, REGISTER_COL_COUNT)->setText( "1" );
             orderListModel->item(0, REGISTER_COL_PRODUCT)->setText( r2b.getInvoiceNum() );
             orderListModel->item(0, REGISTER_COL_TAX)->setText( "0" );
+            ui->orderList->model()->blockSignals(false);
             orderListModel->item(0, REGISTER_COL_SINGLE)->setText( r2b.getInvoiceSum() );
 
             orderListModel->item(0, REGISTER_COL_COUNT)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
