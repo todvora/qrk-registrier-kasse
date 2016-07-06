@@ -144,7 +144,10 @@ win32 {
 
 macx {
  INCLUDEPATH += /usr/local/include
+ INCLUDEPATH += /usr/local/opt/pcsc-lite/include
  LIBS += -L/usr/local/lib -lqrencode
+ LIBS += -L/usr/local/opt/pcsc-lite/lib
+ ICON = ../qrk.icns
 } else {
  LIBS += -lqrencode
 }
@@ -155,5 +158,6 @@ LIBS += -lz
 win32 {
  LIBS += libwinscard
 } else {
+
  LIBS += -lpcsclite
 }
