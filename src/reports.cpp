@@ -328,7 +328,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   pb->setValue(value + 8);
 
   /* Anzahl Zahlungen */
-  q.prepare(QString("SELECT count(id) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND payedBy <= 2").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate)));
+  q.prepare(QString("SELECT count(id) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND payedBy <= 2 AND storno < 2").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate)));
   q.exec();
   q.next();
 
@@ -337,7 +337,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
   pb->setValue(value + 8);
 
   /* Anzahl Stornos */
-  q.prepare(QString("SELECT count(id) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND storno = 1").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate)));
+  q.prepare(QString("SELECT count(id) FROM receipts WHERE timestamp BETWEEN '%1' AND '%2' AND storno = 2").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate)));
   q.exec();
   q.next();
 
