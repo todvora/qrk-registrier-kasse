@@ -283,7 +283,7 @@ void QRKRegister::addProductToOrderList(int id)
     int rc = orderListModel->rowCount();
     if (rc == 0) {
         plusSlot();
-        rc++;
+        rc = orderListModel->rowCount();
         forceOverwrite = true;
     }
 
@@ -318,7 +318,7 @@ void QRKRegister::addProductToOrderList(int id)
         bool newItem = orderListModel->item(rc -1, REGISTER_COL_PRODUCT)->text().isEmpty();
         if (!newItem && !forceOverwrite) {
             plusSlot();
-            rc++;
+            rc = orderListModel->rowCount();
         }
 
         orderListModel->item(rc -1, REGISTER_COL_COUNT)->setText( "1" );
@@ -889,9 +889,10 @@ void QRKRegister::plusSlot()
     if (orderListModel->rowCount() > 0)
     {
 
-        if (! ui->plusButton->isEnabled())
+        if (! ui->plusButton->isEnabled()) {
+            ui->plusButton->setEnabled(true);
             return;
-
+        }
     }
 
     int row = orderListModel->rowCount();
