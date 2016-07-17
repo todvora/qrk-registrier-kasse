@@ -101,6 +101,29 @@ void setApplicationFont()
 
 }
 
+bool isQRKrunning()
+{
+  QString s;
+  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+  QMessageBox msgWarning(QMessageBox::Warning,"","");
+
+  bool rc = settings.value("QRK_RUNNING", false).toBool();
+
+  if(rc)
+  {
+    msgWarning.setWindowTitle(QObject::tr("Warnung"));
+    s = QObject::tr("Das Programm läuft bereits oder wurde das letzte Mal gewaltsam beendet. Bitte überprüfen Sie das!\n(beim nächsten Programmstart wird diese Meldung nicht mehr angezeigt)");
+    msgWarning.setText(s);
+    msgWarning.exec();
+    settings.remove("QRK_RUNNING");
+  }
+  else
+  {
+    settings.setValue("QRK_RUNNING", true);
+  }
+  return rc;
+}
+
 void printHelp()
 {
     printf("QRK understands:\n"
@@ -136,8 +159,6 @@ int main(int argc, char *argv[])
     setApplicationFont();
 
 
-
-
 #ifdef _WIN32
     // Set feed URL before doing anything else
     FvUpdater::sharedUpdater()->SetFeedURL("http://service.ckvsoft.at/swupdates/Appcast.xml");
@@ -151,6 +172,9 @@ int main(int argc, char *argv[])
     // Check for updates automatically
     FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
 #endif
+
+    if (isQRKrunning())
+      exit(0);
 
     /*
   QSharedMemory mem("QRK");
