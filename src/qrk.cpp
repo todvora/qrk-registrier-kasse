@@ -299,6 +299,8 @@ void QRK::closeEvent (QCloseEvent *event)
   if ( QMessageBox::question(this, tr("Beenden"), tr("Möchten sie wirklich beenden ?"),
                              QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes )
   {
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+    settings.remove("QRK_RUNNING");
     QApplication::exit();
   } else {
     event->ignore();

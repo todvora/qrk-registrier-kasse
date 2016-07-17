@@ -1089,20 +1089,29 @@ void QRKRegister::receiptToInvoiceSlot()
             rc++;
         }
 
+        bool productExists = Database::exists("products", r2b.getInvoiceNum());
+        if (productExists) {
+          QMessageBox msgWarning(QMessageBox::Warning,"","");
+          msgWarning.setWindowTitle(QObject::tr("Warnung"));
+          msgWarning.setText(QObject::tr("Die angegebene Rechnungsnummer wurde schon verwendet. Sollte es sich um einen Irrtum handeln dann Klicken Sie bitte nochmals den \"BON zu Rechnung #\" Button."));
+          msgWarning.exec();
+        }
+
         if (rc == 1) {
             isR2B = true;
-            ui->orderList->model()->blockSignals(true);
-            orderListModel->item(0, REGISTER_COL_COUNT)->setText( "1" );
-            orderListModel->item(0, REGISTER_COL_PRODUCT)->setText( r2b.getInvoiceNum() );
-            orderListModel->item(0, REGISTER_COL_TAX)->setText( "0" );
-            ui->orderList->model()->blockSignals(false);
-            orderListModel->item(0, REGISTER_COL_SINGLE)->setText( r2b.getInvoiceSum() );
 
+            ui->orderList->model()->blockSignals(true);
             orderListModel->item(0, REGISTER_COL_COUNT)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             orderListModel->item(0, REGISTER_COL_PRODUCT)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             orderListModel->item(0, REGISTER_COL_TAX)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             orderListModel->item(0, REGISTER_COL_SINGLE)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             orderListModel->item(0, REGISTER_COL_TOTAL)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+
+            orderListModel->item(0, REGISTER_COL_COUNT)->setText( "1" );
+            orderListModel->item(0, REGISTER_COL_PRODUCT)->setText( r2b.getInvoiceNum() );
+            orderListModel->item(0, REGISTER_COL_TAX)->setText( "0" );
+            ui->orderList->model()->blockSignals(false);
+            orderListModel->item(0, REGISTER_COL_SINGLE)->setText( r2b.getInvoiceSum() );
 
             ui->plusButton->setEnabled(false);
 

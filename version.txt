@@ -20,6 +20,13 @@
 #
 #
 
+VERSION 0.16.0717
+ + Es wird jetzt Überprüft ob QRK schon gestartet ist. Ein Dialog wird angezeigt.
+ * Fix Storno wurde im Tagesbericht nicht berücksichtigt
+ * Fix QuickButton bringt QRK zum absturz wenn R2B aktiv ist
+ * R2B Bei der Dialogeingabe wird die Eingabe der Rechnungsnummer auf GROSS gestellt
+ * Fix wenn bei R2B eine Rechnungsnummer mehrmals vergeben wird. Ein WARN Dialog wird angezeigt.
+
 VERSION 0.16.0523
  + Benutzerdefinierbares Datenverzeichnis
  * fix für TerminalServer wenn <Applikationspfad>/data
