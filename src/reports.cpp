@@ -579,7 +579,7 @@ QString Reports::getReport(int id, bool test)
         span = 1;
       }
       needOneMoreCol = true;
-    } else if (t.indexOf(QRegularExpression("^-*\\d*:")) != -1) {
+    } else if (t.indexOf(QRegularExpression("^-*\\d+:")) != -1) {
       list = t.split(":",QString::SkipEmptyParts);
       span = span - list.count();
       int count = 0;
