@@ -134,7 +134,7 @@ TRANSLATIONS += tr/QRK_en.ts \
 <------>error("Unable to include quazip.")
 }
 
-win32 {
+win32|macx {
 # Fervor autoupdater
 # (set TARGET and VERSION of your app before including Fervor.pri)
 !include("3rdparty/fervor-autoupdate/Fervor.pri") {
@@ -142,9 +142,15 @@ win32 {
 }
 }
 
+unix:!macx {
+ INCLUDEPATH += /usr/include/PCSC
+}
+
 macx {
  INCLUDEPATH += /usr/local/include
  INCLUDEPATH += /usr/local/opt/pcsc-lite/include
+ INCLUDEPATH += /usr/local/Cellar/qrencode/3.4.4/include
+
  LIBS += -L/usr/local/lib -lqrencode
  LIBS += -L/usr/local/opt/pcsc-lite/lib
  ICON = ../qrk.icns
@@ -158,6 +164,5 @@ LIBS += -lz
 win32 {
  LIBS += libwinscard
 } else {
-
  LIBS += -lpcsclite
 }

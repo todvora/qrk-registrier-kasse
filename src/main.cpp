@@ -20,7 +20,7 @@
  *
 */
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
 #include "fvupdater.h"
 #endif
 
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     setApplicationFont();
 
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
     // Set feed URL before doing anything else
     FvUpdater::sharedUpdater()->SetFeedURL("http://service.ckvsoft.at/swupdates/Appcast.xml");
     FvUpdater::sharedUpdater()->setRequiredSslFingerPrint("c3b038cb348c7d06328579fb950a48eb");	// Optional
@@ -175,15 +175,6 @@ int main(int argc, char *argv[])
 
     if (isQRKrunning())
       exit(0);
-
-    /*
-  QSharedMemory mem("QRK");
-  if(!mem.create(1))
-  {
-    QMessageBox::critical(0,"Instanz erkannt!","QRK wird bereits ausgeführt!\nQRK wird geschlossen...","Ok");
-    exit(0);
-  }
-*/
 
     QString locale = QLocale::system().name();
 
