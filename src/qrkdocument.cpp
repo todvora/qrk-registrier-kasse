@@ -197,7 +197,7 @@ void QRKDocument::onCancellationButton_clicked()
   reg->setItemModel(model);
   if (! reg->checkEOAny()) {
     emit documentButton_clicked();
-//    return;
+    return;
   }
   currentReceipt = reg->createReceipts();
   if ( currentReceipt )
