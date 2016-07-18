@@ -560,11 +560,11 @@ QString Reports::getReport(int id, bool test)
 
     QStringList list;
 
-    if (t.indexOf('-') == 0) {
+    if (t.indexOf('-') == 0 && t.size() == 1) {
       t.replace('-',"<hr>");
       text.append(QString("<td colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg(t));
       needOneMoreCol = false;
-    } else if (t.indexOf('=') == 0) {
+    } else if (t.indexOf('=') == 0  && t.size() == 1) {
       t.replace('=',"<hr size=\"5\">");
       text.append(QString("<td colspan=\"%1\" %2>%3</td>").arg(span).arg(color).arg(t));
       needOneMoreCol = false;
@@ -579,7 +579,7 @@ QString Reports::getReport(int id, bool test)
         span = 1;
       }
       needOneMoreCol = true;
-    } else if (t.indexOf(QRegularExpression("^\\d:")) != -1) {
+    } else if (t.indexOf(QRegularExpression("^-*\\d*:")) != -1) {
       list = t.split(":",QString::SkipEmptyParts);
       span = span - list.count();
       int count = 0;
