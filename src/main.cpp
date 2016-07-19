@@ -20,7 +20,8 @@
  *
 */
 
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32)
+// || defined(__APPLE__)
 #include "fvupdater.h"
 #endif
 
@@ -159,7 +160,8 @@ int main(int argc, char *argv[])
     setApplicationFont();
 
 
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32)
+    // || defined(__APPLE__)
     // Set feed URL before doing anything else
     FvUpdater::sharedUpdater()->SetFeedURL("http://service.ckvsoft.at/swupdates/Appcast.xml");
     FvUpdater::sharedUpdater()->setRequiredSslFingerPrint("c3b038cb348c7d06328579fb950a48eb");	// Optional
