@@ -54,8 +54,8 @@ QRKRegister::QRKRegister(QProgressBar *progressBar, QWidget *parent)
     }
 
     this->progressBar = progressBar;
-    this->totallyup = totallyup;
-    this->noPrinter = noPrinter;
+    // this->totallyup = totallyup;
+    // this->noPrinter = noPrinter;
 
     ui->totallyup->setVisible(false);
     ui->dateEdit->setDate(QDate::currentDate());

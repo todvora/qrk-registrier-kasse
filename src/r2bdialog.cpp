@@ -37,7 +37,7 @@ R2BDialog::R2BDialog(QWidget *parent) :
   ui->pushButton->setEnabled(false);
 
   connect(this, SIGNAL(hasAcceptableInput(bool)), SLOT(setOkButtonEnabled(bool)));
-  connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept(bool)));
+  connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept()));
 }
 
 void R2BDialog::setOkButtonEnabled(bool isAccptableInput)
@@ -45,7 +45,7 @@ void R2BDialog::setOkButtonEnabled(bool isAccptableInput)
     ui->pushButton->setEnabled(isAccptableInput);
 }
 
-void R2BDialog::accept(bool)
+void R2BDialog::accept()
 {
   invoiceNum = ui->invoiceNum->text();
   invoiceSum = ui->invoiceSum->text();

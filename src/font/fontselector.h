@@ -46,14 +46,14 @@ class FontSelector : public QDialog
 
     void on_weight_check_checked(bool checked);
     void on_fontComboBox_currentFontChanged(const QFont &f);
-    virtual void accept(bool);
+    void accept();
 
   private:
     void update();
 
   private:
     Ui::FontSelector *ui;
-    QFont *font;
+    // QFont *font;
 
 };
 

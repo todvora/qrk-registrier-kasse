@@ -148,7 +148,7 @@ unix:!macx {
 
 macx {
  INCLUDEPATH += /usr/local/include
- INCLUDEPATH += /usr/local/opt/pcsc-lite/include
+ INCLUDEPATH += /usr/local/opt/pcsc-lite/include/PCSC
  INCLUDEPATH += /usr/local/Cellar/qrencode/3.4.4/include
 
  LIBS += -L/usr/local/lib -lqrencode

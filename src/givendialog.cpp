@@ -36,7 +36,7 @@ GivenDialog::GivenDialog(double &sum, QWidget *parent) :
     ui->toPayLabel->setText(tr("Zu bezahlen: %1 %2").arg(QString::number(sum,'f',2)).arg(Database::getCurrency()));
 
     connect (ui->givenEdit, SIGNAL(textChanged(QString)), SLOT(textChanged(QString)));
-    connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept(bool)));
+    connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept()));
 
 }
 
@@ -45,7 +45,7 @@ GivenDialog::~GivenDialog()
     delete ui;
 }
 
-void GivenDialog::accept(bool)
+void GivenDialog::accept()
 {
 
   QDialog::accept();

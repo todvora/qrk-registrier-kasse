@@ -64,6 +64,7 @@ QPixmap QRCode::encodeTextToPixmap( QString text, int size, int margin, int ErrC
       level = QR_ECLEVEL_H;
       break;
     default:
+      level = QR_ECLEVEL_L;
       break;
   }
 

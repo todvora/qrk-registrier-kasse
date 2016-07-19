@@ -38,7 +38,7 @@ public:
     ~GivenDialog();
 
 private slots:
-    void accept(bool);
+    void accept();
     void textChanged(QString);
 
 private:

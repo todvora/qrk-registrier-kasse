@@ -40,7 +40,7 @@ class R2BDialog : public QRKDialog
   signals:
 
   public slots:
-    virtual void accept(bool);
+    void accept();
     void setOkButtonEnabled(bool isAccptableInput);
 
 

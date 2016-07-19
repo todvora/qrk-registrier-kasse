@@ -24,9 +24,11 @@
 #include "ui_fontselector.h"
 
 FontSelector::FontSelector(QFont font, QWidget *parent) :
-  QDialog(parent), ui(new Ui::FontSelector), font(&font)
+  QDialog(parent), ui(new Ui::FontSelector)
 {
   ui->setupUi(this);
+
+  // this->font = new QFont(font);
 
   connect(ui->OKButton, SIGNAL(clicked(bool)),this,SLOT(accept()));
   connect(ui->CancelButton, SIGNAL(clicked(bool)),this,SLOT(close()));
@@ -98,7 +100,7 @@ void FontSelector::update()
   ui->weight_check->setChecked(f.bold());
 }
 
-void FontSelector::accept(bool)
+void FontSelector::accept()
 {
   QDialog::accept();
 }
