@@ -22,6 +22,9 @@
 
 VERSION 0.16.0725
  * fix restart nach Update
+ * fix storno nach Tagesbericht
+ * fix Storno CancelButton wurde ignoriert
+
 
 VERSION 0.16.0717
  + Es wird jetzt Überprüft ob QRK schon gestartet ist. Ein Dialog wird angezeigt.
