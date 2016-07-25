@@ -144,7 +144,6 @@ void sighandler(int /*sig*/)
 int main(int argc, char *argv[])
 {
 
-
     QApplication app(argc, argv);
     QApplication::setStyle(QStyleFactory::create("Fusion"));
 
@@ -174,9 +173,6 @@ int main(int argc, char *argv[])
     // Check for updates automatically
     FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
 #endif
-
-    if (isQRKrunning())
-      exit(0);
 
     QString locale = QLocale::system().name();
 
@@ -214,12 +210,20 @@ int main(int argc, char *argv[])
         {
             mainWidget->setNoPrinter();
         }
+        else if ( arg == "-r")
+        {
+          QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
+          settings.remove("QRK_RUNNING");
+        }
         else // if ( arg == "--help" )  // --help or everything else we do not understand
         {
             printHelp();
             return 0;
         }
     }
+
+    if (isQRKrunning())
+      return 0;
 
     mainWidget->show();
 
