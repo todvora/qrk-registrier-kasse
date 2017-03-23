@@ -298,7 +298,7 @@ int main(int argc, char *argv[])
     if (!RKSignatureModule::isDEPactive() && !reminderOff) {
         QMessageBox messageBox(QMessageBox::Information,
                                QObject::tr("RKSV"),
-                               QObject::tr("Ab den 1.4.2017 benötigen Sie ein Zertifikat welches Sie bei uns beziehen können. http://www.ckvsoft.at"),
+                               QObject::tr("Ab dem 1.4.2017 benötigen Sie ein Zertifikat welches Sie bei uns beziehen können. http://www.ckvsoft.at"),
                                QMessageBox::Yes,
                                0);
         messageBox.setButtonText(QMessageBox::Yes, QObject::tr("OK"));
