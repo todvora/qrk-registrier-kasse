@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,14 +25,14 @@
 
 #include <QObject>
 #include <QMutex>
-#include <QNetworkAccessManager>
+#include <QtNetwork/QNetworkAccessManager>
 #include <QUrl>
 #include <QXmlStreamReader>
+
 class QNetworkReply;
 class FvUpdateWindow;
 class FvUpdateConfirmDialog;
 class FvAvailableUpdate;
-
 
 class FvUpdater : public QObject
 {
@@ -49,10 +49,12 @@ public:
 	void SetFeedURL(QString feedURL);
 	QString GetFeedURL();
 	void finishUpdate(QString pathToFinish = "");
+    QString getRootPath(bool app = false);
 	void setRequiredSslFingerPrint(QString md5);
 	QString getRequiredSslFingerPrint();	// returns md5!
 	// HTTP Authentuication - for security reasons no getters are provided, only a setter
 	void setHtAuthCredentials(QString user, QString pass);
+    void setUserCredentials(QString info);
 	void setHtAuthUsername(QString user);
 	void setHtAuthPassword(QString pass);
 	void setSkipVersionAllowed(bool allowed);
@@ -160,6 +162,7 @@ private:
 	QString htAuthUsername;
 	QString htAuthPassword;
 
+    QString m_userInfo;
 
 	//
 	// XML parser

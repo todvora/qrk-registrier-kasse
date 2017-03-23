@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-CREATE TABLE `products_backup` (
+CREATE TEMPORARY TABLE `products_backup` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `name`	text NOT NULL,
     `sold`	double NOT NULL DEFAULT 0,

@@ -1,126 +1,225 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author>Copyright 2010, Martin Koller</author>
+ <author>Copyright 2016, Christian Kvasny</author>
  <class>ProductEdit</class>
  <widget class="QDialog" name="ProductEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>408</height>
+    <width>420</width>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Produkt Editieren</string>
+   <string>Artikel Editieren</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <property name="verticalSpacing">
-    <number>30</number>
-   </property>
-   <item row="0" column="0">
-    <layout class="QFormLayout" name="formLayout">
-     <property name="verticalSpacing">
-      <number>30</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="nameLabel">
-       <property name="text">
-        <string>Name:</string>
-       </property>
-      </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="nameLabel">
+         <property name="text">
+          <string>Artikel Name:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="name">
+         <property name="placeholderText">
+          <string>Artikelname</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="itemNumLabel">
+         <property name="text">
+          <string>Artikel Nummer:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="itemNum"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="barcodeLabel">
+         <property name="text">
+          <string>Barcode:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="barcode"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="categorieLabel">
+         <property name="text">
+          <string>Gruppe:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="groupComboBox"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Button Farbe:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Steuer:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QComboBox" name="taxComboBox"/>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="visibleLabel">
+         <property name="text">
+          <string>Sichtbar:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QCheckBox" name="visibleCheckBox">
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Netto Preis: </string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLineEdit" name="net">
+         <property name="placeholderText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="PriceLabel">
+         <property name="text">
+          <string>Brutto Preis:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QLineEdit" name="gross"/>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="colorComboBox"/>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="collectionReceiptLabel">
+         <property name="text">
+          <string>Extrabon:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="collectionReceiptCheckBox">
+         <property name="text">
+          <string>(ExtraBon für diesen Artikel drucken)</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="name">
-       <property name="placeholderText">
-        <string>Artikelname</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="categorieLabel">
-       <property name="text">
-        <string>Gruppe:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="groupComboBox"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Button Farbe:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Steuer:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QComboBox" name="taxComboBox"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="visibleLabel">
-       <property name="text">
-        <string>Sichtbar:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QCheckBox" name="visibleCheckBox">
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Netto Preis: </string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="net">
-       <property name="placeholderText">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="PriceLabel">
-       <property name="text">
-        <string>Brutto Preis:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="gross"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="colorComboBox"/>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="okButton">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>OK</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../qrk.qrc">
+           <normaloff>:/icons/ok.png</normaloff>:/icons/ok.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="autoDefault">
+          <bool>true</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="cancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Abbrechen</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../qrk.qrc">
+           <normaloff>:/icons/cancel.png</normaloff>:/icons/cancel.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="autoDefault">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
-   </item>
-   <item row="1" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
  <tabstops>
   <tabstop>name</tabstop>
+  <tabstop>itemNum</tabstop>
+  <tabstop>barcode</tabstop>
   <tabstop>groupComboBox</tabstop>
   <tabstop>colorComboBox</tabstop>
   <tabstop>taxComboBox</tabstop>
@@ -128,39 +227,8 @@
   <tabstop>net</tabstop>
   <tabstop>gross</tabstop>
  </tabstops>
- <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>ProductEdit</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>244</x>
-     <y>158</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>190</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>ProductEdit</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>312</x>
-     <y>158</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>190</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <resources>
+  <include location="../qrk.qrc"/>
+ </resources>
+ <connections/>
 </ui>

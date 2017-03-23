@@ -10,6 +10,11 @@ INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,1
 INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,2,'Kreditkarte','payedByText');
 INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,3,'Tagesabschluss','PayedByText');
 INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,4,'Monatsabschluss','PayedByText');
+INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,5,'Startbeleg','PayedByText');
+INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,6,'Kontrollbeleg','PayedByText');
+INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,7,'Sammelbeleg','PayedByText');
+INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,8,'Monatsbeleg','PayedByText');
+INSERT INTO `actionTypes`(`id`,`actionId`,`actionText`,`comment`) VALUES (NULL,9,'Schlussbeleg','PayedByText');
 
 CREATE TABLE `taxTypes` (
         `id`        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,6 +58,8 @@ INSERT INTO `groups`(`name`,`visible`) VALUES ('Default', 0);
 
 CREATE TABLE `products` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `itemnum`	text NOT NULL,
+    `barcode`	text NOT NULL,
     `name`	text NOT NULL,
     `sold`	double NOT NULL DEFAULT 0,
     `net`	double NOT NULL,
@@ -64,6 +71,7 @@ CREATE TABLE `products` (
     `color`     text DEFAULT '#808080',
     `button`    text DEFAULT '',
     `image`     text DEFAULT '',
+    `coupon`	tinyint(1) NOT NULL DEFAULT 0,
     CONSTRAINT `group` FOREIGN KEY (`group`) REFERENCES `groups` (`id`)
 );
 
@@ -80,16 +88,16 @@ CREATE TABLE `orders` (
 
 CREATE INDEX `orders_receiptId_index` ON `orders` (`receiptId`);
 
-CREATE TABLE  `receipts` (
-        `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-        `timestamp`	datetime NOT NULL,
-        `receiptNum`	int(11) DEFAULT NULL,
-        `payedBy`	int(11) NOT NULL DEFAULT '0',
-        `gross`	double NOT NULL DEFAULT '0',
-        `net`	double NOT NULL DEFAULT '0',
-        `storno`	int(11) NOT NULL DEFAULT '0',
-        `stornoId`	int(11) NOT NULL DEFAULT '0',
-        `signature`	text
+CREATE TABLE `receipts` (
+    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `timestamp`	datetime NOT NULL,
+    `infodate`	datetime NOT NULL,
+    `receiptNum`	int(11) DEFAULT NULL,
+    `payedBy`	int(11) NOT NULL DEFAULT '0',
+    `gross`	double NOT NULL DEFAULT '0',
+    `net`	double NOT NULL DEFAULT '0',
+    `storno`	int(11) NOT NULL DEFAULT '0',
+    `stornoId`	int(11) NOT NULL DEFAULT '0'
 );
 
 CREATE INDEX `receipts_stornoId_index` ON `receipts` (`stornoId`);
@@ -100,7 +108,7 @@ CREATE TABLE `customer` (
     `text`              text
 );
 
-CREATE TABLE `dep` (
+CREATE TABLE `journal` (
     `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `version`           text NOT NULL,
     `cashregisterid`    text NOT NULL,
@@ -108,10 +116,17 @@ CREATE TABLE `dep` (
     `text`              text
 );
 
-CREATE TABLE `reports` (
-        `id`            INTEGER NOT NULL,
+CREATE TABLE `dep` (
+        `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         `receiptNum`	int(11),
-        `text`          text,
-        PRIMARY KEY(id)
+        `data`	text
 );
+
+CREATE TABLE `reports` (
+        `id`            INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        `receiptNum`	int(11),
+        `timestamp`	datetime NOT NULL,
+        `text`          text
+);
+
 CREATE INDEX `reports_receiptNum_index` ON `reports` (`receiptNum`);

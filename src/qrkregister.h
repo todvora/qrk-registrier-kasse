@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,53 +23,33 @@
 #ifndef QRKREGISTER_H
 #define QRKREGISTER_H
 
-#include "defines.h"
-#include "database.h"
 #include "receiptitemmodel.h"
-#include "utils/utils.h"
-#include "documentprinter.h"
-#include "dep.h"
-#include "qrkdelegate.h"
-#include "reports.h"
-#include "r2bdialog.h"
-
-#include <QProgressBar>
-#include <QShortcut>
-#include <QSqlQueryModel>
+#include "preferences/qrksettings.h"
+#include "pluginmanager/Interfaces/barcodesinterface.h"
 
 #include "ui_qrkregister.h"
+
+//class QSqlQueryModel;
 
 class QRKRegister : public QWidget
 {
     Q_OBJECT
   public:
-    explicit QRKRegister(QProgressBar *progressBar, QWidget *parent = 0);
-
-    QString getHeaderText();
+    explicit QRKRegister(QWidget *parent = 0);
+    ~QRKRegister();
     void init();
-    void updateOrderSum();
-    int createReceipts();
-    bool finishReceipts(int, int = 0, bool = false);
     void newOrder();
-
     void clearModel();
-    void setItemModel(QSqlQueryModel *model);
-    QJsonObject compileData(int id = 0);
-    bool createOrder(bool storno = false);
-    void setCurrentReceiptNum(int id);
-    bool checkEOAny();
-    bool checkEOAnyServerMode();
-    bool setR2BServerMode(QJsonObject obj);
-    void setServerMode(bool);
 
   signals:
     void cancelRegisterButton_clicked();
-    void registerButton_clicked();
-
+    void finishedReceipt();
 
   public slots:
+    void safetyDevice(bool active);
+
   private slots:
-    void itemChangedSlot( const QModelIndex& i, const QModelIndex&);
+    void barcodeChangedSlot();
     void plusSlot();
     void minusSlot();
     void onButtonGroup_payNow_clicked(int payedBy);
@@ -79,32 +59,51 @@ class QRKRegister : public QWidget
     void totallyupExitSlot();
     void receiptToInvoiceSlot();
     void onCancelRegisterButton_clicked();
+    void setButtonGroupEnabled(bool enabled);
+    void finishedItemChanged();
+    void finishedPlus();
+    void createCheckReceipt(bool);
+    void setColumnHidden(int col);
 
+  protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
   private:
     Ui::QRKRegister *ui;
 
-    void setButtonGroupEnabled(bool enabled);
+    void updateOrderSum();
+    void setCurrentReceiptNum(int id);
     void quickGroupButtons();
-    QString wordWrap(QString text, int width, QFont font);
-    void printDocument(int id, QString title);
+    void handleAmount(QString amount);
+    void initAmount();
+    void resetAmount();
+    void initAppendType();
+    void init(int col, QString val);
+    void appendToAmount(QString digits);
+    void appendToPrice(QString digits);
 
-    int currentReceipt;
-    QProgressBar *progressBar;
-    QDate lastEOD;
-    ReceiptItemModel *orderListModel;
-    bool totallyup;
-    bool noPrinter;
-    bool useInputNetPrice;
-    bool useMaximumItemSold;
-    bool useDecimalQuantity;
-    bool useGivenDialog;
-    bool isR2B;
-    bool servermode;
-    QString currency;
-    QString taxlocation;
-    QButtonGroup *buttonGroupGroups;
-    QButtonGroup *buttonGroupProducts;
+    bool finishReceipts(int, int = 0, bool = false);
+
+    void initPlugins();
+    BarcodesInterface *barcodesInterface;
+
+    int m_currentReceipt;
+    ReceiptItemModel *m_orderListModel;
+
+    bool m_totallyup;
+    bool m_useInputNetPrice;
+    bool m_useMaximumItemSold;
+    bool m_useDecimalQuantity;
+    bool m_useGivenDialog;
+    bool m_isR2B;
+    bool m_receiptPrintDialog;
+
+    QButtonGroup *m_buttonGroupGroups;
+    QButtonGroup *m_buttonGroupProducts;
+
+    int m_barcodeReaderPrefix;
+
 
 };
 

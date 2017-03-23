@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,9 +57,9 @@ class QrkDelegate : public QStyledItemDelegate
     void commitAndCloseEditor() ;
 
   private:
-    int type;
-    QString shortcurrency;
-    QString taxlocation;
+    int m_type;
+    QString m_shortcurrency;
+    QString m_taxlocation;
 
 };
 

@@ -1,7 +1,7 @@
 #
 # This file is part of QRK - Qt Registrier Kasse
 #
-# Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+# Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 
 To Do Liste:
 
+erledigt    Cardreader Support                      (VERSION 1.00 Build 161220)
+erledigt    DEP Export (JSONFormat)                 (VERSION 1.00 Build 161220)
 erledigt    QR-Code bzw. OCR-Code für 2017 (VERSION 0.16.0327)
 erledigt    AES256 für 2017 (VERSION 0.16.0327)
 erledigt    Kundentext bei Dokumenten anzeigen (VERSION 0.16.0222)
@@ -67,7 +69,5 @@ erledigt    Stammdaten Eingabe                      (VERSION 0.16.0104)
 erledigt    Fußtext auf Kassebon                    (VERSION 0.16.0104)
 erledigt    Bon zu beleg 2-zeilig Drucken           (VERSION 0.15.1231)
 
-offen       Mehrzeilige Produktzeile bei der Eingabe
-offen       Grössere Buttons für Touch (bitte nur wahlweise wegen kleinem Bildschirm)
-offen       Cardreader Support
-offen       DEP Export (JSONFormat)
+verworfen (kein bedarf)      Mehrzeilige Produktzeile bei der Eingabe
+verworfen (kein bedarf)      Grössere Buttons für Touch (bitte nur wahlweise wegen kleinem Bildschirm)

@@ -2,13 +2,22 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>768</height>
+    <height>400</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
@@ -23,6 +32,9 @@
     <height>32</height>
    </size>
   </property>
+  <property name="dockNestingEnabled">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3"/>
   </widget>
@@ -32,23 +44,50 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>29</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
     <property name="title">
      <string>Da&amp;tei</string>
     </property>
-    <addaction name="actionDEP_Exportieren"/>
+    <widget class="QMenu" name="menuImport">
+     <property name="title">
+      <string>&amp;Import</string>
+     </property>
+     <addaction name="import_CSV"/>
+    </widget>
+    <widget class="QMenu" name="menu_Exportieren">
+     <property name="title">
+      <string>&amp;Export</string>
+     </property>
+     <addaction name="export_CSV"/>
+     <addaction name="export_JSON"/>
+    </widget>
+    <widget class="QMenu" name="menuDatensicherung">
+     <property name="title">
+      <string>&amp;Datensicherung</string>
+     </property>
+     <addaction name="actionDatenbank_sichern"/>
+     <addaction name="actionDEPexternalBackup"/>
+    </widget>
+    <addaction name="menuImport"/>
+    <addaction name="menu_Exportieren"/>
+    <addaction name="separator"/>
+    <addaction name="menuDatensicherung"/>
    </widget>
    <widget class="QMenu" name="menuHilfe">
     <property name="title">
      <string>Hi&amp;lfe</string>
     </property>
+    <addaction name="actionInfos_zur_Registrierung_bei_FON"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout_QRK"/>
     <addaction name="actionAbout_QT"/>
     <addaction name="separator"/>
     <addaction name="actionQRK_Forum"/>
+    <addaction name="separator"/>
+    <addaction name="actionPlugins"/>
    </widget>
    <widget class="QMenu" name="menuDEMOMODUS">
     <property name="title">
@@ -61,12 +100,11 @@
    <addaction name="menuHilfe"/>
    <addaction name="menuDEMOMODUS"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionDEP_Exportieren">
-   <property name="text">
-    <string>&amp;DEP Exportieren</string>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="autoFillBackground">
+    <bool>true</bool>
    </property>
-  </action>
+  </widget>
   <action name="actionEOD">
    <property name="text">
     <string>&amp;EOD</string>
@@ -100,6 +138,47 @@
   <action name="actionQRK_Forum">
    <property name="text">
     <string>QRK &amp;Forum</string>
+   </property>
+  </action>
+  <action name="import_CSV">
+   <property name="text">
+    <string>&amp;Csv Datei</string>
+   </property>
+  </action>
+  <action name="export_CSV">
+   <property name="text">
+    <string>&amp;Journal als Csv</string>
+   </property>
+   <property name="toolTip">
+    <string>Journal als Csv</string>
+   </property>
+  </action>
+  <action name="export_JSON">
+   <property name="text">
+    <string>DEP &amp;als JSON</string>
+   </property>
+   <property name="toolTip">
+    <string>DEP als JSON</string>
+   </property>
+  </action>
+  <action name="actionInfos_zur_Registrierung_bei_FON">
+   <property name="text">
+    <string>&amp;Registrierung bei Finanz Online</string>
+   </property>
+  </action>
+  <action name="actionDatenbank_sichern">
+   <property name="text">
+    <string>&amp;Datenbank sichern (derzeit nur SQLite)</string>
+   </property>
+  </action>
+  <action name="actionDEPexternalBackup">
+   <property name="text">
+    <string>DEP &amp;extern sichern</string>
+   </property>
+  </action>
+  <action name="actionPlugins">
+   <property name="text">
+    <string>Plugins</string>
    </property>
   </action>
  </widget>

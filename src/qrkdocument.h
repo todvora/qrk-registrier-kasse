@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,7 @@
 #ifndef QRKDOCUMENT_H
 #define QRKDOCUMENT_H
 
-#include "defines.h"
 #include "qsortfiltersqlquerymodel.h"
-#include "qrkdelegate.h"
-#include "database.h"
-#include "reports.h"
-#include "documentprinter.h"
 
 #include "ui_qrkdocument.h"
 
@@ -38,7 +33,7 @@ class QRKDocument : public QWidget
 
   public:
 
-    explicit QRKDocument(QProgressBar *progressBar, QWidget *parent = 0);
+    explicit QRKDocument(QWidget *parent = 0);
     void documentList();
 
   signals:
@@ -59,11 +54,10 @@ class QRKDocument : public QWidget
 
   private:
     Ui::QRKDocument *ui;
-    QSqlQueryModel *documentContentModel;
-    QSortFilterSqlQueryModel *documentListModel;
+    QSqlQueryModel *m_documentContentModel;
+    QSortFilterSqlQueryModel *m_documentListModel;
 
-    int currentReceipt;
-    QProgressBar *progressBar;
+    int m_currentReceipt;
 };
 
 #endif // QRKDOCUMENT_H

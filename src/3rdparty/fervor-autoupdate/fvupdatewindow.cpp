@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,13 +92,12 @@ bool FvUpdateWindow::UpdateWindowWithCurrentProposedUpdate()
 
         if (reply->error() == QNetworkReply::NoError) {
             //success
-//            qDebug() << "Success" <<reply->readAll();
             m_ui->releaseNotesWebView->setHtml(reply->readAll());
             delete reply;
         }
         else {
             //failure
-            qDebug() << "Failure" <<reply->errorString();
+            qWarning() << "Function Name: " << Q_FUNC_INFO << " Failure" <<reply->errorString();
             delete reply;
         }
 

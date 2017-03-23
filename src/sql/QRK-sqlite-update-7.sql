@@ -13,7 +13,7 @@ CREATE TABLE  `groups` (
 INSERT INTO `groups`(`name`,`visible`) VALUES ('auto', 0);
 INSERT INTO `groups`(`name`,`visible`) VALUES ('Standard', 1);
 
-CREATE TABLE `products_backup` (
+CREATE TEMPORARY TABLE `products_backup` (
 `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 `name`	text NOT NULL,
 `sold`	double NOT NULL DEFAULT 0,

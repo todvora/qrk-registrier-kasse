@@ -2,7 +2,7 @@ BEGIN TRANSACTION;
 
 CREATE INDEX `orders_receiptId_index` ON `orders` (`receiptId`);
 
-CREATE TABLE `orders_backup` (
+CREATE TEMPORARY TABLE `orders_backup` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `receiptId`	INTEGER NOT NULL,
     `product`	INTEGER NOT NULL,
@@ -33,7 +33,7 @@ INSERT INTO orders SELECT `id`,`receiptId`,`product`,`count`,`net`,`gross`, `tax
 DROP TABLE orders_backup;
 
 
-CREATE TABLE `products_backup` (
+CREATE TEMPORARY TABLE `products_backup` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `name`	text NOT NULL,
     `sold`	INTEGER NOT NULL DEFAULT 0,

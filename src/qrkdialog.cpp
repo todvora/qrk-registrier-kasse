@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ QRKDialog::QRKDialog(QWidget* parent)
 
 void QRKDialog::registerMandatoryField(QLineEdit* le, const QString& regexp)
 {
-    if (!le || _mandatoryFields.contains(le))
+    if (!le || m_mandatoryFields.contains(le))
         return;
 
     if (regexp != "")
@@ -41,26 +41,26 @@ void QRKDialog::registerMandatoryField(QLineEdit* le, const QString& regexp)
         le->setValidator(new QRegExpValidator(QRegExp(regexp), le));
     }
 
-    _mandatoryFields.append(le);
+    m_mandatoryFields.append(le);
 
     QObject::connect(le, SIGNAL(textChanged(const QString&)), this, SLOT(checkLineEdits()));
 }
 
 void QRKDialog::unregisterMandatoryField(QLineEdit* le)
 {
-    if (!le || !_mandatoryFields.contains(le))
+    if (!le || !m_mandatoryFields.contains(le))
         return;
 
     QObject::disconnect(le, 0, 0, 0);
 
-    _mandatoryFields.removeAll(le);
+    m_mandatoryFields.removeAll(le);
 }
 
 void QRKDialog::checkLineEdits()
 {
     bool b = true;
 
-    for (QList<QLineEdit*>::iterator iter = _mandatoryFields.begin(); iter != _mandatoryFields.end(); ++iter)
+    for (QList<QLineEdit*>::iterator iter = m_mandatoryFields.begin(); iter != m_mandatoryFields.end(); ++iter)
     {
         QLineEdit* le = *iter;
 

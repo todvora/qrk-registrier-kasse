@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,9 @@
 #define FILEWATCHER_H
 
 #include <QWidget>
-#include <QFileInfoList>
 
-class QTimer;
 class Import;
+class ImportWorker;
 
 class FileWatcher : public QWidget
 {
@@ -36,21 +35,24 @@ class FileWatcher : public QWidget
 public:
     FileWatcher(QWidget* parent=0);
     ~FileWatcher();
+    void removeDirectories();
 
-  signals:
-    void addToQueue(QFileInfoList infoList);
-    void importInfo(QString str);
+signals:
+    void stopWorker();
+    void workerStopped();
 
-  public slots:
+public slots:
     void directoryChanged(const QString& str);
-    void fileAdded();
-
+    void finished();
 
 private:
-    void appendQueue(QString path);
-    QTimer *timer;
-    QFileInfoList list;
-    Import *import;
+    ImportWorker *m_worker;
+    static bool compareNames(const QString& s1,const QString& s2);
+    void start();
+
+    QQueue<QString> *m_queue;
+    QStringList m_watchingPathList;
+    bool m_isBlocked;
 };
 
 #endif // FILEWATCHER_H

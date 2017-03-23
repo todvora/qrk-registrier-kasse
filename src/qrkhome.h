@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,22 +23,23 @@
 #ifndef QRKHOME_H
 #define QRKHOME_H
 
-#include "defines.h"
-#include "settingsdialog.h"
-#include "dep.h"
-#include "reports.h"
-
-#include <QFileSystemWatcher>
 #include <QFileInfoList>
+#include <QFileSystemWatcher>
 
 #include "ui_qrkhome.h"
+
+class FileWatcher;
 
 class QRKHome : public QWidget
 {
     Q_OBJECT
   public:
-    explicit QRKHome(QWidget *parent = 0);
+    explicit QRKHome(bool servermode = false, QWidget *parent = 0);
+    ~QRKHome();
+
     void init();
+    bool isServerMode();
+    void setExternalDepLabels(bool visible);
 
   signals:
     void registerButton_clicked();
@@ -46,25 +47,30 @@ class QRKHome : public QWidget
     void managerButton_clicked();
     void fullScreenButton_clicked();
     void exitButton_clicked();
+    void stopWatcher();
+    void refreshMain();
 
     void endOfDay();
     void endOfMonth();
 
   public slots:
+    void safetyDevice(bool);
 
   private slots:
     void menuSlot();
     void taskSlot();
     void settingsSlot();
     void serverModeCheckBox_clicked(bool checked);
-    void importInfo(QString str);
+    void importInfo(QString str, bool isError);
 
   private:
     Ui::QRKHome *ui;
-    QFrame *menu;
-    QFrame *task;
-    QFileSystemWatcher watcher;
-    QString watcherpath;
+    QWidget *m_menu;
+    QFrame *m_task;
+    QFileSystemWatcher m_watcher;
+    FileWatcher *m_fw;
+    QString m_watcherpath;
+    bool m_previousSafetyDeviceState;
 
 };
 

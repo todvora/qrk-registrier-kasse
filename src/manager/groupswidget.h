@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 #ifndef _GROUPS_WIDGET_H_
 #define _GROUPS_WIDGET_H_
 
-#include <QDialog>
+#include <QWidget>
+
 class QSqlTableModel;
 class QSortFilterProxyModel;
 
@@ -48,9 +49,8 @@ class GroupsWidget : public QWidget
 
   private:
     Ui::GroupsWidget *ui;
-    QSqlTableModel *model;
-    QSortFilterProxyModel *proxyModel;
-
+    QSqlTableModel *m_model;
+    QSortFilterProxyModel *m_proxyModel;
 };
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,60 +24,57 @@
 #define MAINWIDGET_H
 
 #include <ui_qrk.h>
-#include "reports.h"
 
 #include <QWidget>
 #include <QDate>
-
-class QLabel;
-class QProgressBar;
 
 class QRKHome;
 class QRKDocument;
 class QRKRegister;
 class QStackedWidget;
 class QLCDNumber;
-
+class QLabel;
+class QProgressBar;
 
 class QRK : public QMainWindow
 {
     Q_OBJECT
 
-  public:
+public:
 
-    QRK();
+    QRK(bool servermode = false);
     ~QRK();
 
-    void setLastEOD(QDate lastEOD) {this->lastEOD = lastEOD;}
-    void setNoPrinter() { noPrinter = true; }  // do not print to printer but only to pdf file for testing only
     void setShopName();
-    int getCurrentRegisterYear(){return currentRegisterYear;}
-    void init();
+    int getCurrentRegisterYear(){return m_currentRegisterYear;}
 
-    QLabel *currentRegisterYearLabel;
-    QLabel *cashRegisterIdLabel;
-    QProgressBar *progressBar;
+    QLabel *m_currentRegisterYearLabel;
+    QLabel *m_cashRegisterIdLabel;
 
-    QRKHome *qrk_home;
-    QRKRegister *qrk_register;
-    QRKDocument *qrk_document;
-    QStackedWidget *stackedWidget;
-
-  protected:
+protected:
     void iniStack();
 
-  private slots:
-    bool endOfDaySlot();
-    bool endOfMonthSlot();
+private slots:
+    void endOfDaySlot();
+    void endOfMonthSlot();
     void onRegisterButton_clicked();
     void onCancelRegisterButton_clicked();
     void onManagerButton_clicked();
-    void onCancelManagerButton_clicked();
-
+    void finishedReceipt();
+    void init();
 
     void onDocumentButton_clicked();
     void onCancelDocumentButton_clicked();
-    void actionDEP_Export();
+    void import_CSV();
+    void export_CSV();
+    void export_JSON();
+    void infoFON();
+    void backupDEP();
+    void backup();
+    void plugins();
+
+    void setSafetyDevice(bool active);
+
     void actionAbout_QRK();
     void actionQRK_Forum();
     void actionLeaveDemoMode();
@@ -86,29 +83,41 @@ class QRK : public QMainWindow
     void fullScreenSlot();
     void exitSlot();
 
-  protected slots:
+protected slots:
     virtual void timerDone();
 
+public slots:
+    void setStatusBarProgressBar(int value, bool add);
+    void setStatusBarProgressBarWait(bool on_off);
 
-  private:
+private:
     void closeEvent (QCloseEvent *event);
-
-    QString shopname();
-    QLCDNumber *dateLcd;
-
-  private:
     Ui::MainWindow *ui;
-    void printDocument(int id, QString title);
 
-    QTimer *timer;
+    bool m_servermode;
+    QString shopname();
+    QLCDNumber *m_dateLcd;
 
-    int currentReceipt;
-    int currentRegisterYear;
-    QString cashRegisterId;
+    void restartApplication();
 
-    QString shopName;
-    bool noPrinter;
-    QDate lastEOD;
+    QLabel *m_dep;
+    QLabel *m_depPX;
+    QLabel *m_safetyDevicePX;
+
+    QProgressBar *m_progressBar;
+
+    QRKHome *m_qrk_home;
+    QRKRegister *m_qrk_register;
+    QRKDocument *m_qrk_document;
+    QStackedWidget *m_stackedWidget;
+
+    QTimer *m_timer;
+
+    int m_currentRegisterYear;
+    QString m_cashRegisterId;
+
+    QString m_shopName;
+    bool m_previousSafetyDeviceState;
 
 };
 

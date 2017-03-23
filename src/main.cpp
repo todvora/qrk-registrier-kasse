@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,14 @@
  *
 */
 
-#if defined(_WIN32)
-// || defined(__APPLE__)
-#include "fvupdater.h"
+#if defined(_WIN32) || defined(__APPLE__)
+#include "3rdparty/fervor-autoupdate/fvupdater.h"
 #endif
 
+
 #include "qrk.h"
-#include "settingsdialog.h"
+#include "preferences/settingsdialog.h"
+#include "preferences/qrksettings.h"
 #include "utils/demomode.h"
 #include "backup.h"
 
@@ -43,24 +44,26 @@
 #include <QSharedMemory>
 #include <QStyleFactory>
 #include <QStandardPaths>
+#include <QCommandLineParser>
 
 //--------------------------------------------------------------------------------
 #include <QFile>
 #include <QTextStream>
+#include <QSettings>
 #include <QDebug>
 
 void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString & str)
 {
-    QString txt;
+    QString txt = "";
+    bool debug = qApp->property("debugMsg").toBool();
     switch (type) {
     case QtDebugMsg:
-        txt = QString("%1 %2 Debug: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
+        if (debug)
+            txt = QString("%1 %2 Debug: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     case QtInfoMsg:
         txt = QString("%1 %2 Info: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
-#endif
     case QtWarningMsg:
         txt = QString("%1 %2 Warning: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
         break;
@@ -76,9 +79,12 @@ void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString
     if (outFile.size() > 20000000) /*20 Mega*/
         Backup::pakLogFile();
 
-    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
-    QTextStream ts(&outFile);
-    ts << txt.simplified() << endl;
+    if (!txt.isEmpty()) {
+        outFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+        QTextStream ts(&outFile);
+        ts << txt.simplified() << endl;
+        outFile.close();
+    }
 }
 
 void createAppDataLocation()
@@ -89,8 +95,8 @@ void createAppDataLocation()
 
 void setApplicationFont()
 {
-  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
-  QList<QString> systemFontList = settings.value("systemfont").toString().split(",");
+  QrkSettings settings;
+    QList<QString> systemFontList = settings.value("systemfont").toString().split(",");
   if (systemFontList.count() < 3)
     return;
 
@@ -102,11 +108,31 @@ void setApplicationFont()
 
 }
 
+void loadStyleSheet(const QString &sheetName)
+{
+    QFile file(sheetName);
+    if (file.exists()) {
+        file.open(QFile::ReadOnly);
+        QString styleSheet = QString::fromLatin1(file.readAll());
+
+        qApp->setStyleSheet(styleSheet);
+    } else {
+        qWarning() << "Function Name: " << Q_FUNC_INFO << " QSS File <" << sheetName << "> not found";
+    }
+}
+
+void setNoPrinter(bool noPrinter = false)
+{
+    QrkSettings settings;
+    settings.save2Settings("noPrinter", noPrinter, false);
+}
+
 bool isQRKrunning()
 {
   QString s;
-  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
   QMessageBox msgWarning(QMessageBox::Warning,"","");
+
+  QrkSettings settings;
 
   bool rc = settings.value("QRK_RUNNING", false).toBool();
 
@@ -116,28 +142,21 @@ bool isQRKrunning()
     s = QObject::tr("Das Programm läuft bereits oder wurde das letzte Mal gewaltsam beendet. Bitte überprüfen Sie das!\n(beim nächsten Programmstart wird diese Meldung nicht mehr angezeigt)");
     msgWarning.setText(s);
     msgWarning.exec();
-    settings.remove("QRK_RUNNING");
+    settings.removeSettings("QRK_RUNNING", false);
   }
   else
   {
-    settings.setValue("QRK_RUNNING", true);
+    settings.save2Settings("QRK_RUNNING", true, false);
   }
   return rc;
-}
-
-void printHelp()
-{
-    printf("QRK understands:\n"
-           "-db ... open database defintion dialog\n"
-           "-f | --fullscreen ... work in fullscreen mode\n"
-           "-n | --noPrinter ... for tests, do not print to printer but to PDF\n"
-           "--help ... this text\n");
 }
 
 //--------------------------------------------------------------------------------
 
 void sighandler(int /*sig*/)
 {
+    QrkSettings settings;
+    settings.removeSettings("QRK_RUNNING", false);
     qApp->exit();
 }
 
@@ -158,77 +177,103 @@ int main(int argc, char *argv[])
 
     setApplicationFont();
 
-
-#if defined(_WIN32)
-    // || defined(__APPLE__)
-    // Set feed URL before doing anything else
-    FvUpdater::sharedUpdater()->SetFeedURL("http://service.ckvsoft.at/swupdates/Appcast.xml");
-    FvUpdater::sharedUpdater()->setRequiredSslFingerPrint("c3b038cb348c7d06328579fb950a48eb");	// Optional
-    FvUpdater::sharedUpdater()->setHtAuthCredentials("swupdates", "updatepw");	// Optional
-    FvUpdater::sharedUpdater()->setSkipVersionAllowed(true);	// Optional
-    FvUpdater::sharedUpdater()->setRemindLaterAllowed(true);	// Optional
-    // Finish Up old Updates
-    FvUpdater::sharedUpdater()->finishUpdate();
-
-    // Check for updates automatically
-    FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
-#endif
-
     QString locale = QLocale::system().name();
 
     QTranslator trans;
     QString translationPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-    if ( trans.load(QLatin1String("qt_") + locale, translationPath) )
+    if ( (trans.load(QLocale(), QLatin1String("qt"), QLatin1String("_"),translationPath) ||
+          trans.load(QLocale(), QLatin1String("qt"), QLatin1String("_"),QCoreApplication::applicationDirPath() + QDir::separator() + QLatin1String("i18n"))) )
         app.installTranslator(&trans);
 
-    // QRK translation file is searched in the application install dir (e.g. /opt/QRK)
-    // and also in /usr/share/QRK
+    // QRK translation file is searched in the application install dir (e.g. /opt/qrk)
+    // and also in /usr/share/qrk
     QTranslator trans2;  // if current language is not de and translation not found, use english
     if ( !locale.startsWith(QLatin1String("de")) &&
-         (trans2.load(QLatin1String("QRK_") + locale, QCoreApplication::applicationDirPath()) ||
-          trans2.load(QLatin1String("QRK_") + locale, QLatin1String("/usr/share/QRK")) ||
-          trans2.load(QLatin1String("QRK_en"), QCoreApplication::applicationDirPath()) ||
-          trans2.load(QLatin1String("QRK_en"), QLatin1String("/usr/share/QRK"))) )
+         (trans2.load(QLatin1String("QRK_") + locale, QCoreApplication::applicationDirPath() + QDir::separator() + QLatin1String("i18n")) ||
+          trans2.load(QLatin1String("QRK_") + locale, QLatin1String("/usr/share/qrk")) ||
+          trans2.load(QLatin1String("QRK_en"), QCoreApplication::applicationDirPath()  + QDir::separator() + QLatin1String("i18n")) ||
+          trans2.load(QLatin1String("QRK_en"), QLatin1String("/usr/share/qrk"))) )
         app.installTranslator(&trans2);
 
-    QRK *mainWidget = new QRK;
 
-    bool dbSelect = false;
+    QCommandLineParser parser;
+    parser.setApplicationDescription("QRK");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption fullScreenOption(QStringList() << "f" << "fullscreen", QObject::tr("Startet im Vollbild Modus."));
+    parser.addOption(fullScreenOption);
 
-    foreach(const QString &arg, QApplication::arguments())
-    {
-        if ( arg[0] != '-' )
-            continue;
+    QCommandLineOption minimizeScreenOption(QStringList() << "m" << "minimize", QObject::tr("Startet im Minimize Modus."));
+    parser.addOption(minimizeScreenOption);
 
-        if ( arg == "-db" )
-            dbSelect = true;
-        else if ( (arg == "--fullscreen") || (arg == "-f") )
-        {
-            mainWidget->setWindowState(mainWidget->windowState() ^ Qt::WindowFullScreen);
-        }
-        else if ( (arg == "--noPrinter") || (arg == "-n") )
-        {
-            mainWidget->setNoPrinter();
-        }
-        else if ( arg == "-r")
-        {
-          QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
-          settings.remove("QRK_RUNNING");
-        }
-        else // if ( arg == "--help" )  // --help or everything else we do not understand
-        {
-            printHelp();
-            return 0;
-        }
+    QCommandLineOption noPrinterOption(QStringList() << "n" << "noprinter", QObject::tr("Verwendet den internen PDF Drucker."));
+    parser.addOption(noPrinterOption);
+
+    QCommandLineOption dbSelectOption("db", QObject::tr("Datenbank Definition Dialog."));
+    parser.addOption(dbSelectOption);
+
+    QCommandLineOption restartOption("r", QObject::tr("Erzwingt den Start."));
+    parser.addOption(restartOption);
+
+    QCommandLineOption styleSheetOption(QStringList() << "s" << "stylesheet", QObject::tr("StyleSheet <QSS Datei>."), QObject::tr("QSS Datei"));
+    parser.addOption(styleSheetOption);
+
+    QCommandLineOption serverModeOption(QStringList() << "servermode", QObject::tr("Startet QRK im Servermode"));
+    parser.addOption(serverModeOption);
+
+    QCommandLineOption debugModeOption(QStringList() << "d" << "debug", QObject::tr("Schreibt DEBUG Ausgaben in die Log-Datei"));
+    parser.addOption(debugModeOption);
+
+    QCommandLineOption reminderOffOption(QStringList() << "noreminder", QObject::tr("Unterdrückt die RKSV Information"));
+    parser.addOption(reminderOffOption);
+
+    parser.process(app);
+
+    bool dbSelect = parser.isSet(dbSelectOption);
+    bool fullScreen = parser.isSet(fullScreenOption);
+    bool minimize = parser.isSet(minimizeScreenOption);
+    bool noPrinter = parser.isSet(noPrinterOption);
+    bool servermode = parser.isSet(serverModeOption);
+    bool debugMsg = parser.isSet(debugModeOption);
+    bool reminderOff  = parser.isSet(reminderOffOption);
+
+#ifdef QT_DEBUG
+    debugMsg = true;
+    noPrinter = true;
+#endif
+
+    if (parser.isSet(restartOption)) {
+        QrkSettings settings;
+        settings.removeSettings("QRK_RUNNING", false);
+    }
+
+    if (parser.isSet(styleSheetOption)) {
+        loadStyleSheet(parser.value(styleSheetOption));
     }
 
     if (isQRKrunning())
       return 0;
 
-    mainWidget->show();
-
-    if ( !Database::open( dbSelect) )
+    if ( !Database::open( dbSelect) ) {
+        sighandler(0);
         return 0;
+    }
+
+    QRK *mainWidget = new QRK(servermode);
+
+    mainWidget->statusBar()->setStyleSheet(
+                "QStatusBar { border-top: 1px solid lightgrey; border-radius: 1px;"
+                "background: lightgrey; spacing: 3px; /* spacing between items in the tool bar */ }"
+                );
+
+    setNoPrinter(noPrinter);
+
+    if (fullScreen && !minimize)
+        mainWidget->setWindowState(mainWidget->windowState() ^ Qt::WindowFullScreen);
+    else if (minimize && !fullScreen)
+        mainWidget->setWindowState(mainWidget->windowState() ^ Qt::WindowMinimized);
+
+    mainWidget->show();
 
     /*check if we have SET Demomode*/
     if (DemoMode::isModeNotSet()) {
@@ -246,28 +291,53 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (!(Database::getTaxLocation() == "AT"))
+        reminderOff = true;
+
+    /* RKSV Reminder */
+    if (!RKSignatureModule::isDEPactive() && !reminderOff) {
+        QMessageBox messageBox(QMessageBox::Information,
+                               QObject::tr("RKSV"),
+                               QObject::tr("Ab den 1.4.2017 benötigen Sie ein Zertifikat welches Sie bei uns beziehen können. http://www.ckvsoft.at"),
+                               QMessageBox::Yes,
+                               0);
+        messageBox.setButtonText(QMessageBox::Yes, QObject::tr("OK"));
+
+        messageBox.exec();
+    }
+
+
+    if (DemoMode::isDemoMode())
+        debugMsg = true;
+
+    app.setProperty("debugMsg", debugMsg);
+
     /*Check for MasterData*/
     QString cri = Database::getCashRegisterId();
     if ( cri.isEmpty() ) {
         QMessageBox::warning(0, QObject::tr("Kassenidentifikationsnummer"), QObject::tr("Stammdaten müssen vollständig ausgefüllt werden.."));
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
-        SettingsDialog *tab = new SettingsDialog(settings);
-        if (tab->exec() == QDialog::Accepted )
-        {
-            if ( Database::getCashRegisterId().isEmpty() )
-                return 0;
+        SettingsDialog tab;
+        tab.exec();
+        if ( Database::getCashRegisterId().isEmpty() ) {
+            sighandler(0);
+            return 0;
         }
     }
 
-    QString title = QString("QRK V%1.%2 - Qt Registrier Kasse - %3").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR).arg(Database::getShopName());
-    mainWidget->currentRegisterYearLabel->setText(QObject::tr(" Kassenjahr: %1 ").arg(mainWidget->getCurrentRegisterYear()));
-    mainWidget->cashRegisterIdLabel->setText(QObject::tr(" Kassenidentifikationsnummer: %1 ").arg(Database::getCashRegisterId()));
-    mainWidget->setLastEOD(Reports::getLastEOD());
+#if defined(_WIN32) || defined(__APPLE__)
+    // Set feed URL before doing anything else
+    FvUpdater::sharedUpdater()->SetFeedURL("http://service.ckvsoft.at/qrk/updates/Appcast.xml");
+    FvUpdater::sharedUpdater()->setRequiredSslFingerPrint("c3b038cb348c7d06328579fb950a48eb");	// Optional
+    FvUpdater::sharedUpdater()->setHtAuthCredentials("username", "password");	// Optional
+    FvUpdater::sharedUpdater()->setUserCredentials(Database::getShopName() + "/" + Database::getCashRegisterId() + "/" + QApplication::applicationVersion());
+    FvUpdater::sharedUpdater()->setSkipVersionAllowed(true);	// Optional
+    FvUpdater::sharedUpdater()->setRemindLaterAllowed(true);	// Optional
+    // Finish Up old Updates
+    FvUpdater::sharedUpdater()->finishUpdate();
 
-    mainWidget->setShopName();
-    mainWidget->setWindowTitle ( title );
-    mainWidget->init();
-
+    // Check for updates automatically
+    FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
+#endif
 
     signal(SIGTERM, sighandler);
 

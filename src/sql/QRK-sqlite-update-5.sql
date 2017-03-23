@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-CREATE TABLE `orders_backup` (
+CREATE TEMPORARY TABLE `orders_backup` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `receiptId`	INTEGER NOT NULL,
     `product`	INTEGER NOT NULL,
@@ -27,8 +27,7 @@ CREATE INDEX `orders_receiptId_index` ON `orders` (`receiptId`);
 INSERT INTO orders SELECT id,receiptId,product,count,gross - (gross * tax / (100 + tax)) as net, gross, tax FROM orders_backup;
 DROP TABLE orders_backup;
 
-
-CREATE TABLE `products_backup` (
+CREATE TEMPORARY TABLE`products_backup` (
     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `name`	text NOT NULL,
     `gross`	double NOT NULL,

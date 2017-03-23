@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,45 +34,45 @@ QSortFilterSqlQueryModel::QSortFilterSqlQueryModel(QObject *parent) :
 
 void QSortFilterSqlQueryModel::setQuery(const QString &query, const QSqlDatabase &db)
 {
-  queryClause = query;
-  dbc = db;
+  m_queryClause = query;
+  m_dbc = db;
 
-  filterString.clear();
+  m_filterString.clear();
   //filterColumn.clear();
-  filterFlags = Qt::MatchStartsWith;
-  sortKeyColumn = -1;
-  sortOrder = Qt::DescendingOrder;
+  m_filterFlags = Qt::MatchStartsWith;
+  m_sortKeyColumn = -1;
+  m_sortOrder = Qt::DescendingOrder;
 }
 
 void QSortFilterSqlQueryModel::select()
 {
 
-  if (queryClause.isEmpty() || (!dbc.isValid()))
+  if (m_queryClause.isEmpty() || (!m_dbc.isValid()))
     return;
 
-  QString query = queryClause;
+  QString query = m_queryClause;
 
-  if (!filterString.isEmpty() && !filterColumn.isEmpty()) {
+  if (!m_filterString.isEmpty() && !m_filterColumn.isEmpty()) {
     QString whereClause;
-    QString esFilterString = filterString;
-    QString esFilterColumn = filterColumn;
+    QString esFilterString = m_filterString;
+    QString esFilterColumn = m_filterColumn;
 
-    if (filterFlags & Qt::MatchExactly) {
+    if (m_filterFlags & Qt::MatchExactly) {
       whereClause = "WHERE %1 = %2";
-    } else if (filterFlags & Qt::MatchStartsWith) {
+    } else if (m_filterFlags & Qt::MatchStartsWith) {
       whereClause = "WHERE %1 LIKE %2";
       esFilterString.append("%");
-    } else if (filterFlags & Qt::MatchEndsWith) {
+    } else if (m_filterFlags & Qt::MatchEndsWith) {
       whereClause = "WHERE %1 LIKE %2";
       esFilterString.prepend("%");
-    } else if (filterFlags & Qt::MatchContains) {
+    } else if (m_filterFlags & Qt::MatchContains) {
       whereClause = "WHERE %1 LIKE %2";
       esFilterString.append("%");
       esFilterString.prepend("%");
     } else { return; } // unhandled filterflag
 
-    QSqlDriver *driver = dbc.driver();
-    esFilterColumn = driver->escapeIdentifier(filterColumn, QSqlDriver::FieldName);
+    QSqlDriver *driver = m_dbc.driver();
+    esFilterColumn = driver->escapeIdentifier(m_filterColumn, QSqlDriver::FieldName);
     QSqlField field; field.setType(QVariant::String); field.setValue(esFilterString);
     esFilterString = driver->formatValue(field);
 
@@ -81,27 +81,27 @@ void QSortFilterSqlQueryModel::select()
   }
 
 
-  if (sortKeyColumn >= 0) {
+  if (m_sortKeyColumn >= 0) {
     QString orderClause;
-    orderClause = "ORDER BY " + QString::number(sortKeyColumn+1) + " " + ((sortOrder == Qt::AscendingOrder) ? "ASC" : "DESC");
+    orderClause = "ORDER BY " + QString::number(m_sortKeyColumn+1) + " " + ((m_sortOrder == Qt::AscendingOrder) ? "ASC" : "DESC");
     query.append(" " + orderClause);
   }
 
-  QSqlQueryModel::setQuery(query, dbc);
+  QSqlQueryModel::setQuery(query, m_dbc);
 
 }
 
 void QSortFilterSqlQueryModel::setSort(int column, Qt::SortOrder order)
 {
-  sortKeyColumn = column;
-  sortOrder = order;
+  m_sortKeyColumn = column;
+  m_sortOrder = order;
   QSortFilterSqlQueryModel::setFilterColumn(this->record().fieldName( column ));
   emit sortChanged();
 }
 
 void QSortFilterSqlQueryModel::sort(int column, Qt::SortOrder order)
 {
-  if ((sortKeyColumn != column) || (sortOrder != order)) {
+  if ((m_sortKeyColumn != column) || (m_sortOrder != order)) {
     setSort(column, order);
     select();
   }
@@ -109,21 +109,21 @@ void QSortFilterSqlQueryModel::sort(int column, Qt::SortOrder order)
 
 void QSortFilterSqlQueryModel::setFilterColumn(const QString &column)
 {
-  filterColumn = column;
+  m_filterColumn = column;
 }
 
 void QSortFilterSqlQueryModel::setFilter(const QString &filter) {
-  filterString = filter;
+  m_filterString = filter;
 }
 
 void QSortFilterSqlQueryModel::setFilterFlags(const Qt::MatchFlag flags)
 {
-  filterFlags = flags;
+  m_filterFlags = flags;
 }
 
 void QSortFilterSqlQueryModel::filter(const QString &filter)
 {
-  if (filterString != filter) {
+  if (m_filterString != filter) {
     setFilter(filter);
     select();
   }
@@ -131,5 +131,5 @@ void QSortFilterSqlQueryModel::filter(const QString &filter)
 
 QString QSortFilterSqlQueryModel::getFilterColumnName()
 {
-  return this->headerData( sortKeyColumn, Qt::Horizontal ).toString();
+  return this->headerData( m_sortKeyColumn, Qt::Horizontal ).toString();
 }

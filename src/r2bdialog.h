@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #ifndef R2BDIALOG_H
 #define R2BDIALOG_H
 
-#include "qrkdelegate.h"
 #include "qrkdialog.h"
 
 #include "ui_r2bdialog.h"
@@ -46,9 +45,9 @@ class R2BDialog : public QRKDialog
 
   private:
     Ui::R2BDialog *ui;
-    QString invoiceNum;
-    QString invoiceNet;
-    QString invoiceSum;
+    QString m_invoiceNum;
+    QString m_invoiceNet;
+    QString m_invoiceSum;
 };
 
 #endif // R2BDIALOG_H

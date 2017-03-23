@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,16 @@
 */
 
 #include "groupedit.h"
+#include "database.h"
 
 #include <QSqlQuery>
+#include <QSqlError>
+#include <QDebug>
 
 //--------------------------------------------------------------------------------
 
-GroupEdit::GroupEdit(QWidget *parent, int theId)
-  : QDialog(parent), ui(new Ui::GroupEdit), id(theId)
+GroupEdit::GroupEdit(QWidget *parent, int id)
+  : QDialog(parent), ui(new Ui::GroupEdit), m_id(id)
 {
   ui->setupUi(this);
 
@@ -44,7 +47,7 @@ GroupEdit::GroupEdit(QWidget *parent, int theId)
       ui->colorComboBox->model()->setData(idx, color, Qt::BackgroundColorRole);
   }
 
-  if ( id != -1 )
+  if ( m_id != -1 )
   {
     QSqlDatabase dbc = QSqlDatabase::database("CN");
 
@@ -73,6 +76,10 @@ GroupEdit::GroupEdit(QWidget *parent, int theId)
     ui->colorComboBox->setPalette(palette);
 
   }
+
+  connect (ui->okButton, SIGNAL(clicked(bool)),this,SLOT(accept()));
+  connect (ui->cancelButton, SIGNAL(clicked(bool)),this,SLOT(reject()));
+
 }
 
 //--------------------------------------------------------------------------------
@@ -84,20 +91,24 @@ void GroupEdit::accept()
 
   QString color = ui->colorComboBox->model()->index(ui->colorComboBox->currentIndex(), 0).data(Qt::BackgroundColorRole).toString();
 
-  if ( id == -1 )  // new entry
+  if ( m_id == -1 )  // new entry
   {
-    query.exec(QString("INSERT INTO groups (name, visible, color) VALUES('%1', %2, '%3')")
-                       .arg(ui->name->text())
-                       .arg(ui->visibleCheckBox->isChecked())
-                       .arg(color));
+    query.prepare(QString("INSERT INTO groups (name, visible, color) VALUES(:name, :visible, :color)"));
   }
   else
   {
-    query.exec(QString("UPDATE groups SET name='%1',visible=%2, color='%3' WHERE id=%4")
-                       .arg(ui->name->text())
-                       .arg(ui->visibleCheckBox->isChecked())
-                       .arg(color)
-                       .arg(id));
+    query.prepare(QString("UPDATE groups SET name=:name, visible=:visible, color=:color WHERE id=:id"));
+    query.bindValue(":id", m_id);
+  }
+
+  query.bindValue(":name", ui->name->text());
+  query.bindValue(":visible", ui->visibleCheckBox->isChecked());
+  query.bindValue(":color", color);
+
+  bool ok = query.exec();
+  if (!ok) {
+    qWarning() << "Function Name: " << Q_FUNC_INFO << " Error: " << query.lastError().text();
+    qWarning() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(query);
   }
 
   QDialog::accept();

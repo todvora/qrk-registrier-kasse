@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author>Copyright 2010, Martin Koller</author>
+ <author>Copyright 2016 Christian Kvasny</author>
  <class>GroupsWidget</class>
  <widget class="QWidget" name="GroupsWidget">
   <property name="geometry">

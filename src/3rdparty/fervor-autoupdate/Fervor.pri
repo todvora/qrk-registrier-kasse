@@ -1,7 +1,7 @@
 #
 # This file is part of QRK - Qt Registrier Kasse
 #
-# Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+# Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,38 +20,27 @@
 #
 #
 
-QT += core widgets network
-QT += gui
-DEFINES += FV_GUI
-
-win32:INCLUDEPATH += $$[QT_INSTALL_PREFIX]/include/QtZlib
-
 DEFINES += FV_APP_NAME=\\\"$$TARGET\\\"
 DEFINES += FV_APP_VERSION=\\\"$$VERSION\\\"
 
-DEPENDPATH += "$$PWD"
-INCLUDEPATH += "$$PWD"
+INCLUDEPATH += $$SRC_DIR/qrkcore/3rdparty/quazip
+
 SOURCES += $$PWD/fvupdater.cpp \
         $$PWD/fvversioncomparator.cpp \
         $$PWD/fvplatform.cpp \
         $$PWD/fvignoredversions.cpp \
-        $$PWD/fvavailableupdate.cpp
+        $$PWD/fvavailableupdate.cpp \
+        $$PWD/fvupdatewindow.cpp \
+        $$PWD/fvupdatedownloadprogress.cpp
 
 HEADERS += $$PWD/fvupdater.h \
         $$PWD/fvversioncomparator.h \
         $$PWD/fvplatform.h \
         $$PWD/fvignoredversions.h \
-        $$PWD/fvavailableupdate.h
+        $$PWD/fvavailableupdate.h \
+        $$PWD/fvupdatewindow.h \
+        $$PWD/fvupdatedownloadprogress.h
 
-    SOURCES += $$PWD/fvupdatewindow.cpp \
-            $$PWD/fvupdatedownloadprogress.cpp
+FORMS += $$PWD/fvupdatewindow.ui \
+        $$PWD/fvupdatedownloadprogress.ui
 
-    HEADERS += $$PWD/fvupdatewindow.h \
-            $$PWD/fvupdatedownloadprogress.h
-
-    FORMS += $$PWD/fvupdatewindow.ui \
-            $$PWD/fvupdatedownloadprogress.ui
-
-
-TRANSLATIONS += fervor_lt.ts
-CODECFORTR = UTF-8

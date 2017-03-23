@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 */
 
 #include <QtWidgets>
-#include <QSqlDatabase>
-#include <QSqlQuery>
 #include <QPrinterInfo>
 
 #include "managerdialog.h"
@@ -33,12 +31,12 @@ ManagerDialog::ManagerDialog(QWidget *parent)
   : QDialog(parent)
 {
 
-  groups = new GroupsWidget(this);
-  products = new ProductsWidget(this);
+  m_groups = new GroupsWidget(this);
+  m_products = new ProductsWidget(this);
 
-  tabWidget = new QTabWidget;
-  tabWidget->addTab(groups, tr("Gruppen"));
-  tabWidget->addTab(products, tr("Produkte"));
+  m_tabWidget = new QTabWidget;
+  m_tabWidget->addTab(m_groups, tr("Gruppen"));
+  m_tabWidget->addTab(m_products, tr("Artikel"));
 
   QPushButton *pushButton = new QPushButton;
   pushButton->setMinimumHeight(60);
@@ -55,7 +53,7 @@ ManagerDialog::ManagerDialog(QWidget *parent)
   buttonLayout->addWidget(pushButton);
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(tabWidget);
+  mainLayout->addWidget(m_tabWidget);
   mainLayout->addLayout(buttonLayout);
   setLayout(mainLayout);
 

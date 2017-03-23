@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,222 +20,339 @@
  *
 */
 
+#include "defines.h"
 #include "qrkhome.h"
-#include "database.h"
 #include "import/filewatcher.h"
+#include "singleton/spreadsignal.h"
+#include "qrkprogress.h"
+#include "preferences/settingsdialog.h"
+#include "preferences/qrksettings.h"
+#include "database.h"
+#include "utils/utils.h"
 
 #include <QMessageBox>
 #include <QDesktopWidget>
-#include <QSettings>
 #include <QStandardPaths>
+#include <QDateTime>
+#include <QDir>
 
 #include <QDebug>
 
-QRKHome::QRKHome(QWidget *parent)
-  : QWidget(parent),ui(new Ui::QRKHome), menu(0)
-
+QRKHome::QRKHome(bool servermode, QWidget *parent)
+    : QWidget(parent),ui(new Ui::QRKHome), m_menu(0)
 {
-  ui->setupUi(this);
+    connect(Spread::Instance(),SIGNAL(updateSafetyDevice(bool)), this,SLOT(safetyDevice(bool)));
 
-  if ( QApplication::desktop()->width() < 1200 )
-  {
-    ui->documentButton->setMinimumWidth(0);
-    ui->pushButton1->setMinimumWidth(0);
-    ui->registerButton->setMinimumWidth(0);
-    ui->taskButton->setMinimumWidth(0);
-  }
+    ui->setupUi(this);
 
-  // create the menu popup
-  {
-    menu = new QFrame(this, Qt::Popup);
-    menu->setFrameStyle(QFrame::StyledPanel);
-    menu->hide();
-    QVBoxLayout *vbox = new QVBoxLayout(menu);
+    ui->signatureDamagedLabel->setVisible(false);
 
-    QPushButton *b;
-    b = new QPushButton(QIcon(":/icons/exit.png"), tr("Beenden"));
-    b->setFixedHeight(MIN_HEIGHT);
-    b->setIconSize(QSize(32, 32));
-    connect(b, SIGNAL(clicked()), this, SIGNAL(exitButton_clicked()));
-    vbox->addWidget(b);
+    if ( QApplication::desktop()->width() < 1200 )
+    {
+        ui->documentButton->setMinimumWidth(0);
+        ui->managerButton->setMinimumWidth(0);
+        ui->registerButton->setMinimumWidth(0);
+        ui->taskButton->setMinimumWidth(0);
+    }
 
-    b = new QPushButton(QIcon(":/icons/view-fullscreen.png"), tr("Vollbild"));
-    b->setFixedHeight(MIN_HEIGHT);
-    b->setIconSize(QSize(32, 32));
-    connect(b, SIGNAL(clicked()), this, SIGNAL(fullScreenButton_clicked()));
-    vbox->addWidget(b);
+    // create the menu popup
+    {
 
-    b = new QPushButton(QIcon(":/icons/settings.png"), tr("Einstellungen"));
-    b->setFixedHeight(MIN_HEIGHT);
-    b->setIconSize(QSize(32, 32));
-    connect(b, SIGNAL(clicked()), this, SLOT(settingsSlot()));
-    vbox->addWidget(b);
+        m_menu = new QWidget(this, Qt::Popup);
+        m_menu->hide();
+        QVBoxLayout *vbox = new QVBoxLayout(m_menu);
 
-    /*    b = new QPushButton(QIcon(":/icons/reports.png"), tr("Berichte"));
+        QPushButton *b;
+        b = new QPushButton(QIcon(":/icons/exit.png"), tr("Beenden"));
+        b->setFixedHeight(MIN_HEIGHT);
+        b->setIconSize(QSize(32, 32));
+        connect(b, SIGNAL(clicked()), this, SIGNAL(exitButton_clicked()));
+        vbox->addWidget(b);
+
+        b = new QPushButton(QIcon(":/icons/view-fullscreen.png"), tr("Vollbild"));
+        b->setFixedHeight(MIN_HEIGHT);
+        b->setIconSize(QSize(32, 32));
+        connect(b, SIGNAL(clicked()), this, SIGNAL(fullScreenButton_clicked()));
+        vbox->addWidget(b);
+
+        b = new QPushButton(QIcon(":/icons/settings.png"), tr("Einstellungen"));
+        b->setFixedHeight(MIN_HEIGHT);
+        b->setIconSize(QSize(32, 32));
+        connect(b, SIGNAL(clicked()), this, SLOT(settingsSlot()));
+        vbox->addWidget(b);
+
+        /*    b = new QPushButton(QIcon(":/icons/reports.png"), tr("Berichte"));
     b->setFixedHeight(MIN_HEIGHT);
     b->setIconSize(QSize(32, 32));
     connect(b, SIGNAL(clicked()), this, SLOT(reportsSlot()));
     vbox->addWidget(b);
 */
-    connect(ui->menuButton, SIGNAL(clicked()), this, SLOT(menuSlot()));
+        connect(ui->menuButton, SIGNAL(clicked()), this, SLOT(menuSlot()));
+        // connect(ui->menuButton, SIGNAL(clicked()), this, SLOT(settingsSlot()));
 
-  }
+    }
 
-  // create the task popup
-  {
-    task = new QFrame(this, Qt::Popup);
-    task->setFrameStyle(QFrame::StyledPanel);
-    task->hide();
-    QVBoxLayout *vbox = new QVBoxLayout(task);
+    // create the task popup
+    {
+        m_task = new QFrame(this, Qt::Popup);
+        m_task->setFrameStyle(QFrame::StyledPanel);
+        m_task->hide();
+        QVBoxLayout *vbox = new QVBoxLayout(m_task);
 
-    QPushButton *b;
-    b = new QPushButton(QIcon(":/icons/day.png"), tr("Tagesabschluss"));
-    b->setFixedHeight(MIN_HEIGHT);
-    b->setIconSize(QSize(32, 32));
-    connect(b, SIGNAL(clicked()), this, SIGNAL(endOfDay()));
-    vbox->addWidget(b);
+        QPushButton *b;
+        b = new QPushButton(QIcon(":/icons/day.png"), tr("Tagesabschluss"));
+        b->setFixedHeight(MIN_HEIGHT);
+        b->setIconSize(QSize(32, 32));
+        connect(b, SIGNAL(clicked()), this, SIGNAL(endOfDay()));
+        vbox->addWidget(b);
 
-    b = new QPushButton(QIcon(":/icons/month.png"), tr("Monatsabschluss"));
-    b->setFixedHeight(MIN_HEIGHT);
-    b->setIconSize(QSize(32, 32));
-    connect(b, SIGNAL(clicked()), this, SIGNAL(endOfMonth()));
-    vbox->addWidget(b);
+        b = new QPushButton(QIcon(":/icons/month.png"), tr("Monatsabschluss"));
+        b->setFixedHeight(MIN_HEIGHT);
+        b->setIconSize(QSize(32, 32));
+        connect(b, SIGNAL(clicked()), this, SIGNAL(endOfMonth()));
+        vbox->addWidget(b);
 
-    connect(ui->taskButton, SIGNAL(clicked()), this, SLOT(taskSlot()));
+        connect(ui->taskButton, SIGNAL(clicked()), this, SLOT(taskSlot()));
+        connect(ui->registerButton, SIGNAL(clicked()), this, SIGNAL(registerButton_clicked()));
+        connect(ui->documentButton, SIGNAL(clicked()), this, SIGNAL(documentButton_clicked()));
+        connect(ui->managerButton, SIGNAL(clicked()), this, SIGNAL(managerButton_clicked()));
+    }
 
-    connect(ui->registerButton, SIGNAL(clicked()), this, SIGNAL(registerButton_clicked()));
-    connect(ui->documentButton, SIGNAL(clicked()), this, SIGNAL(documentButton_clicked()));
     connect(ui->serverModeCheckBox, SIGNAL(clicked(bool)), this, SLOT(serverModeCheckBox_clicked(bool)));
+    connect(Spread::Instance(),SIGNAL(updateImportInfo(QString, bool)), this,SLOT(importInfo(QString, bool)));
 
-    // for TESTS
-    connect(ui->pushButton1, SIGNAL(clicked()), this, SIGNAL(managerButton_clicked()));
+    ui->importWidget->setVisible(true);
+    setMinimumHeight(400);
 
+    m_fw = new FileWatcher();
+    QObject::connect(&m_watcher, SIGNAL(directoryChanged(QString)), m_fw, SLOT(directoryChanged(QString)));
 
-  }
+    ui->serverModeCheckBox->setChecked(servermode);
+}
+
+QRKHome::~QRKHome()
+{
+    delete m_fw;
+}
+
+void QRKHome::safetyDevice(bool active)
+{
+    if (active != m_previousSafetyDeviceState) {
+        m_previousSafetyDeviceState = active;
+        if (!active) {
+            ui->signatureDamagedLabel->setVisible(true);
+            importInfo(tr("Signaturerstellungseinrichtung ausgefallen!"), true);
+            if (isServerMode())
+                emit serverModeCheckBox_clicked(false);
+        } else {
+            ui->signatureDamagedLabel->setVisible(false);
+        }
+    }
+}
+
+void QRKHome::setExternalDepLabels(bool visible)
+{
+    ui->externalDepDescriptionLabel->setVisible(visible);
+    ui->externalDepDirIconLabel->setVisible(visible);
+    ui->externalDepDirlabel->setVisible(visible);
 
 }
 
-// page 1 Main
-//--------------------------------------------------------------------------------
-
 void QRKHome::init()
 {
-  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
-  if (settings.value("backupDirectory").toString().isEmpty()){
-    QPixmap pixmap;
-    pixmap.load(":icons/cancel.png");
-    ui->backupDirIconLabel->setPixmap(pixmap);
-    ui->backupDirLabel->setText(tr("n/a"));
-  } else {
-    ui->backupDirLabel->setText(settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
-  }
+    QrkSettings settings;
+    if (settings.value("backupDirectory").toString().isEmpty()){
+        QPixmap pixmap;
+        pixmap.load(":icons/cancel.png");
+        ui->backupDirIconLabel->setPixmap(pixmap);
+        ui->backupDirLabel->setText(tr("n/a"));
+    } else {
+        QString backupDir = settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString();
+        if (!Utils::isDirectoryWritable(backupDir)) {
+            QPixmap pixmap;
+            pixmap.load(":icons/cancel.png");
+            ui->backupDirIconLabel->setPixmap(pixmap);
+        }
+        ui->backupDirLabel->setToolTip(backupDir);
+        ui->backupDirLabel->setText(backupDir);
+    }
 
-  QString dataDir = settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString();
-  ui->dataDirlabel->setText(dataDir);
+    // QFontMetrics metricsDataDir(ui->dataDirlabel->font());
+    // ui->dataDirlabel->setText(metricsDataDir.elidedText(dataDir, Qt::ElideMiddle, ui->dataDirlabel->width()));
+    QString dataDir = settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString();
+    if (!Utils::isDirectoryWritable(dataDir)) {
+        QPixmap pixmap;
+        pixmap.load(":icons/cancel.png");
+        ui->dataDirIconLabel->setPixmap(pixmap);
+    }
+    ui->dataDirlabel->setToolTip(dataDir);
+    ui->dataDirlabel->setText(dataDir);
 
-  ui->lcdNumberDay->display(Database::getDayCounter());
-  ui->lcdNumberMonth->display(Database::getMonthCounter());
-  ui->lcdNumberYear->display(Database::getYearCounter());
-  ui->serverModeCheckBox->setText(tr("Server Modus (Importverzeichnis: %1)").arg(settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)  + "/import").toString()));
+    if (settings.value("pdfDirectory").toString().isEmpty()){
+        QPixmap pixmap;
+        pixmap.load(":icons/cancel.png");
+        ui->pdfDirIconLabel->setPixmap(pixmap);
+        ui->pdfDirLabel->setText(tr("n/a"));
+    } else {
+        QString pdfDir = settings.value("pdfDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString();
+        if (!Utils::isDirectoryWritable(pdfDir)) {
+            QPixmap pixmap;
+            pixmap.load(":icons/cancel.png");
+            ui->pdfDirIconLabel->setPixmap(pixmap);
+        }
+        ui->pdfDirLabel->setToolTip(pdfDir);
+        ui->pdfDirLabel->setText(pdfDir);
+    }
 
-  watcherpath = settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +  "/import" ).toString();
+    if (settings.value("externalDepDirectory").toString().isEmpty()){
+        QPixmap pixmap;
+        pixmap.load(":icons/cancel.png");
+        ui->externalDepDirIconLabel->setPixmap(pixmap);
+        ui->externalDepDirlabel->setText(tr("n/a"));
+    } else {
+        QString externalDepDir = settings.value("externalDepDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString();
+        if (!Utils::isDirectoryWritable(externalDepDir)) {
+            QPixmap pixmap;
+            pixmap.load(":icons/cancel.png");
+            ui->externalDepDirIconLabel->setPixmap(pixmap);
+        }
+        ui->externalDepDirlabel->setToolTip(externalDepDir);
+        ui->externalDepDirlabel->setText(externalDepDir);
+    }
 
-  watcher.removePaths(watcher.directories());
-  if (ui->serverModeCheckBox->isChecked()) {
-    watcher.addPath(watcherpath);
-    ui->importWidget->setVisible(true);
-  } else {
-      ui->importWidget->setVisible(false);
-  }
+    ui->lcdNumberDay->display(Database::getDayCounter());
+    ui->lcdNumberMonth->display(Database::getMonthCounter());
+    ui->lcdNumberYear->display(Database::getYearCounter());
+    ui->serverModeCheckBox->setText(tr("Server Modus (Importverzeichnis: %1)").arg(settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString()));
 
-//  watcher.addPath(qApp->applicationDirPath() + "/import/" );
+    m_watcherpath = settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString();
 
-  QStringList directoryList = watcher.directories();
-  Q_FOREACH(QString directory, directoryList)
-    qDebug() << "Directory name" << directory <<"\n";
+    if (!m_watcher.directories().isEmpty()) {
+        m_watcher.removePaths(m_watcher.directories());
+        qDebug() << "Function Name: " << Q_FUNC_INFO << " remove directories from WatchList";
+    }
 
-  FileWatcher *fw = new FileWatcher();
-  QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), fw, SLOT(directoryChanged(QString)));
-  QObject::connect(fw, SIGNAL(importInfo(QString)), this, SLOT(importInfo(QString)));
-  // QObject::connect(fw, SIGNAL(addToQueue(QFileInfoList)), this, SLOT(addToQueue(QFileInfoList)));
+    if (isServerMode()) {
+        m_watcher.addPath(m_watcherpath);
+        ui->importWidget->setVisible(true);
+        emit serverModeCheckBox_clicked(true);
+    } else {
+        ui->importWidget->setVisible(false);
+        // emit serverModeCheckBox_clicked(false);
+    }
 
-//  QObject::connect(&watcher, SIGNAL(fileChanged(QString)), fw, SLOT(showModified(QString)));
+    if (Database::isCashRegisterInAktive()) {
+        ui->registerButton->setEnabled(false);
+        ui->taskButton->setEnabled(false);
+        ui->serverModeCheckBox->setEnabled(false);
+    }
 
+    // Remove old Importfiles
+    QDir dir(m_watcherpath);
+    dir.setNameFilters(QStringList() << "*.false" << "*.old");
+    dir.setFilter(QDir::Files);
+    QStringList list = dir.entryList();
+    while(list.size() > 0){
+        QString f = list.takeFirst();
+        if (QFileInfo(dir.absoluteFilePath(f)).created() < QDateTime::currentDateTime().addDays(-7)) {
+            QFile::remove(dir.absoluteFilePath(f));
+            qInfo() << "Function Name: " << Q_FUNC_INFO << " Remove file older than 7 Days FileName: " << f;
+        }
+    }
+}
+
+bool QRKHome::isServerMode()
+{
+    return ui->serverModeCheckBox->isChecked();
 }
 
 void QRKHome::menuSlot()
 {
-  QPoint p(ui->menuButton->x() + ui->menuButton->width() - menu->sizeHint().width(),
-           ui->menuButton->y() - menu->sizeHint().height());
+    QPoint p(ui->menuButton->x() + ui->menuButton->width() - m_menu->sizeHint().width(),
+             ui->menuButton->y() - m_menu->sizeHint().height());
 
-  menu->move(mapToGlobal(p));
-  menu->show();
+    m_menu->move(mapToGlobal(p));
+    m_menu->show();
 }
 
 //--------------------------------------------------------------------------------
 
 void QRKHome::settingsSlot()
 {
-  QSettings settings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK");
-  SettingsDialog *tab = new SettingsDialog(settings);
-  if (tab->exec() == QDialog::Accepted )
-  {
-    init();
-  }
+    SettingsDialog *tab = new SettingsDialog();
+    if (tab->exec() == QDialog::Accepted )
+    {
+        init();
+        emit refreshMain();
+    }
+    delete tab;
 }
 
 //--------------------------------------------------------------------------------
 
 void QRKHome::taskSlot()
 {
-  QPoint p(ui->taskButton->x() + ui->taskButton->width() - task->sizeHint().width(),
-           ui->taskButton->y() - task->sizeHint().height());
+    QPoint p(ui->taskButton->x() + ui->taskButton->width() - m_task->sizeHint().width(),
+             ui->taskButton->y() - m_task->sizeHint().height());
 
-  task->move(mapToGlobal(p));
-  task->show();
+    m_task->move(mapToGlobal(p));
+    m_task->show();
 }
 
 void QRKHome::serverModeCheckBox_clicked(bool checked)
 {
-  ui->importWidget->setVisible(checked);
-  ui->registerButton->setEnabled(!checked);
-  ui->taskButton->setEnabled(!checked);
+    ui->importWidget->setVisible(checked);
+    ui->registerButton->setEnabled(!checked);
+    ui->taskButton->setEnabled(!checked);
 
-  if (checked) {
-      if (Utils::isDirectoryWritable(watcherpath)) {
-          watcher.addPath(watcherpath);
-          /* create and remove file
+    if (checked) {
+        if (Utils::isDirectoryWritable(m_watcherpath)) {
+            m_watcher.addPath(m_watcherpath);
+            /* create and remove file
            * to scan at servermode startup
            */
-          QFile f(watcherpath + "/scan");
-          f.open(QFile::WriteOnly);
-          f.putChar('s');
-          f.close();
-          f.remove();
-      } else {
-          QMessageBox::warning(this,tr("Fehler"),tr("Import Verzeichnis %1 ist nicht beschreibbar.").arg(watcherpath),QMessageBox::Ok);
-          ui->serverModeCheckBox->setChecked(false);
-          emit serverModeCheckBox_clicked(false);
-      }
+            QFile f(m_watcherpath + "/scan");
+            f.open(QFile::WriteOnly);
+            f.putChar('s');
+            f.close();
+            f.remove();
+        } else {
+            QMessageBox::warning(this,tr("Fehler"),tr("Import Verzeichnis %1 ist nicht beschreibbar.").arg(m_watcherpath),QMessageBox::Ok);
+            ui->serverModeCheckBox->setChecked(false);
+            emit serverModeCheckBox_clicked(false);
+        }
 
-  } else {
-    watcher.removePath(watcherpath);
-  }
+    } else {
+
+        m_watcher.removePath(m_watcherpath);
+        connect(this, SIGNAL(stopWatcher()), m_fw, SIGNAL(stopWorker()));
+        emit stopWatcher();
+
+        QRKProgress *p = new QRKProgress(this);
+        connect(m_fw, SIGNAL(workerStopped()), p, SLOT(close()));
+
+        p->setText(tr("Warte auf die Fertigstellung der aktuellen Importdatei."));
+        p->setWaitMode();
+        p->show();
+        m_fw->removeDirectories();
+        ui->serverModeCheckBox->setChecked(false);
+    }
 }
 
-void QRKHome::importInfo(QString str)
+void QRKHome::importInfo(QString str, bool isError)
 {
-    ui->importWidget->sortItems(Qt::DescendingOrder);
-    ui->importWidget->setWordWrap( true);
     ui->importWidget->addItem(QDateTime::currentDateTime().toString() + ": " + str);
-    if (str.startsWith(tr("Import Fehler"))) {
+    if (isError) {
         int count = ui->importWidget->count();
         ui->importWidget->item(count -1)->setTextColor(Qt::red);
     } else {
         int count = ui->importWidget->count();
         ui->importWidget->item(count -1)->setTextColor(Qt::darkGreen);
     }
+
     ui->importWidget->sortItems(Qt::DescendingOrder);
+    ui->importWidget->setWordWrap( true);
+//    ui->importWidget->repaint();
 
     ui->lcdNumberDay->display(Database::getDayCounter());
     ui->lcdNumberMonth->display(Database::getMonthCounter());

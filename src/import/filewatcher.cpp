@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,56 +21,170 @@
 */
 
 #include "filewatcher.h"
-#include "import.h"
+#include "importworker.h"
+#include "singleton/spreadsignal.h"
 
-#include <QMessageBox>
 #include <QDir>
-#include <QTimer>
+#include <QCollator>
+#include <QQueue>
+#include <QThread>
 #include <QDebug>
 
 FileWatcher::FileWatcher (QWidget* parent)
     : QWidget(parent)
 {
-    this->timer = new QTimer(this);
-    timer->setSingleShot(true);
-    connect(timer,SIGNAL(timeout()),this,SLOT(fileAdded()));
-
+    m_isBlocked = false;
+    m_queue = new QQueue<QString>;
 }
 
 FileWatcher::~FileWatcher ()
 {
+
 }
 
-void FileWatcher::directoryChanged(const QString &str)
+void FileWatcher::directoryChanged(const QString &path)
 {
-    timer->start(200);
-    // Q_UNUSED(str)
-    // QMessageBox::information(this,"Directory Modified", "Your Directory is modified: " + str);
-    appendQueue(str);
-}
 
-void FileWatcher::appendQueue(QString path)
-{
-    qDebug() << "FileWatcher::appendQueue EVENT: " << path;
+    if(m_isBlocked)
+        return;
+
+    m_isBlocked = true;
+
+    if (!m_watchingPathList.contains(path))
+        m_watchingPathList.append(path);
+
     QDir directory;
+    directory.setFilter(QDir::Files | QDir::NoSymLinks);
+    directory.setSorting(QDir::NoSort);  // will sort manually with std::sort
 
     directory.setPath(path);
     QStringList filter;
     filter.append("*.json");
-    list = directory.entryInfoList(filter, QDir::Files, QDir::Time | QDir::Reversed);
+    QStringList fileList;
+    fileList.clear();
+    fileList = directory.entryList(filter);
 
+    qSort(
+        fileList.begin(),
+        fileList.end(), compareNames);
+
+
+    foreach (const QString str, fileList) {
+        QFile f(path + "/" + str);
+        if (!m_queue->contains(path + "/" + str) && f.exists()) {
+
+            m_queue->append(path + "/" + str);
+        }
+
+        if (m_queue->size() > 50)
+            break;
+    }
+
+    if (m_isBlocked && !m_queue->isEmpty())
+        start();
+    else
+        m_isBlocked = false;
 }
 
-void FileWatcher::fileAdded()
+void FileWatcher::removeDirectories()
 {
-    Q_FOREACH(QFileInfo fileinfo, list)
-    qDebug() << "FileWatcher::fileAdded: " << fileinfo.absoluteFilePath();
+    m_watchingPathList.clear();
+    if (m_queue->isEmpty())
+        emit workerStopped();
+}
 
-    // emit addToQueue(list);
-    import = new Import(this);
+void FileWatcher::finished()
+{
 
-    connect(import,SIGNAL(importInfo(QString)),this,SIGNAL(importInfo(QString)));
+    m_isBlocked = false;
+    emit workerStopped();
+    foreach (const QString str, m_watchingPathList) {
+        emit directoryChanged(str);
+    }
+}
 
-    import->loadJSonFile(&list);
-    list.clear();
+bool FileWatcher::compareNames(const QString& s1,const QString& s2)
+{
+    {
+        // ignore common prefix..
+        int i = 0;
+        while ((i < s1.length()) && (i < s2.length()) && (s1.at(i).toLower() == s2.at(i).toLower()))
+            ++i;
+        ++i;
+        // something left to compare?
+        if ((i < s1.length()) && (i < s2.length()))
+        {
+            // get number prefix from position i - doesnt matter from which string
+            int k = i-1;
+            //If not number return native comparator
+            if(!s1.at(k).isNumber() || !s2.at(k).isNumber())
+            {
+                return QString::compare(s1, s2, Qt::CaseSensitive) < 0;
+            }
+            QString n = "";
+            k--;
+            while ((k >= 0) && (s1.at(k).isNumber()))
+            {
+                n = s1.at(k)+n;
+                --k;
+            }
+            // get relevant/signficant number string for s1
+            k = i-1;
+            QString n1 = "";
+            while ((k < s1.length()) && (s1.at(k).isNumber()))
+            {
+                n1 += s1.at(k);
+                ++k;
+            }
+
+            // get relevant/signficant number string for s2
+            //Decrease by
+            k = i-1;
+            QString n2 = "";
+            while ((k < s2.length()) && (s2.at(k).isNumber()))
+            {
+                n2 += s2.at(k);
+                ++k;
+            }
+
+            // got two numbers to compare?
+            if (!n1.isEmpty() && !n2.isEmpty())
+            {
+                return (n+n1).toInt() < (n+n2).toInt();
+            }
+            else
+            {
+                // not a number has to win over a number.. number could have ended earlier... same prefix..
+                if (!n1.isEmpty())
+                    return false;
+                if (!n2.isEmpty())
+                    return true;
+                return s1.at(i) < s2.at(i);
+            }
+        }
+        else {
+            // shortest string wins
+            return s1.length() < s2.length();
+        }
+    }
+}
+
+void FileWatcher::start()
+{
+    qDebug()<<"From main thread: "<<QThread::currentThreadId();
+
+    QThread *thread = new QThread;
+    m_worker = new ImportWorker(*m_queue);
+    m_worker->clear();
+    m_worker->moveToThread(thread);
+
+    connect(thread, SIGNAL(started()), m_worker, SLOT(process()));
+    connect(this, SIGNAL(stopWorker()), m_worker, SLOT(stopProcess()), Qt::DirectConnection);
+    connect(m_worker, SIGNAL(finished()), this, SLOT(finished()));
+    connect(m_worker, SIGNAL (finished()), thread, SLOT (quit()));
+    connect(m_worker, SIGNAL (finished()), m_worker, SLOT (deleteLater()));
+    connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+
+    thread->start();
+//    worker->process();
 }

@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "groupswidget.h"
 
 #include <QSqlTableModel>
-#include <QSqlQuery>
 #include <QSortFilterProxyModel>
 #include <QSqlError>
 #include <QMessageBox>
@@ -45,28 +44,27 @@ GroupsWidget::GroupsWidget(QWidget *parent)
   connect(ui->edit, SIGNAL(clicked()), this, SLOT(editSlot()));
   connect(ui->groupFilter, SIGNAL(textChanged(const QString &)), this, SLOT(filterGroup(const QString &)));
 
-  model = new QSqlTableModel(this, dbc);
-  model->setTable("groups");
-  model->setFilter("id > 1");
-  model->setEditStrategy(QSqlTableModel::OnFieldChange);
-  model->select();
+  m_model = new QSqlTableModel(this, dbc);
+  m_model->setTable("groups");
+  m_model->setFilter("id > 1");
+  m_model->setEditStrategy(QSqlTableModel::OnFieldChange);
+  m_model->select();
 
-  model->setHeaderData(model->fieldIndex("name"), Qt::Horizontal, tr("Gruppe"), Qt::DisplayRole);
-  model->setHeaderData(model->fieldIndex("visible"), Qt::Horizontal, tr("sichtbar"), Qt::DisplayRole);
+  m_model->setHeaderData(m_model->fieldIndex("name"), Qt::Horizontal, tr("Gruppe"), Qt::DisplayRole);
+  m_model->setHeaderData(m_model->fieldIndex("visible"), Qt::Horizontal, tr("sichtbar"), Qt::DisplayRole);
 
-  proxyModel = new QSortFilterProxyModel(this);
-  proxyModel->setSourceModel(model);
-  proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-  proxyModel->setFilterKeyColumn(model->fieldIndex("name"));
+  m_proxyModel = new QSortFilterProxyModel(this);
+  m_proxyModel->setSourceModel(m_model);
+  m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  m_proxyModel->setFilterKeyColumn(m_model->fieldIndex("name"));
 
-//  ui->tableView->setModel(model);
-  ui->tableView->setModel(proxyModel);
+  ui->tableView->setModel(m_proxyModel);
   ui->tableView->setSortingEnabled(true);
-  ui->tableView->setColumnHidden(model->fieldIndex("id"), true);
-  ui->tableView->setColumnWidth(model->fieldIndex("name"), 250);
-  ui->tableView->setColumnHidden(model->fieldIndex("color"), true);
-  ui->tableView->setColumnHidden(model->fieldIndex("button"), true);
-  ui->tableView->setColumnHidden(model->fieldIndex("image"), true);
+  ui->tableView->setColumnHidden(m_model->fieldIndex("id"), true);
+  ui->tableView->setColumnWidth(m_model->fieldIndex("name"), 250);
+  ui->tableView->setColumnHidden(m_model->fieldIndex("color"), true);
+  ui->tableView->setColumnHidden(m_model->fieldIndex("button"), true);
+  ui->tableView->setColumnHidden(m_model->fieldIndex("image"), true);
 
   ui->tableView->setAlternatingRowColors(true);
   ui->tableView->resizeColumnsToContents();
@@ -81,9 +79,9 @@ void GroupsWidget::filterGroup(const QString &filter)
 {
   // show only matching items
 
-  proxyModel->setFilterWildcard("*" + filter + "*");
+  m_proxyModel->setFilterWildcard("*" + filter + "*");
 
-  model->fetchMore();  // else the list is not filled with all possible rows
+  m_model->fetchMore();  // else the list is not filled with all possible rows
                        // e.g. when using mouse wheel it would fetch more items
                        // but on the WeTab we have no mouse
 }
@@ -95,30 +93,30 @@ void GroupsWidget::plusSlot()
   GroupEdit dialog(this);
   dialog.exec();
 
-  model->select();
+  m_model->select();
 }
 
 //--------------------------------------------------------------------------------
 
 void GroupsWidget::minusSlot()
 {
-  int row = proxyModel->mapToSource(ui->tableView->currentIndex()).row();
+  int row = m_proxyModel->mapToSource(ui->tableView->currentIndex()).row();
   if ( row == -1 )
     return;
 
   if ( QMessageBox::question(this, tr("Gruppe löschen"),
          tr("Möchten sie die Gruppe '%1' wirklich löschen ?")
-            .arg(model->data(model->index(row, 1)).toString()),
+            .arg(m_model->data(m_model->index(row, 1)).toString()),
          QMessageBox::Yes, QMessageBox::No) == QMessageBox::No )
     return;
 
-  if ( !model->removeRow(row) )
+  if ( !m_model->removeRow(row) )
   {
     QMessageBox::information(this, tr("Löschen nicht möglich"),
         tr("Gruppe '%1' kann nicht gelöscht werden, da sie noch in Verwendung ist")
-           .arg(model->data(model->index(row, 1)).toString()));
+           .arg(m_model->data(m_model->index(row, 1)).toString()));
   }
-  model->select();
+  m_model->select();
 }
 
 //--------------------------------------------------------------------------------
@@ -126,15 +124,15 @@ void GroupsWidget::minusSlot()
 void GroupsWidget::editSlot()
 {
 
-  QModelIndex current(proxyModel->mapToSource(ui->tableView->currentIndex()));
+  QModelIndex current(m_proxyModel->mapToSource(ui->tableView->currentIndex()));
   int row = current.row();
   if ( row == -1 )
     return;
 
-  GroupEdit dialog(this, model->data(model->index(row, model->fieldIndex("id"))).toInt());
+  GroupEdit dialog(this, m_model->data(m_model->index(row, m_model->fieldIndex("id"))).toInt());
   if ( dialog.exec() == QDialog::Accepted )
   {
-    model->select();
+    m_model->select();
     ui->tableView->resizeRowsToContents();
     ui->tableView->setCurrentIndex(current);
   }

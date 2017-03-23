@@ -1,7 +1,7 @@
 #
 # This file is part of QRK - Qt Registrier Kasse
 #
-# Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+# Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,87 +30,80 @@ include(../defaults.pri)
 
 QT += sql
 QT += printsupport
+QT += widgets
+QT += network
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+TARGET = qrk
+DESTDIR = ../bin
+INCLUDEPATH += ../qrkcore
+DEPENDPATH += ../qrkcore
 
-TARGET = ../bin/qrk
-# TEMPLATE = app
-
-SOURCES += main.cpp\
-    databasedefinition.cpp \
-    settingsdialog.cpp \
-    database.cpp \
-    receiptitemmodel.cpp \
+SOURCES += main.cpp \
     qsortfiltersqlquerymodel.cpp \
-    documentprinter.cpp \
     qrk.cpp \
-    depexportdialog.cpp \
     qrkdelegate.cpp \
-    dep.cpp \
-    reports.cpp \
     r2bdialog.cpp \
     qrkhome.cpp \
     qrkdocument.cpp \
     qrkregister.cpp \
     aboutdlg.cpp \
-    utils/base32decode.cpp \
-    utils/base32encode.cpp \
-    utils/aesutil.cpp \
-    backup.cpp \
     givendialog.cpp \
     manager/groupedit.cpp \
     manager/groupswidget.cpp \
     manager/managerdialog.cpp \
-    manager/productedit.cpp \
-    manager/productswidget.cpp \
-    utils/utils.cpp \
     import/filewatcher.cpp \
-    import/import.cpp \
-    utils/demomode.cpp \
     qrkdialog.cpp \
-    utils/qrcode.cpp \
-    font/fontselector.cpp
+    font/fontselector.cpp \
+    qrkprogress.cpp \
+    import/comboboxdelegate.cpp \
+    import/csvimportwizard.cpp \
+    import/csvimportwizardpage1.cpp \
+    import/csvimportwizardpage2.cpp \
+    import/csvimportwizardpage3.cpp \
+    export/exportdialog.cpp \
+    export/exportdep.cpp \
+    import/importworker.cpp \
+    manager/productswidget.cpp \
+    manager/productedit.cpp \
+    export/exportjournal.cpp \
+    foninfo.cpp \
+    flowlayout.cpp \
+    preferences/settingsdialog.cpp
 
 HEADERS  += \
-    databasedefinition.h \
-    settingsdialog.h \
-    database.h \
-    receiptitemmodel.h \
     qsortfiltersqlquerymodel.h \
-    documentprinter.h \
     qrk.h \
-    depexportdialog.h \
     qrkdelegate.h \
-    dep.h \
-    reports.h \
     r2bdialog.h \
     qrkdocument.h \
     qrkhome.h \
     qrkregister.h \
-    defines.h \
     aboutdlg.h \
-    utils/base32decode.h \
-    utils/base32encode.h \
-    utils/aesutil.h \
-    backup.h \
     givendialog.h \
     manager/groupedit.h \
     manager/groupswidget.h \
     manager/managerdialog.h \
     manager/productedit.h \
     manager/productswidget.h \
-    utils/utils.h \
     import/filewatcher.h \
-    import/import.h \
-    utils/demomode.h \
     qrkdialog.h \
-    utils/qrcode.h \
-    font/fontselector.h
+    font/fontselector.h \
+    qrkprogress.h \
+    import/comboboxdelegate.h \
+    import/csvimportwizard.h \
+    import/csvimportwizardpage1.h \
+    import/csvimportwizardpage2.h \
+    import/csvimportwizardpage3.h \
+    export/exportdialog.h \
+    export/exportdep.h \
+    import/importworker.h \
+    export/exportjournal.h \
+    foninfo.h \
+    flowlayout.h \
+    preferences/settingsdialog.h
 
 FORMS += \
     ui/qrk.ui \
-    ui/databasedefinition.ui \
-    ui/depexportdialog.ui \
     ui/r2bdialog.ui \
     ui/qrkdocument.ui \
     ui/qrkhome.ui \
@@ -121,49 +114,77 @@ FORMS += \
     manager/groupwidget.ui \
     manager/productedit.ui \
     manager/productswidget.ui \
-    font/fontselector.ui
+    font/fontselector.ui \
+    ui/qrkprogress.ui \
+    import/csvimportwizardpage1.ui \
+    import/csvimportwizardpage2.ui \
+    import/csvimportwizardpage3.ui \
+    export/exportdialog.ui \
+    ui/foninfo.ui
 
 RESOURCES += \
     qrk.qrc
 
 TRANSLATIONS += tr/QRK_en.ts \
-    tr/QRK_de.ts
+    tr/QRK_de.ts \
+    tr/QRK_en_US.ts
 
-# quazip
-!include("3rdparty/quazip/quazip.pri") {
-<------>error("Unable to include quazip.")
-}
 
-win32 {
-# |macx
-# Fervor autoupdater
-# (set TARGET and VERSION of your app before including Fervor.pri)
-!include("3rdparty/fervor-autoupdate/Fervor.pri") {
-<------>error("Unable to include Fervor autoupdater.")
-}
+win32:CONFIG(release, debug|release): LIBS += -L../qrkcore/release -lQrkCore
+else:win32:CONFIG(debug, debug|release): LIBS += -L../qrkcore/debug -lQrkCore
+else:unix: LIBS += -L../qrkcore -lQrkCore
+
+win32|macx {
+    # Fervor autoupdater
+    # (set TARGET and VERSION of your app before including Fervor.pri)
+    !include("3rdparty/fervor-autoupdate/Fervor.pri") {
+	error("Unable to include Fervor autoupdater.")
+    }
+    DEFINES += FV_GUI
+
+    DEFINES += FV_APP_NAME=\\\"$$TARGET\\\"
+    DEFINES += FV_APP_VERSION=\\\"$$VERSION\\\"
 }
 
 unix:!macx {
  INCLUDEPATH += /usr/include/PCSC
+ LIBS += -lpcsclite
 }
 
 macx {
  INCLUDEPATH += /usr/local/include
- INCLUDEPATH += /usr/local/opt/pcsc-lite/include/PCSC
- INCLUDEPATH += /usr/local/Cellar/qrencode/3.4.4/include
-
- LIBS += -L/usr/local/lib -lqrencode
- LIBS += -L/usr/local/opt/pcsc-lite/lib
+ #INCLUDEPATH += /usr/local/Cellar/qrencode/3.4.4/include
+ QMAKE_LFLAGS += -Wl,-rpath,@executable_path/
+ LIBS += -L/usr/local/lib
+ LIBS += -framework PCSC
+ LIBS += -framework CoreFoundation
  ICON = ../qrk.icns
-} else {
- LIBS += -lqrencode
+}
+
+win32 {
+ INCLUDEPATH += $$[QT_INSTALL_PREFIX]/include/QtZlib
+ LIBS += libwinscard
+ LIBS += -pthread
+ RC_ICONS = ../qrk.ico
 }
 
 LIBS += -lcryptopp
 LIBS += -lz
 
-win32 {
- LIBS += libwinscard
-} else {
- LIBS += -lpcsclite
+win32:CONFIG(release, debug|release): COREDLL = $$BUILD_DIR/../qrkcore/release/*.dll
+else:win32:CONFIG(debug, debug|release): COREDLL = $$BUILD_DIR/../qrkcore/debug/*.dll
+else:macx: COREDLL = $$BUILD_DIR/../qrkcore/libQrkCore.1.0.0.dylib
+
+win32: PLUGINS = $$BUILD_DIR/../plugins/bin/*.dll
+else:macx: PLUGINS = $$BUILD_DIR/../plugins/bin/*.dylib
+
+macx {
+QMAKE_POST_LINK += $$quote($(COPY_FILE) $$COREDLL $$BUILD_DIR/../bin/$${TARGET}.app/Contents/MacOS/libQrkCore.1.dylib) &
+QMAKE_POST_LINK += $$quote($(MKDIR) $$BUILD_DIR/../bin/$${TARGET}.app/Contents/plugins) &
+QMAKE_POST_LINK += $$quote($(COPY_DIR) $$PLUGINS $$BUILD_DIR/../bin/$${TARGET}.app/Contents/plugins/) &
+QMAKE_POST_LINK += install_name_tool -change libQrkCore.1.dylib  @executable_path/libQrkCore.1.dylib $$BUILD_DIR/../bin/$${TARGET}.app/Contents/MacOS/$${TARGET}
+} else:win32 {
+QMAKE_POST_LINK += $$shell_path($(COPY_DIR) $$COREDLL $$BUILD_DIR/../bin/) &
+QMAKE_POST_LINK += $$shell_path($(MKDIR) $$BUILD_DIR/../bin/plugins) &
+QMAKE_POST_LINK += $$shell_path($(COPY_DIR) $$PLUGINS $$BUILD_DIR/../bin/plugins/)
 }

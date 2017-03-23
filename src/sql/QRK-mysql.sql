@@ -11,14 +11,19 @@ CREATE TABLE `actionTypes` (
   `actionText` text NOT NULL,
   `comment` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=6 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=11 ;
 
 INSERT INTO `actionTypes` (`id`, `actionId`, `actionText`, `comment`) VALUES
 (1, 0, 'BAR', 'payedByText'),
 (2, 1, 'Bankomat', 'payedByText'),
 (3, 2, 'Kreditkarte', 'payedByText'),
 (4, 3, 'Tagesabschluss', 'PayedByText'),
-(5, 4, 'Monatsabschluss', 'PayedByText');
+(5, 4, 'Monatsabschluss', 'PayedByText'),
+(6, 5, 'Startbeleg','PayedByText'),
+(7, 6, 'Kontrollbeleg','PayedByText'),
+(8, 7, 'Nullbeleg','PayedByText'),
+(9, 8, 'Monatsbeleg','PayedByText'),
+(10, 9, 'Schlussbeleg','PayedByText');
 
 CREATE TABLE `customer` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -27,7 +32,7 @@ CREATE TABLE `customer` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE `dep` (
+CREATE TABLE `journal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `version` text NOT NULL,
   `cashregisterid` text NOT NULL,
@@ -35,6 +40,13 @@ CREATE TABLE `dep` (
   `text` text,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE `dep` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `receiptNum` int(11),
+  `data` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `globals` (
   `name` text NOT NULL,
@@ -71,6 +83,8 @@ CREATE TABLE `orders` (
 
 CREATE TABLE `products` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `itemnum` text NOT NULL,
+  `barcode` text NOT NULL,
   `name` text NOT NULL,
   `sold` double NOT NULL DEFAULT '0',
   `net` double NOT NULL,
@@ -82,6 +96,7 @@ CREATE TABLE `products` (
   `color` varchar(255) DEFAULT '#808080',
   `button` varchar(255) DEFAULT '',
   `image` varchar(255) DEFAULT '',
+  `coupon` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `group` (`group`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
@@ -89,24 +104,25 @@ CREATE TABLE `products` (
 CREATE TABLE `receipts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `timestamp` datetime NOT NULL,
+  `infodate` datetime NOT NULL,
   `receiptNum` int(11) DEFAULT NULL,
   `payedBy` int(11) NOT NULL DEFAULT '0',
   `gross` double NOT NULL DEFAULT '0',
   `net` double NOT NULL DEFAULT '0',
   `storno` int(11) NOT NULL DEFAULT '0',
   `stornoId` int(11) NOT NULL DEFAULT '0',
-  `signature` text,
   PRIMARY KEY (`id`),
   KEY `receipts_stornoId_index` (`stornoId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 CREATE TABLE `reports` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `receiptNum` int(11) DEFAULT NULL,
+  `timestamp` datetime NOT NULL,
   `text` text,
   PRIMARY KEY (`id`),
   KEY `reports_receiptNum_index` (`receiptNum`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 CREATE TABLE `taxTypes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

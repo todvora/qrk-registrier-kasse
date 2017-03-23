@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ GivenDialog::GivenDialog(double &sum, QWidget *parent) :
     QDoubleValidator *doubleVal = new QDoubleValidator(0.0, 9999999.99, 2, this);
     doubleVal->setNotation(QDoubleValidator::StandardNotation);
     ui->givenEdit->setValidator(doubleVal);
-    this->sum = sum;
+    m_sum = sum;
     ui->toPayLabel->setText(tr("Zu bezahlen: %1 %2").arg(QString::number(sum,'f',2)).arg(Database::getCurrency()));
 
     connect (ui->givenEdit, SIGNAL(textChanged(QString)), SLOT(textChanged(QString)));
@@ -55,7 +55,7 @@ void GivenDialog::textChanged(QString given)
 {
 
     given.replace(",",".");
-    double retourMoney = given.toDouble() - sum;
+    double retourMoney = given.toDouble() - m_sum;
 
     ui->lcdNumber->display(QString::number(retourMoney,'f',2));
 

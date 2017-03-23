@@ -1,7 +1,7 @@
 /*
  * This file is part of QRK - Qt Registrier Kasse
  *
- * Copyright (C) 2015-2016 Christian Kvasny <chris@ckvsoft.at>
+ * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,25 +47,25 @@ void R2BDialog::setOkButtonEnabled(bool isAccptableInput)
 
 void R2BDialog::accept()
 {
-  invoiceNum = ui->invoiceNum->text();
-  invoiceSum = ui->invoiceSum->text();
+  m_invoiceNum = ui->invoiceNum->text();
+  m_invoiceSum = ui->invoiceSum->text();
   QDialog::accept();
 }
 
 QString R2BDialog::getInvoiceNum()
 {
-  if (invoiceNum.isEmpty())
+  if (m_invoiceNum.isEmpty())
     return "Zahlungsbeleg für Rechnung 1 - nicht für den Vorsteuerabzug geeignet";
 
-  return QString("Zahlungsbeleg für Rechnung %1 - nicht für den Vorsteuerabzug geeignet" ).arg(invoiceNum.toUpper());
+  return QString("Zahlungsbeleg für Rechnung %1 - nicht für den Vorsteuerabzug geeignet" ).arg(m_invoiceNum.toUpper());
 }
 
 QString R2BDialog::getInvoiceSum()
 {
-  invoiceSum.replace(',','.');
-  if (invoiceSum.isEmpty())
+  m_invoiceSum.replace(',','.');
+  if (m_invoiceSum.isEmpty())
     return "0.0";
 
-  QString text = QString::number(invoiceSum.toDouble(),'f',2);
+  QString text = QString::number(m_invoiceSum.toDouble(),'f',2);
   return text;
 }

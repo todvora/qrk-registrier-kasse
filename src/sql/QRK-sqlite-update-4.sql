@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-CREATE TABLE `dep_backup` (
+CREATE TEMPORARY TABLE `dep_backup` (
     `id`                INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `version`           text NOT NULL,
     `cashregisterid`    int(11) NOT NULL,
