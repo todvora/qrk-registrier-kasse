@@ -323,8 +323,8 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
             logoPixmap.load(m_logoFileName);
 
             if (m_logoRight) {
-                if (logoPixmap.width() > printer.pageRect().width() / 2.50)
-                    logoPixmap =  logoPixmap.scaled(printer.pageRect().width() / 2.50, printer.pageRect().height(), Qt::KeepAspectRatio);
+                if (logoPixmap.width() > WIDTH / 2.50)
+                    logoPixmap =  logoPixmap.scaled(WIDTH / 2.50, printer.pageRect().height(), Qt::KeepAspectRatio);
 
                 painter.drawPixmap(WIDTH - logoPixmap.width() - 1, y, logoPixmap);
 
@@ -350,8 +350,8 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
                 y += 5;
             } else {
 
-                if (logoPixmap.width() > printer.pageRect().width())
-                    logoPixmap =  logoPixmap.scaled(printer.pageRect().width(), printer.pageRect().height(), Qt::KeepAspectRatio);
+                if (logoPixmap.width() > WIDTH)
+                    logoPixmap =  logoPixmap.scaled(WIDTH, printer.pageRect().height(), Qt::KeepAspectRatio);
                 painter.drawPixmap((WIDTH / 2) - (logoPixmap.width()/2) - 1, y, logoPixmap);
                 y += 5 + logoPixmap.height() + 4;
 
@@ -582,10 +582,10 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
     }
 
     int ySave = y; // save y when QR-Code was printing left
+    QString sumText = tr("Gesamt: %1").arg(sum);
     painter.save();
     painter.setFont(boldFont);
-    painter.drawText(0, y, WIDTH, boldMetr.height(), Qt::AlignRight,
-                     tr("Gesamt: %1").arg(sum));
+    painter.drawText(0, y, WIDTH, boldMetr.height(), Qt::AlignRight, sumText);
     painter.restore();
 
     y += 5 + boldMetr.height();
@@ -614,7 +614,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
     // Die Währung müsste sonst neben jeden Preis stehen, darum schreiben wir diesen InfoText
     QString currencyText = tr("(Alle Beträge in %1)").arg(m_currency);
-    if (m_printQrCodeLeft) {
+    if (m_printQRCode && m_printQrCodeLeft) {
         painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignRight, currencyText);
         y += 20;
     } else {
@@ -623,9 +623,47 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
     y += 5 + fontMetr.height();
 
-    int yBeforeFooter = y + 5;
-
     SpreadSignal::setProgressBarValue(((float)(progress += 10) / (float)oc) * 100);
+
+    QString qr_code_rep = shopName + " - " + shopMasterData;
+    QString ocr_code_rep = shopName + " - " + shopMasterData;
+
+    if (RKSignatureModule::isDEPactive()) {
+        QString signature = Utils::getReceiptSignature(data.value("receiptNum").toInt(), true);
+        if (signature.split('.').size() == 3) {
+            qr_code_rep = signature.split('.').at(1);
+            qr_code_rep = RKSignatureModule::base64Url_decode(qr_code_rep);
+            ocr_code_rep = qr_code_rep;
+            qr_code_rep = qr_code_rep + "_" + RKSignatureModule::base64Url_decode(signature.split('.').at(2)).toBase64();
+            ocr_code_rep = ocr_code_rep + "_" + RKSignatureModule::base32_encode(RKSignatureModule::base64Url_decode(signature.split('.').at(2)));
+            if (signature.split('.').at(2) == RKSignatureModule::base64Url_encode("Sicherheitseinrichtung ausgefallen"))
+                data["isSEEDamaged"] = true;
+            qDebug() << "Function Name: " << Q_FUNC_INFO << " QRCode Representation: " << qr_code_rep;
+        } else {
+            qInfo() << "Function Name: " << Q_FUNC_INFO << " Print old (before DEP) Receipt Id:" << data.value("receiptNum").toInt();
+        }
+    }
+
+    if (m_printQRCode && m_printQrCodeLeft) {
+        QRCode *qr = new QRCode;
+        QPixmap QR = qr->encodeTextToPixmap(qr_code_rep);
+        delete qr;
+
+        int sumWidth = boldMetr.boundingRect(sumText).width();
+
+        if (QR.width() > (WIDTH - sumWidth))
+            QR =  QR.scaled(WIDTH - sumWidth - 4, printer.pageRect().height(), Qt::KeepAspectRatio);
+
+        painter.drawPixmap( 1, ySave, QR);
+
+        y = 20 + qMax(ySave + QR.height(), y);
+
+        if(data.value("isSEEDamaged").toBool()) {
+            y += 5 + fontMetr.height();
+            painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignCenter, "Sicherheitseinrichtung ausgefallen");
+            y += 5 + fontMetr.height();
+        }
+    }
 
     if(isInvoiceCompany) {
         y += 5;
@@ -650,53 +688,14 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
     SpreadSignal::setProgressBarValue(((float)(progress += 10) / (float)oc) * 100);
 
-    QString qr_code_rep = shopName + " - " + shopMasterData;
-    QString ocr_code_rep = shopName + " - " + shopMasterData;
-
-    if (RKSignatureModule::isDEPactive()) {
-        QString signature = Utils::getReceiptSignature(data.value("receiptNum").toInt(), true);
-        if (signature.split('.').size() == 3) {
-            qr_code_rep = signature.split('.').at(1);
-            qr_code_rep = RKSignatureModule::base64Url_decode(qr_code_rep);
-            ocr_code_rep = qr_code_rep;
-            qr_code_rep = qr_code_rep + "_" + RKSignatureModule::base64Url_decode(signature.split('.').at(2)).toBase64();
-            ocr_code_rep = ocr_code_rep + "_" + RKSignatureModule::base32_encode(RKSignatureModule::base64Url_decode(signature.split('.').at(2)));
-            if (signature.split('.').at(2) == RKSignatureModule::base64Url_encode("Sicherheitseinrichtung ausgefallen"))
-                data["isSEEDamaged"] = true;
-            qDebug() << "Function Name: " << Q_FUNC_INFO << " QRCode Representation: " << qr_code_rep;
-        } else {
-            qInfo() << "Function Name: " << Q_FUNC_INFO << " Print old (before DEP) Receipt Id:" << data.value("receiptNum").toInt();
-        }
-    }
-
-    if(data.value("isSEEDamaged").toBool()) {
-        y += 5 + fontMetr.height();
-        painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignCenter, "Sicherheitseinrichtung ausgefallen");
-        y += 5 + fontMetr.height();
-    }
-
-    if (m_printQRCode) {
-
+    if (m_printQRCode && !m_printQrCodeLeft) {
         QRCode *qr = new QRCode;
         QPixmap QR = qr->encodeTextToPixmap(qr_code_rep);
         delete qr;
 
-        if (QR.width() > printer.pageRect().width())
-            QR =  QR.scaled(printer.pageRect().width(), printer.pageRect().height(), Qt::KeepAspectRatio);
+        if (QR.width() > WIDTH)
+            QR =  QR.scaled(WIDTH, printer.pageRect().height(), Qt::KeepAspectRatio);
 
-        if (m_printQrCodeLeft && yBeforeFooter > ySave + QR.height()) {
-            // check if new drawText is heigher than page height
-            if ( (ySave + QR.height() + 20) > printer.pageRect().height() )
-            {
-                printer.newPage();
-                ySave = 0;
-            }
-
-            painter.drawPixmap( 1, ySave, QR);
-            if (ySave + QR.height() > y)
-                y = ySave + QR.height() + 20;
-
-        } else {
             y += 5;
             painter.drawLine(0, y, WIDTH, y);
             y += 5;
@@ -710,8 +709,8 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
             painter.drawPixmap((WIDTH / 2) - (QR.width()/2) - 1, y, QR);
 
             y += QR.height() + 20;
-        }
-    } else if (Database::getTaxLocation() == "AT") {
+
+    } else if (!m_printQRCode && Database::getTaxLocation() == "AT") {
         y += 5;
         painter.drawLine(0, y, WIDTH, y);
         y += 5;
@@ -722,8 +721,8 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
         painter.setFont(ocrfont);
         QFontMetrics ocrMetr = painter.fontMetrics();
 
-        qr_code_rep = Utils::wordWrap(qr_code_rep, WIDTH, ocrfont);
-        int ocrHeight = qr_code_rep.split(QRegExp("\n|\r\n|\r")).count() * ocrMetr.height();
+        ocr_code_rep = Utils::wordWrap(ocr_code_rep, WIDTH, ocrfont);
+        int ocrHeight = ocr_code_rep.split(QRegExp("\n|\r\n|\r")).count() * ocrMetr.height();
 
         // check if new drawText is heigher than page height
         if ( (y + ocrHeight + 20) > printer.pageRect().height() )
@@ -732,9 +731,16 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
             y = 0;
         }
 
-        painter.drawText(0,  y, WIDTH,  ocrHeight, Qt::AlignLeft, qr_code_rep);
+        painter.drawText(0,  y, WIDTH,  ocrHeight, Qt::AlignLeft, ocr_code_rep);
         y += ocrHeight + 20;
+    }
 
+    if (!m_printQrCodeLeft) {
+        if(data.value("isSEEDamaged").toBool()) {
+            y += 5 + fontMetr.height();
+            painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignCenter, "Sicherheitseinrichtung ausgefallen");
+            y += 5 + fontMetr.height();
+        }
     }
 
     if (advertising) {
@@ -747,8 +753,8 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
         advertisingPixmap.load(m_advertisingFileName);
 
-        if (advertisingPixmap.width() > printer.pageRect().width())
-            advertisingPixmap = advertisingPixmap.scaled(printer.pageRect().width(), printer.pageRect().height(), Qt::KeepAspectRatio);
+        if (advertisingPixmap.width() > WIDTH)
+            advertisingPixmap = advertisingPixmap.scaled(WIDTH, printer.pageRect().height(), Qt::KeepAspectRatio);
         painter.drawPixmap((WIDTH / 2) - (advertisingPixmap.width()/2) - 1, y, advertisingPixmap);
         y += 5 + advertisingPixmap.height() + 4;
 

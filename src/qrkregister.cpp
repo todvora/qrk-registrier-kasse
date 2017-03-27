@@ -530,7 +530,7 @@ void QRKRegister::createCheckReceipt(bool)
         if (m_receiptPrintDialog) {
             QMessageBox *msgBox  = new QMessageBox();
             msgBox->setWindowTitle(tr("Drucker"));
-            msgBox->setText(tr("Kontrollbeleg (Beleg %1) wurde gedruckt. Nächster Vorgang wird gestartet.").arg(m_orderListModel->getReceiptNum()));
+            msgBox->setText(tr("Kontrollbeleg (Beleg %1) wurde gedruckt. Nächster Vorgang wird gestartet.").arg(m_currentReceipt));
 
             QTimer::singleShot(10000, msgBox, SLOT(reject()));
             msgBox->exec();
