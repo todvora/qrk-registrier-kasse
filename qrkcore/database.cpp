@@ -975,9 +975,13 @@ void Database::setCashRegisterInAktive()
             return;
         else
             q.prepare("UPDATE globals set name=:name, value=:value;");
+    } else {
+        q.prepare("INSERT INTO globals (name, value) VALUES(:name, :value)");
     }
 
-    q.prepare("REPLACE into globals (name, value) values('CASHREGISTER_INAKTIV', 1);");
+    q.bindValue(":name", "CASHREGISTER_INAKTIV");
+    q.bindValue(":value", 1);
+
     q.exec();
 }
 
@@ -1042,7 +1046,7 @@ void Database::resetAllData()
     q.prepare("UPDATE globals SET value = 0 WHERE name = 'DEP';");
     q.exec();
 
-    q.prepare("REPLACE into globals (name, value) values('CASHREGISTER_INAKTIV', 0);");
+    q.prepare("DELETE FROM globals WHERE `name`='CASHREGISTER_INAKTIV';");
     q.exec();
 
     QString dbType = getDatabaseType();

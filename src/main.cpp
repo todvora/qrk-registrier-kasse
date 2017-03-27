@@ -277,6 +277,7 @@ int main(int argc, char *argv[])
         if (messageBox.exec() == QMessageBox::Yes )
         {
             mainWidget->closeCashRegister();
+            return 0;
         }
     }
 

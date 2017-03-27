@@ -595,5 +595,5 @@ void QRK::restartApplication()
     arguments << "-r";
     QString wd = QDir::currentPath();
     QProcess::startDetached(app, arguments, wd);
-    QApplication::exit();
+    QApplication::exit(0);
 }
