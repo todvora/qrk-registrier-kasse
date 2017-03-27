@@ -65,6 +65,11 @@ void Journal::journalInsertReceipt(QJsonObject &data)
     bool ok = query.prepare(QString("INSERT INTO journal %1 VALUES(:version,:kasse,:receiptTime,:var)")
         .arg(val));
 
+    if (!ok) {
+      qCritical() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+      qCritical() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+    }
+
     query.bindValue(":version", data.value("version").toString());
     query.bindValue(":kasse", data.value("kasse").toString());
     query.bindValue(":receiptTime", data.value("receiptTime").toString());
@@ -96,6 +101,12 @@ void Journal::journalInsertReceipt(QJsonObject &data)
 
   bool ok = query.prepare(QString("INSERT INTO journal %1 VALUES(:version,:kasse,:receiptTime,:var)")
       .arg(val));
+
+  if (!ok) {
+    qCritical() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+    qCritical() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+  }
+
   query.bindValue(":version", data.value("version").toString());
   query.bindValue(":kasse", data.value("kasse").toString());
   query.bindValue(":receiptTime", data.value("receiptTime").toString());
@@ -116,16 +127,21 @@ void Journal::journalInsertLine(QString title,  QString text)
   QString val = "(version,cashregisterid,datetime,text)";
   bool ok = query.prepare(QString("INSERT INTO journal %1 VALUES(:version, :kasse, :date, :text)")
                       .arg(val));
-  query.bindValue(":version", QString("%1.%2").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR));
-  query.bindValue(":kasse", Database::getCashRegisterId());
-  query.bindValue(":date", dt.toString(Qt::ISODate));
-  query.bindValue(":text", title + "\t" + text + "\t" + dt.toString(Qt::ISODate));
 
   if (!ok) {
     qCritical() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
     qCritical() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
   }
 
-  query.exec();
+  query.bindValue(":version", QString("%1.%2").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR));
+  query.bindValue(":kasse", Database::getCashRegisterId());
+  query.bindValue(":date", dt.toString(Qt::ISODate));
+  query.bindValue(":text", title + "\t" + text + "\t" + dt.toString(Qt::ISODate));
 
+  ok = query.exec();
+
+  if (!ok) {
+    qCritical() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+    qCritical() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+  }
 }

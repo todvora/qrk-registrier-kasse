@@ -127,6 +127,7 @@ QRK::QRK(bool servermode)
     connect(ui->actionDEMOMODUS_Verlassen, SIGNAL(triggered()), this, SLOT(actionLeaveDemoMode()));
     connect(ui->actionInfos_zur_Registrierung_bei_FON, SIGNAL(triggered(bool)), this, SLOT(infoFON()));
     connect(ui->actionPlugins, SIGNAL(triggered(bool)), this, SLOT(plugins()));
+    connect(ui->actionResuscitationCashRegister, SIGNAL(triggered(bool)), this, SLOT(actionResuscitationCashRegister()));
 
     connect(m_qrk_home, SIGNAL(endOfDay()), this, SLOT(endOfDaySlot()));
     connect(m_qrk_home, SIGNAL(endOfMonth()), this, SLOT(endOfMonthSlot()));
@@ -251,6 +252,7 @@ void QRK::init()
     ui->export_JSON->setVisible(RKSignatureModule::isDEPactive());
     ui->actionInfos_zur_Registrierung_bei_FON->setVisible(RKSignatureModule::isDEPactive());
 
+
     setShopName();
     m_cashRegisterId = Database::getCashRegisterId();
 
@@ -319,11 +321,18 @@ void QRK::init()
     }
 }
 
+void QRK::setResuscitationCashRegister(bool visible)
+{
+    ui->menuNEUE_KASSE_ERSTELLEN->setEnabled(visible);
+    ui->menuNEUE_KASSE_ERSTELLEN->menuAction()->setVisible(visible);
+}
+
 //--------------------------------------------------------------------------------
 
 void QRK::setShopName()
 {
     m_shopName = Database::getShopName();
+    m_cashRegisterIdLabel->setText(QObject::tr(" KID: %1 ").arg(Database::getCashRegisterId()));
 }
 
 //--------------------------------------------------------------------------------
@@ -503,6 +512,24 @@ void QRK::actionLeaveDemoMode()
 void QRK::actionResetDemoData()
 {
     Database::resetAllData();
+    restartApplication();
+}
+
+void QRK::closeCashRegister()
+{
+    Reports *rep = new Reports(this, true);
+    rep->endOfMonth();
+    rep->createNullReceipt(PAYED_BY_CONCLUSION_RECEIPT);
+    Database::setCashRegisterInAktive();
+    backupDEP();
+    restartApplication();
+}
+
+void QRK::actionResuscitationCashRegister()
+{
+    backupDEP();
+    Database::resetAllData();
+    RKSignatureModule::setDEPactive(false);
     restartApplication();
 }
 

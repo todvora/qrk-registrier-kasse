@@ -33,6 +33,7 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QFontMetrics>
+#include <QStringList>
 #include <QDebug>
 
 Utils::Utils()
@@ -74,7 +75,7 @@ QString Utils::getSignature(QJsonObject data)
         double gross = data.value(Database::getTaxType(query.value(0).toDouble())).toDouble();
 
         sign[Database::getTaxType( tax )] = QString::number( gross , 'f', 2);
-        counter += QString::number( gross, 'f', 2).toDouble() * 100;
+        counter += QString::number( gross * 100, 'f', 0).toLongLong();
     }
 
     QString concatenatedValue = sign["Kassen-ID"].toString() + sign["Belegnummer"].toString();
@@ -198,13 +199,7 @@ QString Utils::getReceiptShortJson(QJsonObject sig)
 
 void Utils::resetTurnOverCounter()
 {
-    QSqlDatabase dbc = QSqlDatabase::database("CN");
-    QSqlQuery query(dbc);
-
-    query.prepare("UPDATE globals set value=0 WHERE name='turnovercounter'");
-    bool ok = query.exec();
-    if (!ok)
-        qCritical() << "Function Name: " << Q_FUNC_INFO << " error: " << query.lastError().text();
+    updateTurnOverCounter(0);
 }
 
 qlonglong Utils::getTurnOverCounter()
@@ -308,6 +303,30 @@ QString Utils::wordWrap(QString text, int width, QFont font)
       break;
   }
   return result + text;
+}
+
+bool Utils::checkTurnOverCounter()
+{
+    qlonglong turnOverCounter = Utils::getTurnOverCounter();
+
+    QSqlDatabase dbc = QSqlDatabase::database("CN");
+    QSqlQuery query(dbc);
+
+    query.prepare("SELECT data FROM dep");
+    query.exec();
+
+    qlonglong counter = 0;
+
+    while(query.next()) {
+        QString payload = RKSignatureModule::base64Url_decode(query.value(0).toString().split('.').at(1));
+        QStringList list = payload.split('_');
+        for (int y = 5; y < 9; y++) {
+            QString current = list.at(y);
+            double d = current.replace(',','.').toDouble();
+            counter += QString::number( d * 100, 'f', 0).toLongLong();
+        }
+    }
+    return (turnOverCounter == counter);
 }
 
 QString Utils::normalizeNumber(QString value)

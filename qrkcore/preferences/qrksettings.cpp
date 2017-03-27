@@ -21,14 +21,17 @@
 */
 
 #include "qrksettings.h"
+#include "database.h"
 #include "journal.h"
 
 #include <QSqlQuery>
+#include <QSqlError>
 #include <QSettings>
+#include <QDebug>
 
 QrkSettings::QrkSettings(QObject *parent) : QSettings(parent)
 {
-    m_settings =  new QSettings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK", this);
+    m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "QRK", "QRK", this);
     m_journal = new Journal(this);
 }
 
@@ -52,17 +55,43 @@ void QrkSettings::save2Database(QString name, QString value)
     QSqlQuery query(dbc);
 
     QString oldValue = "";
-    query.prepare("select strValue FROM globals WHERE name=:name");
+    query.prepare("SELECT id, strValue FROM globals WHERE name=:name;");
     query.bindValue(":name", name);
-    query.exec();
-    if (query.next())
-        oldValue = query.value(0).toString();
+    bool ok = query.exec();
 
-    if (oldValue != value) {
-        query.prepare("UPDATE globals SET strValue=:value WHERE name=:name");
+    if (!ok) {
+        qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+        qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+    }
+
+    int id = -1;
+    if (query.next()) {
+        id = query.value("id").toInt();
+        oldValue = query.value("strValue").toString();
+    }
+
+    if (oldValue.isEmpty() && oldValue != value) {
+        if (id > 0)
+            ok = query.prepare("UPDATE globals set strValue=:value WHERE name=:name;");
+        else
+            ok = query.prepare("INSERT INTO globals (name, strValue) VALUES(:name, :value);");
+
+        if (!ok) {
+            qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+            qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+        }
+
         query.bindValue(":value", value);
         query.bindValue(":name", name);
-        query.exec();
+        ok = query.exec();
+
+        qDebug() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+
+        if (!ok) {
+            qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+            qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+        }
+
         QString text = QString("Parameter '%1' aus der Datenbanktabelle 'globals' wurde von '%2' auf '%3' geändert").arg(name).arg(oldValue).arg(value);
         m_journal->journalInsertLine("Konfigurationsänderung", text);
     }

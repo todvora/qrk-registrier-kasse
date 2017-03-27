@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>30</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
@@ -96,9 +96,19 @@
     <addaction name="actionDEMO_Daten_zur_cksetzen"/>
     <addaction name="actionDEMOMODUS_Verlassen"/>
    </widget>
+   <widget class="QMenu" name="menuNEUE_KASSE_ERSTELLEN">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="title">
+     <string>&amp;NEUE KASSE ERSTELLEN</string>
+    </property>
+    <addaction name="actionResuscitationCashRegister"/>
+   </widget>
    <addaction name="menuDatei"/>
    <addaction name="menuHilfe"/>
    <addaction name="menuDEMOMODUS"/>
+   <addaction name="menuNEUE_KASSE_ERSTELLEN"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="autoFillBackground">
@@ -178,7 +188,18 @@
   </action>
   <action name="actionPlugins">
    <property name="text">
-    <string>Plugins</string>
+    <string>&amp;Plugins</string>
+   </property>
+  </action>
+  <action name="actionResuscitationCashRegister">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Erstellen</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
    </property>
   </action>
  </widget>

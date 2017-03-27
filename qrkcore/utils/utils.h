@@ -38,6 +38,7 @@ class QRK_EXPORT Utils
 
     QString getSignature(QJsonObject data);
 
+    static bool checkTurnOverCounter();
     static double getYearlyTotal(int year);
     static qlonglong getTurnOverCounter();
     static void resetTurnOverCounter();

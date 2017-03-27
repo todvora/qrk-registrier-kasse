@@ -114,8 +114,6 @@ void SettingsDialog::masterTaxChanged(QString tax)
     }
 }
 
-
-
 void SettingsDialog::accept()
 {
 
@@ -878,7 +876,7 @@ MasterDataTab::MasterDataTab(QWidget *parent)
     mainLayout->addStretch(1);
     setLayout(mainLayout);
 
-    if (RKSignatureModule::isDEPactive() || Database::isCashRegisterInAktive()) {
+    if (RKSignatureModule::isDEPactive()) {
         m_shopCashRegisterId->setEnabled(false);
         currencyGroup->setEnabled(false);
     }

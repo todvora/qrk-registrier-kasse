@@ -1,6 +1,5 @@
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 
 CREATE TABLE `products_backup` (
@@ -18,7 +17,7 @@ CREATE TABLE `products_backup` (
   `image` varchar(255) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `group` (`group`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 INSERT INTO products_backup SELECT `id`, `name`,`sold`,`net`,`gross`, `group`, `visible`, `completer`, `tax`, `color`, `button`, `image` FROM `products`;
 DROP TABLE `products`;
 
@@ -39,7 +38,7 @@ CREATE TABLE `products` (
   `image` varchar(255) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `group` (`group`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 INSERT INTO products SELECT `id`, '', '',`name`,`sold`,`net`,`gross`, `group`, `visible`, `completer`, `tax`, `color`, `button`, `image` FROM `products_backup`;
 DROP TABLE `products_backup`;

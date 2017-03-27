@@ -38,10 +38,11 @@ INSERT INTO `taxTypes`(`id`,`tax`,`comment`,`taxlocation`) VALUES (NULL,2.5,'Sat
 INSERT INTO `taxTypes`(`id`,`tax`,`comment`,`taxlocation`) VALUES (NULL,3.8,'Satz-Besonders','CH');
 INSERT INTO `taxTypes`(`id`,`tax`,`comment`,`taxlocation`) VALUES (NULL,0.0,'Satz-Null','CH');
 
-CREATE TABLE  `globals` (
-    `name`      	text NOT NULL,
-    `value`     	int(11),
-    `strValue`  	text
+CREATE TABLE `globals` (
+    `id`                INTEGER PRIMARY KEY AUTOINCREMENT,
+    `name`              text NOT NULL,
+    `value`             int(11),
+    `strValue`          text
 );
 INSERT INTO `globals`(`name`,`value`) VALUES ('demomode',1);
 

@@ -47,6 +47,8 @@ public:
 
     void setShopName();
     int getCurrentRegisterYear(){return m_currentRegisterYear;}
+    void setResuscitationCashRegister(bool visible);
+    void closeCashRegister();
 
     QLabel *m_currentRegisterYearLabel;
     QLabel *m_cashRegisterIdLabel;
@@ -79,6 +81,7 @@ private slots:
     void actionQRK_Forum();
     void actionLeaveDemoMode();
     void actionResetDemoData();
+    void actionResuscitationCashRegister();
 
     void fullScreenSlot();
     void exitSlot();

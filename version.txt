@@ -20,11 +20,6 @@
 #
 #
 
-VERSION 1.03 Build 170327
-  * fix seltenen Rundungsfehler beim Summenzähler
-  * fix für MySQL
-  + add Funktion um eine geschloßene Kasse wieder als neue Kasse zu aktivieren
-
 VERSION 1.03 Build 170322
   + Plugin Support
   + neue Kommandozeilen Parameter
@@ -84,7 +79,7 @@ VERSION 1.00 Build 161220
  * ServerMode (JSON Schnittstelle )wurde erweitert, es können jetzt auch "normale" Bons automatisch erstellt werden
  * Das Format sollte selbsterklärend sein
  * {"receipt":[
- * {"customertext": "Customer Text",
+ * {"customerText": "Customer Text",
  * "payedBy": "0",
  * "items":[
  * { "count": "3", "name": "Kupplung", "gross": "122,70", "tax": "20" },

@@ -1,6 +1,5 @@
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 
 USE QRK;
@@ -11,7 +10,7 @@ CREATE TABLE `actionTypes` (
   `actionText` text NOT NULL,
   `comment` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=11 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 INSERT INTO `actionTypes` (`id`, `actionId`, `actionText`, `comment`) VALUES
 (1, 0, 'BAR', 'payedByText'),
@@ -30,7 +29,7 @@ CREATE TABLE `customer` (
   `receiptNum` int(11) DEFAULT NULL,
   `text` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `journal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -39,19 +38,21 @@ CREATE TABLE `journal` (
   `datetime` datetime NOT NULL,
   `text` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `dep` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `receiptNum` int(11),
   `data` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `globals` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `value` int(11) DEFAULT NULL,
-  `strValue` text
+  `strValue` text,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `groups` (
@@ -62,7 +63,7 @@ CREATE TABLE `groups` (
   `image` text,
   `visible` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 INSERT INTO `groups` (`id`, `name`, `color`, `button`, `image`, `visible`) VALUES
 (1, 'auto', '', '', '', 0),
@@ -79,7 +80,7 @@ CREATE TABLE `orders` (
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
   KEY `orders_receiptId_index` (`receiptId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `products` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -99,7 +100,7 @@ CREATE TABLE `products` (
   `coupon` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `group` (`group`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `receipts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -113,7 +114,7 @@ CREATE TABLE `receipts` (
   `stornoId` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `receipts_stornoId_index` (`stornoId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `reports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -122,7 +123,7 @@ CREATE TABLE `reports` (
   `text` text,
   PRIMARY KEY (`id`),
   KEY `reports_receiptNum_index` (`receiptNum`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `taxTypes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -130,7 +131,7 @@ CREATE TABLE `taxTypes` (
   `comment` text,
   `taxlocation` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=13 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `taxTypes`

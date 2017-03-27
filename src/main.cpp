@@ -29,7 +29,9 @@
 #include "preferences/settingsdialog.h"
 #include "preferences/qrksettings.h"
 #include "utils/demomode.h"
+#include "utils/utils.h"
 #include "backup.h"
+#include "reports.h"
 
 #include "defines.h"
 #include "database.h"
@@ -59,19 +61,19 @@ void QRKMessageHandler(QtMsgType type, const QMessageLogContext &, const QString
     switch (type) {
     case QtDebugMsg:
         if (debug)
-            txt = QString("%1 %2 Debug: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
+            txt = QString("%1 %2 Debug: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(QApplication::applicationVersion()).arg(str);
         break;
     case QtInfoMsg:
-        txt = QString("%1 %2 Info: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
+        txt = QString("%1 %2 Info: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(QApplication::applicationVersion()).arg(str);
         break;
     case QtWarningMsg:
-        txt = QString("%1 %2 Warning: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
+        txt = QString("%1 %2 Warning: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(QApplication::applicationVersion()).arg(str);
         break;
     case QtCriticalMsg:
-        txt = QString("%1 %2 Critical: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
+        txt = QString("%1 %2 Critical: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg( QApplication::applicationVersion()).arg(str);
         break;
     case QtFatalMsg:
-        txt = QString("%1 %2 Fatal: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg(type).arg(str);
+        txt = QString("%1 %2 Fatal: %3").arg(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")).arg( QApplication::applicationVersion()).arg(str);
         break;
     }
 
@@ -165,6 +167,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     QApplication::setStyle(QStyleFactory::create("Fusion"));
+    app.setProperty("debugMsg", true);
 
     qInstallMessageHandler(QRKMessageHandler);
 
@@ -260,6 +263,24 @@ int main(int argc, char *argv[])
     }
 
     QRK *mainWidget = new QRK(servermode);
+    mainWidget->show();
+
+    if (!Database::isCashRegisterInAktive() && !DemoMode::isDemoMode() && RKSignatureModule::isDEPactive() && !Utils::checkTurnOverCounter()) {
+        QMessageBox messageBox(QMessageBox::Critical,
+                               QObject::tr("DEP Fehler"),
+                               QObject::tr("ACHTUNG! Leider sind Sie von einem seltenen Rundungsfehler betroffen.\n Bitte sichern Sie Ihre Daten und Melden Sie die Kasse bei FON ab und nochmals neu an.\nInformationen bitte per eMail (info@ckvsoft.at) anfordern.\nBis dahin müssen Sie Belege per Hand erstellen und danch in der neuen Kasse erfassen."),
+                               QMessageBox::Yes | QMessageBox::No,
+                               0);
+        messageBox.setButtonText(QMessageBox::Yes, QObject::tr("Kasse außer Betrieb nehmen?"));
+        messageBox.setButtonText(QMessageBox::No, QObject::tr("Weiter machen"));
+
+        if (messageBox.exec() == QMessageBox::Yes )
+        {
+            mainWidget->closeCashRegister();
+        }
+    }
+
+    mainWidget->setResuscitationCashRegister(Database::isCashRegisterInAktive());
 
     mainWidget->statusBar()->setStyleSheet(
                 "QStatusBar { border-top: 1px solid lightgrey; border-radius: 1px;"
@@ -268,12 +289,15 @@ int main(int argc, char *argv[])
 
     setNoPrinter(noPrinter);
 
+    if (DemoMode::isDemoMode())
+        debugMsg = true;
+
+    app.setProperty("debugMsg", debugMsg);
+
     if (fullScreen && !minimize)
         mainWidget->setWindowState(mainWidget->windowState() ^ Qt::WindowFullScreen);
     else if (minimize && !fullScreen)
         mainWidget->setWindowState(mainWidget->windowState() ^ Qt::WindowMinimized);
-
-    mainWidget->show();
 
     /*check if we have SET Demomode*/
     if (DemoMode::isModeNotSet()) {
@@ -306,23 +330,19 @@ int main(int argc, char *argv[])
         messageBox.exec();
     }
 
-
-    if (DemoMode::isDemoMode())
-        debugMsg = true;
-
-    app.setProperty("debugMsg", debugMsg);
-
     /*Check for MasterData*/
     QString cri = Database::getCashRegisterId();
     if ( cri.isEmpty() ) {
         QMessageBox::warning(0, QObject::tr("Kassenidentifikationsnummer"), QObject::tr("Stammdaten müssen vollständig ausgefüllt werden.."));
         SettingsDialog tab;
         tab.exec();
-        if ( Database::getCashRegisterId().isEmpty() ) {
+        if ( Database::getCashRegisterId().replace("DEMO-", "").isEmpty() ) {
             sighandler(0);
             return 0;
         }
     }
+
+    mainWidget->setShopName();
 
 #if defined(_WIN32) || defined(__APPLE__)
     // Set feed URL before doing anything else

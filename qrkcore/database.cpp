@@ -178,7 +178,7 @@ QString Database::getTaxLocation()
 
     query.prepare("INSERT INTO globals (name, strValue) VALUES (:name, :value)");
     query.bindValue(":name", "taxlocation");
-    query.bindValue(":text", "AT");
+    query.bindValue(":value", "AT");
     query.exec();
 
     return "AT";
@@ -243,13 +243,16 @@ QString Database::getCashRegisterId()
     query.prepare("SELECT strValue FROM globals WHERE name='shopCashRegisterId'");
     query.exec();
     if (query.next()) {
+        QString id = query.value(0).toString();
+        if (id.isNull() || id.isEmpty())
+            return QString();
         if (DemoMode::isDemoMode())
-            return "DEMO-" + query.value(0).toString();
+            return "DEMO-" + id;
 
         return query.value(0).toString();
     }
 
-    return QString();
+    return "";
 }
 
 //--------------------------------------------------------------------------------
@@ -589,7 +592,7 @@ void Database::reopen()
 
 bool Database::open(bool dbSelect)
 {
-    const int CURRENT_SCHEMA_VERSION = 14;
+    const int CURRENT_SCHEMA_VERSION = 15;
     // read global defintions (DB, ...)
     QrkSettings settings;
 
@@ -691,13 +694,21 @@ bool Database::open(bool dbSelect)
         else if ( dbType == "QMYSQL" )
         {
             f.setFileName(":/sql/QRK-mysql.sql");
+            currentConnection.setConnectOptions("MYSQL_OPT_RECONNECT=1");
         }
 
         f.open(QIODevice::ReadOnly);
         QString cmd = f.readAll();
         QStringList commands = cmd.split(';', QString::SkipEmptyParts);
-        foreach (const QString &command, commands)
-            query.exec(command);
+        foreach (const QString &command, commands) {
+            if (command.trimmed().isEmpty())
+                continue;
+            bool ok = query.exec(command);
+            if (!ok) {
+                qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+                qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+            }
+        }
 
         query.exec("INSERT INTO globals (name, value) VALUES('lastReceiptNum', 0)");
         query.exec("INSERT INTO globals (name, strValue) VALUES('shopName', '')");
@@ -718,7 +729,7 @@ bool Database::open(bool dbSelect)
         int schemaVersion = 1;
         query.exec("SELECT value FROM globals WHERE name='schemaVersion'");
         if ( query.next() )
-            schemaVersion = query.value(0).toInt();
+            schemaVersion = query.value("value").toInt();
         else  // schemaVersion not set in globals, must be version 1
             query.exec("INSERT INTO globals (name, value) VALUES('schemaVersion', 1)");
 
@@ -755,16 +766,36 @@ bool Database::open(bool dbSelect)
 
             QString cmd = f.readAll();
             QStringList commands = cmd.split(';', QString::SkipEmptyParts);
-            foreach (const QString &command, commands)
-                query.exec(command);
+            bool ok;
+            foreach (const QString &command, commands) {
+                if (command.trimmed().isEmpty())
+                    continue;
+                ok = query.exec(command);
+                if (!ok) {
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+                }
+            }
 
             // changes which are not possible in sql file needed for update-7
             if ( i == 7 ) {
-                query.exec(QString("UPDATE products SET `group`=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
-                query.exec(QString("UPDATE products SET `group`=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
+                ok = query.exec(QString("UPDATE products SET `group`=2 WHERE name NOT LIKE 'Zahlungsbeleg für Rechnung%'"));
+                if (!ok) {
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+                }
+                ok = query.exec(QString("UPDATE products SET `group`=1 WHERE name LIKE 'Zahlungsbeleg für Rechnung%'"));
+                if (!ok) {
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+                }
             }
             if ( i == 14 ) {
-                query.exec(QString("UPDATE journal SET `text`='%1' WHERE id=1").arg("Id\tProgrammversion\tKassen-Id\tKonfigurationsänderung\tBeschreibung\tErstellungsdatum"));
+                ok = query.exec(QString("UPDATE journal SET `text`='%1' WHERE id=1").arg("Id\tProgrammversion\tKassen-Id\tKonfigurationsänderung\tBeschreibung\tErstellungsdatum"));
+                if (!ok) {
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << query.lastError().text();
+                  qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
+                }
             }
         }
 
@@ -932,7 +963,21 @@ void Database::setCashRegisterInAktive()
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery q(dbc);
 
-    q.prepare("REPLACE into globals (name, value) values('CASHREGISTER INAKTIV', 1);");
+    q.prepare("SELECT value FROM globals WHERE name=:name");
+    q.bindValue(":name", "CASHREGISTER_INAKTIV");
+    bool ok = q.exec();
+    if (!ok) {
+        qWarning() << "Function Name: " << Q_FUNC_INFO << " Error: " << q.lastError().text();
+        qWarning() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(q);
+    }
+    if (q.next()) {
+        if (q.value("value").toInt() == 1)
+            return;
+        else
+            q.prepare("UPDATE globals set name=:name, value=:value;");
+    }
+
+    q.prepare("REPLACE into globals (name, value) values('CASHREGISTER_INAKTIV', 1);");
     q.exec();
 }
 
@@ -940,7 +985,7 @@ bool Database::isCashRegisterInAktive()
 {
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
-    query.prepare("SELECT value FROM globals WHERE name = 'CASHREGISTER INAKTIV'");
+    query.prepare("SELECT value FROM globals WHERE name = 'CASHREGISTER_INAKTIV'");
     query.exec();
 
     if (query.next())
@@ -973,7 +1018,22 @@ void Database::resetAllData()
     q.prepare("DELETE FROM products WHERE `group`=1;");
     q.exec();
 
+    q.prepare("DELETE FROM globals WHERE `name`='PrivateTurnoverKey';");
+    q.exec();
+
     q.prepare("UPDATE globals SET value = 0 WHERE name = 'lastReceiptNum';");
+    q.exec();
+
+    q.prepare("DELETE FROM globals WHERE `name`='certificate';");
+    q.exec();
+
+    q.prepare("DELETE FROM globals WHERE `name`='DEP';");
+    q.exec();
+
+    q.prepare("DELETE FROM globals WHERE `name`='lastUsedCertificate';");
+    q.exec();
+
+    q.prepare("DELETE FROM globals WHERE `name`='shopCashRegisterId';");
     q.exec();
 
     q.prepare("UPDATE globals SET value = 0 WHERE name = 'turnovercounter';");
@@ -982,7 +1042,7 @@ void Database::resetAllData()
     q.prepare("UPDATE globals SET value = 0 WHERE name = 'DEP';");
     q.exec();
 
-    q.prepare("REPLACE into globals (name, value) values('CASHREGISTER INAKTIV', 0);");
+    q.prepare("REPLACE into globals (name, value) values('CASHREGISTER_INAKTIV', 0);");
     q.exec();
 
     QString dbType = getDatabaseType();
