@@ -70,7 +70,7 @@ void QrkSettings::save2Database(QString name, QString value)
         oldValue = query.value("strValue").toString();
     }
 
-    if (oldValue.isEmpty() && oldValue != value) {
+    if (oldValue.isEmpty() && !value.isEmpty() || oldValue != value) {
         if (id > 0)
             ok = query.prepare("UPDATE globals set strValue=:value WHERE name=:name;");
         else

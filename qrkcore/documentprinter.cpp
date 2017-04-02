@@ -88,6 +88,7 @@ DocumentPrinter::DocumentPrinter(QObject *parent)
     m_feedHeaderText = settings.value("feedHeaderText", 5).toInt();
 
     m_printQrCodeLeft = settings.value("qrcodeleft", false).toBool();
+    m_useDecimalQuantity = settings.value("useDecimalQuantity", false).toBool();
 
     if (settings.value("noPrinter", false).toBool()) {
         m_useReportPrinter = false;
@@ -547,7 +548,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
         painter.drawText(X_COUNT, y, WIDTH - X_COUNT, fontMetr.height(), Qt::AlignLeft, QString::number(count));
         painter.drawText(X_NAME,  y, WIDTH,  productHeight, Qt::AlignLeft, product, &usedRect);
 
-        if (count > 1 || count < -1) {
+        if (m_useDecimalQuantity || count > 1 || count < -1) {
             y += m_feedProdukt + usedRect.height();
             painter.drawText(X_NAME,  y, WIDTH - X_NAME - grossWidth - 5,  fontMetr.height(), Qt::AlignLeft, singleGrossText);
         } else {

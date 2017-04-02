@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
     if (!Database::isCashRegisterInAktive() && !DemoMode::isDemoMode() && RKSignatureModule::isDEPactive() && !Utils::checkTurnOverCounter()) {
         QMessageBox messageBox(QMessageBox::Critical,
                                QObject::tr("DEP Fehler"),
-                               QObject::tr("ACHTUNG! Leider sind Sie von einem seltenen Rundungsfehler betroffen.\n Bitte sichern Sie Ihre Daten und Melden Sie die Kasse bei FON ab und nochmals neu an.\nInformationen bitte per eMail (info@ckvsoft.at) anfordern.\nBis dahin müssen Sie Belege per Hand erstellen und danch in der neuen Kasse erfassen."),
+                               QObject::tr("ACHTUNG! Leider sind Sie von einem seltenen Rundungsfehler betroffen.\nBitte sichern Sie Ihre Daten. Melden Sie die Kasse bei FON ab und nochmals neu an.\nInformationen im Forum (http://www.ckvsoft.at/forum/qrk-fragen-und-antworten/fehlerhafter-code-im-a-sit-registrierkassen-beispielcode/).\nBis dahin müssen Sie Belege per Hand erstellen und in der neuen Kasse erfassen."),
                                QMessageBox::Yes | QMessageBox::No,
                                0);
         messageBox.setButtonText(QMessageBox::Yes, QObject::tr("Kasse außer Betrieb nehmen?"));

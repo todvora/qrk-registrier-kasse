@@ -1,4 +1,4 @@
-/*
+/*currentCardReader
  * This file is part of QRK - Qt Registrier Kasse
  *
  * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
@@ -1370,7 +1370,7 @@ ReceiptTab::ReceiptTab(QWidget *parent)
     receiptLayout->addRow(tr("QRCode links neben der Gesamtsumme drucken:"), m_printQRCodeLeftCheck);
     receiptLayout->addRow(tr("Logo verwenden:"), logoLayout);
     receiptLayout->addRow(tr("Logo auf der rechten Seite drucken:"), m_useLogoRightCheck);
-    receiptLayout->addRow(tr("KassaBon Werbung:"), advertisingLayout);
+    receiptLayout->addRow(tr("KassaBon Werbung Grafik:"), advertisingLayout);
 
     receiptLayout->addRow(tr("KassaBon Werbung Text:"), m_printAdvertisingEdit);
     receiptLayout->addRow(tr("BON Kopfzeile:"), m_printHeaderEdit);
@@ -1569,9 +1569,11 @@ SCardReaderTab::SCardReaderTab(QWidget *parent)
 
     m_providerComboBox->addItem("A-Trust");
     QString currentOnlineReader = settings.value("atrust_connection").toString();
+    bool onlineReader = false;
     if (currentOnlineReader.split("@").size() == 3) {
         m_providerLoginEdit->setText(currentOnlineReader.split("@")[0]);
         m_providerPasswordEdit->setText(currentOnlineReader.split("@")[1]);
+        onlineReader = currentCardReader.isEmpty();
     }
 
     /*----------------------------------------------------------------------*/
@@ -1587,7 +1589,8 @@ SCardReaderTab::SCardReaderTab(QWidget *parent)
 
     m_onlineGroup = new QGroupBox(tr("Onlinedienst"));
     m_onlineGroup->setCheckable(true);
-    m_onlineGroup->setChecked(false);
+    m_onlineGroup->setChecked(onlineReader && currentCardReader.isEmpty());
+    m_scardGroup->setChecked(!currentCardReader.isEmpty());
 
     QFormLayout *onlineLayout = new QFormLayout;
     QHBoxLayout *loginLayout = new QHBoxLayout;
@@ -1659,7 +1662,6 @@ SCardReaderTab::SCardReaderTab(QWidget *parent)
         m_scardReaderComboBox->setEnabled(false);
         emit scardGroup_clicked(false);
     }
-
 }
 
 bool SCardReaderTab::saveSettings()
@@ -1667,11 +1669,13 @@ bool SCardReaderTab::saveSettings()
     QrkSettings *settings = new QrkSettings(this);
     bool ret = false;
     QString currentCardReader = getCurrentCardReader();
-    if (currentCardReader.isNull()) {
+    if (currentCardReader.isEmpty()) {
         settings->removeSettings("currentCardReader");
     } else {
-        settings->save2Settings("currentCardReader", currentCardReader);
-        ret = true;
+        if (!m_onlineGroup->isChecked()) {
+            settings->save2Settings("currentCardReader", currentCardReader);
+            ret = true;
+        }
     }
 
     QString connectionString = getCurrentOnlineConnetionString();

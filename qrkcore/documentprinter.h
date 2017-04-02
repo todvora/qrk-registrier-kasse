@@ -76,6 +76,7 @@ class QRK_EXPORT DocumentPrinter : public QObject
     int m_feedPrintHeader;
     int m_feedHeaderText;
     bool m_printQrCodeLeft;
+    bool m_useDecimalQuantity;
 
 };
 

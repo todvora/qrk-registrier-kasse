@@ -59,7 +59,14 @@ RKSignatureModule *RKSignatureModuleFactory::createInstance(QString reader, bool
     }
 
     QString ATR;
-    ATR = getATR(reader);
+    for (int i = 0; i < 3; i++) {
+        ATR = getATR(reader);
+        if (!ATR.isEmpty())
+            break;
+
+        qDebug() << "Function Name: " << Q_FUNC_INFO << " Wait for ATR";
+        QThread::msleep(200);
+    }
 
     if (ATR == "3BBF11008131FE45455041000000000000000000000000F1" || ATR == "3BBF13008131FE45455041" || ATR == "3BBF11008131FE45455041000000000000000000000000F1") {
         // cardInstance = new SmardCard_ACOS(reader);

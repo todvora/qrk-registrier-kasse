@@ -43,9 +43,11 @@ void ExportDEP::Export()
         QString filename = dlg->getFilename();
         if (depExport(filename, dlg->getFrom(), dlg->getTo())) {
             delete dlg;
+            SpreadSignal::setProgressBarValue(-1);
             QMessageBox::information(0, tr("Export"), tr("DEP (Daten-Erfassungs-Protokol) wurde nach %1 exportiert.").arg(filename));
         } else {
             delete dlg;
+            SpreadSignal::setProgressBarValue(-1);
             QMessageBox::warning(0, tr("Export"), tr("DEP (Daten-Erfassungs-Protokol) konnte nicht nach %1 exportiert werden.\nÜberprüfen Sie bitte Ihre Schreibberechtigung.").arg(filename));
         }
     } else {

@@ -20,6 +20,21 @@
 #
 #
 
+VERSION 1.03 Build ???
+  * fix FONInfo Seriennummeranzeige bei ATrust Online
+
+VERSION 1.03 Build 170330
+  * fix mehrzeiligen Bondruck bei Decimaler Stückzahl
+  * fix Online Zertifikat bei Sicherheitseinrichtung ausgefallen
+  * fix unnötige ESC Steuerzeichen werden beim Import von JSON entfernt
+  * fix Ist ein Kartenleser angeschlossen aber eine ATrust Online SEE ausgewählt
+        dann wird im Einstellungsdialog der Kartenleser nicht mehr aktiv angezeigt.
+
+VERSION 1.03 Build 170327
+    * fix seltenen Rundungsfehler beim Summenzähler
+    * fix für MySQL
+    + add Funktion um eine geschloßene Kasse wieder als neue Kasse zu aktivieren
+
 VERSION 1.03 Build 170322
   + Plugin Support
   + neue Kommandozeilen Parameter

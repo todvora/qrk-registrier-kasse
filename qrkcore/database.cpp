@@ -738,7 +738,7 @@ bool Database::open(bool dbSelect)
             QMessageBox errorDialog;
             errorDialog.setIcon(QMessageBox::Critical);
             errorDialog.addButton(QMessageBox::Ok);
-            errorDialog.setText(tr("Falsches QRK Registrier Kassen Datenbank Schema.\nVerwenden Sie bitte eine neuere version von QRK.\nBei Fragen wenden Sie sich bitte an das QRK Forum (www.ckvsoft.at)"));
+            errorDialog.setText(tr("Falsches QRK Registrier Kassen Datenbank Schema.\nVerwenden Sie bitte eine neuere Version von QRK.\nBei Fragen wenden Sie sich bitte an das QRK Forum (www.ckvsoft.at)"));
             errorDialog.setWindowTitle(QObject::tr("Falsche Version"));
             errorDialog.exec();
             return false;

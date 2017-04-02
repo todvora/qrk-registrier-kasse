@@ -110,7 +110,10 @@ QString Utils::getSignature(QJsonObject data)
 
     sign["Sig-Voriger-Beleg"] = RKSignature->getLastSignatureValue(last_signature);
 
+    QTime t;
+    t.start();
     QString signature = RKSignature->signReceipt(getReceiptShortJson(sign));
+    qDebug() << "Function Name: " << Q_FUNC_INFO << "Signature Time elapsed: " << t.elapsed() << " ms";
 
     delete RKSignature;
 
@@ -213,7 +216,7 @@ qlonglong Utils::getTurnOverCounter()
         qCritical() << "Function Name: " << Q_FUNC_INFO << " error: " << query.lastError().text();
 
     if (query.next())
-        return query.value(0).toLongLong();
+        return query.value("value").toLongLong();
 
     return 0;
 
@@ -307,26 +310,38 @@ QString Utils::wordWrap(QString text, int width, QFont font)
 
 bool Utils::checkTurnOverCounter()
 {
-    qlonglong turnOverCounter = Utils::getTurnOverCounter();
+    QString key = RKSignatureModule::getPrivateTurnoverKey();
+    RKSignatureModule *sm = RKSignatureModuleFactory::createInstance("", DemoMode::isDemoMode());
 
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
 
-    query.prepare("SELECT data FROM dep");
+    query.prepare("SELECT data FROM dep ORDER BY id");
     query.exec();
 
     qlonglong counter = 0;
-
+    bool ret = true;
     while(query.next()) {
         QString payload = RKSignatureModule::base64Url_decode(query.value(0).toString().split('.').at(1));
         QStringList list = payload.split('_');
+        qlonglong counter2 = 0;
+        QString con = list.at(2) + list.at(3);
+        QString encTOC = list.at(10);
         for (int y = 5; y < 9; y++) {
             QString current = list.at(y);
-            double d = current.replace(',','.').toDouble();
-            counter += QString::number( d * 100, 'f', 0).toLongLong();
+            double gross = current.replace(',','.').toDouble();
+            counter2 += QString::number( gross * 100, 'f', 0).toLongLong();
+        }
+        counter += counter2;
+        QString newEncTOC = sm->encryptTurnoverCounter(con,counter,key);
+
+        if (newEncTOC.compare(encTOC)) {
+            if (encTOC != "U1RP")
+                ret = false;
         }
     }
-    return (turnOverCounter == counter);
+    delete sm;
+    return ret;
 }
 
 QString Utils::normalizeNumber(QString value)

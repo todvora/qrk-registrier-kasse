@@ -35,6 +35,7 @@ FONInfo::FONInfo(QWidget *parent) :
 {
     ui->setupUi(this);
     RKSignatureModule *signatureModule = RKSignatureModuleFactory::createInstance("", DemoMode::isDemoMode());
+    signatureModule->selectApplication();
     ui->aesKeyLabel->setText(signatureModule->getPrivateTurnoverKeyBase64());
     ui->cashRegisterIdLabel->setText(Database::getCashRegisterId());
     ui->checkSumLabel->setText(signatureModule->getPrivateTurnoverKeyCheckValueBase64Trimmed());

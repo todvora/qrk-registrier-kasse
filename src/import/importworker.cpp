@@ -76,7 +76,8 @@ void ImportWorker::process()
 bool ImportWorker::loadJSonFile(QString filename)
 {
 
-    QString receiptInfo;
+//    QString receiptInfo;
+    QByteArray receiptInfo;
     QFile file(filename);
 
     // in some cases we are to fast here. Try 3 times to open the file while file is in use by create process
@@ -92,8 +93,8 @@ bool ImportWorker::loadJSonFile(QString filename)
     }
 
     receiptInfo = file.readAll();
-    file.close();
 
+    file.close();
     // remove any prefix and suffix from dirty json files
     if (!receiptInfo.startsWith('{')) {
         int begin = receiptInfo.indexOf('{');
@@ -101,7 +102,8 @@ bool ImportWorker::loadJSonFile(QString filename)
         receiptInfo = receiptInfo.mid(begin,end);
     }
 
-    QJsonDocument jd = QJsonDocument::fromJson(receiptInfo.toUtf8());
+    QString json = receiptInfo;
+    QJsonDocument jd = QJsonDocument::fromJson(json.toUtf8());
     QJsonObject data = jd.object();
 
     if (data.contains("r2b")) {

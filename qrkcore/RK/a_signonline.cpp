@@ -144,6 +144,12 @@ QString ASignOnline::getCertificate(bool base64)
  */
 QString ASignOnline::getCertificateSerial(bool hex)
 {
+    QStringList l = signReceipt("check").split('.');
+    if (l.size() == 3) {
+        if (RKSignatureModule::base64Url_decode(l.at(2)) == "Sicherheitseinrichtung ausgefallen")
+            return "0";
+    }
+
     if (m_certificateserial.isEmpty())
         getCertificate();
 
