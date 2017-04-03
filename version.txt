@@ -22,6 +22,7 @@
 
 VERSION 1.03 Build ???
   * fix FONInfo Seriennummeranzeige bei ATrust Online
+  * fix feedTimeStamp Einstellungen
 
 VERSION 1.03 Build 170330
   * fix mehrzeiligen Bondruck bei Decimaler Stückzahl
