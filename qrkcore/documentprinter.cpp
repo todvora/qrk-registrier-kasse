@@ -144,10 +144,16 @@ void DocumentPrinter::printDocument(QTextDocument *document, QString title)
         initAlternatePrinter(printer);
         printer.setPrinterName(settings.value("reportPrinter").toString());
         document->adjustSize();
-
     }
 
-    document->print(&printer);
+    QSizeF size(printer.width(), printer.height());
+    document->setPageSize(size);
+
+    QPainter painter(&printer);
+    document->documentLayout()->setPaintDevice(painter.device());
+    document->drawContents(&painter);
+
+//    document->print(&printer);
     SpreadSignal::setProgressBarWait(false);
 }
 

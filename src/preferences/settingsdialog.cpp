@@ -199,7 +199,7 @@ void SettingsDialog::accept()
     settings->save2Settings("feedCompanyHeader", m_receiptprinter->getfeedCompanyHeader());
     settings->save2Settings("feedCompanyAddress", m_receiptprinter->getfeedCompanyAddress());
     settings->save2Settings("feedCashRegisterid", m_receiptprinter->getfeedCashRegisterid());
-    settings->save2Settings("feedTimestamp()", m_receiptprinter->getfeedTimestamp());
+    settings->save2Settings("feedTimestamp", m_receiptprinter->getfeedTimestamp());
     settings->save2Settings("feedTax", m_receiptprinter->getfeedTax());
     settings->save2Settings("feedPrintHeader", m_receiptprinter->getfeedPrintHeader());
     settings->save2Settings("feedHeaderText", m_receiptprinter->getfeedHeaderText());
@@ -999,7 +999,7 @@ PrinterTab::PrinterTab(QWidget *parent)
 
     m_paperFormatCombo->addItem("A4");
     m_paperFormatCombo->addItem("A5");
-    // paperFormatCombo->addItem("POS");
+    m_paperFormatCombo->addItem("POS");
     m_paperFormatCombo->setCurrentText(settings.value("paperFormat", "A4").toString());
 
     m_invoiceCompanyPaperFormatCombo->addItem("A4");
