@@ -25,6 +25,9 @@
 #include "RK/rk_signaturemodulefactory.h"
 #include "utils/demomode.h"
 
+#include <QPrintDialog>
+#include <QPrinter>
+#include <QTextDocument>
 #include <QDebug>
 
 #include "ui_foninfo.h"
@@ -50,11 +53,39 @@ FONInfo::FONInfo(QWidget *parent) :
     ui->serialLabel->setText(serial);
 
     delete signatureModule;
-    connect(ui->pushButton, SIGNAL(clicked(bool)),this, SLOT(close()));
+    connect(ui->okPushButton, SIGNAL(clicked(bool)),this, SLOT(close()));
+    connect(ui->printPushButton, SIGNAL(clicked(bool)),this, SLOT(printFonInfo()));
 
 }
 
 FONInfo::~FONInfo()
 {
     delete ui;
+}
+
+void FONInfo::printFonInfo()
+{
+    QTextDocument doc;
+    QString html;
+    html.append("<html><body>");
+    html.append("<b>" + ui->label->text() + "</b><br>");
+    html.append("<b>" + ui->label_3->text() + "</b><br>");
+    html.append(ui->label_4->text() + ": " + ui->securityModuleLabel->text() + "<br>");
+    html.append(ui->label_5->text() + ": " + ui->providerLabel->text() + "<br>");
+    html.append(ui->label_6->text() + ": " + ui->serialLabel->text() + "<br><br>");
+
+    html.append("<b>" + ui->label_7->text() + "</b><br>");
+    html.append(ui->label_8->text() + ": " + ui->cashRegisterIdLabel->text() + "<br>");
+    html.append(ui->label_9->text() + ": " + ui->descriptionLabel->text() + "<br>");
+    html.append(ui->label_10->text() + ": " + ui->aesKeyLabel->text() + "<br>");
+    html.append(ui->label_11->text() + ": " + ui->checkSumLabel->text() + "<br><br>");
+    html.append("</body></html>");
+
+    doc.setHtml(html);
+    QPrinter printer;
+    QPrintDialog *dlg = new QPrintDialog(&printer, this);
+    if (dlg->exec() != QDialog::Accepted)
+        return;
+
+    doc.print(&printer);
 }

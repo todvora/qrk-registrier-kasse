@@ -250,8 +250,7 @@ void QRK::init()
     ui->menuDEMOMODUS->setEnabled(DemoMode::isDemoMode());
     ui->menuDEMOMODUS->menuAction()->setVisible(DemoMode::isDemoMode());
     ui->export_JSON->setVisible(RKSignatureModule::isDEPactive());
-    ui->actionInfos_zur_Registrierung_bei_FON->setVisible(RKSignatureModule::isDEPactive());
-
+    ui->actionInfos_zur_Registrierung_bei_FON->setVisible(RKSignatureModule::isDEPactive() && !DemoMode::isDemoMode());
 
     setShopName();
     m_cashRegisterId = Database::getCashRegisterId();
@@ -376,7 +375,11 @@ void QRK::export_JSON()
 
 void QRK::infoFON()
 {
+    setStatusBarProgressBarWait(true);
+    ui->menubar->setEnabled(false);
     FONInfo *finfo = new FONInfo(this);
+    setStatusBarProgressBarWait(false);
+    ui->menubar->setEnabled(true);
     finfo->exec();
     delete finfo;
 }

@@ -37,6 +37,9 @@ public:
     explicit FONInfo(QWidget *parent = 0);
     ~FONInfo();
 
+private slots:
+    void printFonInfo();
+
 private:
     Ui::FONInfo *ui;
 };
