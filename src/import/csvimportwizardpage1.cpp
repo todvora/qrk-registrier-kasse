@@ -91,6 +91,9 @@ void CsvImportWizardPage1::loadSettings()
     ui->rememberFileNameCheck->setChecked(settings.value("remember", false).toBool());
     if (ui->rememberFileNameCheck->isChecked())
         ui->filePathEdit->setText(settings.value("lastimportfile", "").toString());
+
+    ui->firstRowIsHeaderCheckBox->setChecked(settings.value("firstrowisheader", true).toBool());
+
     settings.endGroup();
 }
 
@@ -113,6 +116,7 @@ void CsvImportWizardPage1::saveSettings() const
     settings.save2Settings("other", ui->otherEdit->text(), false);
     settings.save2Settings("lastimportfile", ui->filePathEdit->text(), false);
     settings.save2Settings("remember", ui->rememberFileNameCheck->isChecked(), false);
+    settings.save2Settings("firstrowisheader", ui->firstRowIsHeaderCheckBox->isChecked(), true);
 
     settings.endGroup();
 }
@@ -238,6 +242,7 @@ void CsvImportWizardPage1::fileLoadClicked(bool)
 
     dlg.setViewMode(QFileDialog::Detail);
     dlg.setFileMode(QFileDialog::ExistingFile);
+    dlg.setOption(QFileDialog::DontUseNativeDialog);
     dlg.setDirectory(path);
 
     if (dlg.exec()) {
@@ -351,6 +356,7 @@ void LoadCsvFile::run()
         in.setCodec(QTextCodec::codecForName(m_codec.toUtf8()));
         QFileInfo fi(file);
         qint64 currsize = 0;
+        bool headerwritten = false;
 
         while (!in.atEnd()) {
             if (m_fromLine > lineindex) {
@@ -374,15 +380,22 @@ void LoadCsvFile::run()
 
             for (int j = 0; j < lineToken.size(); j++) {
                 QString value = lineToken.at(j);
-                if (m_firstRowIsHeader && lineindex == 0)
+                if (m_firstRowIsHeader && !headerwritten)
                     emit addHeader(lineToken.size(), j, value);
-                else
+                else {
+                    if (!headerwritten)
+                        emit addHeader(lineToken.size(), j, QString::number(j));
+
                     emit addItem(lineindex - m_fromLine, j, value);
+                }
             }
 
-            if (m_firstRowIsHeader && lineindex == 0)
-                m_firstRowIsHeader = false;
-            else
+
+            if (!headerwritten && lineindex == 0) {
+                headerwritten = true;
+                if (!m_firstRowIsHeader)
+                    lineindex++;
+            } else
                 lineindex++;
         }
 

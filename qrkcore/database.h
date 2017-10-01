@@ -38,6 +38,7 @@ class QRK_EXPORT Database : public QObject
 
     static bool open(bool dbSelect);
     static void reopen();
+    static QDateTime getLastJournalEntryDate();
     static QString getLastExecutedQuery(const QSqlQuery &query);
     static QString getShopName();
     static QString getShopMasterData();
@@ -71,6 +72,8 @@ class QRK_EXPORT Database : public QObject
     static void setCashRegisterInAktive();
     static bool isCashRegisterInAktive();
     static void resetAllData();
+    static QString getLastVersionInfo();
+
 
   private:
     static QString getDatabaseType();

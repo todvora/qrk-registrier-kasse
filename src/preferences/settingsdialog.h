@@ -50,11 +50,15 @@ class ExtraTab : public QWidget
 public:
     explicit ExtraTab(QWidget *parent = 0);
     bool getInputNetPrice();
+    bool getDiscount();
     bool getMaximumItemSold();
     bool getDecimalQuantity();
     bool getGivenDialog();
+    bool getSalesWidget();
     bool getReceiptPrintedDialog();
     bool isFontsGroup();
+    bool hideDebitcardButton();
+    bool hideCreditcardButton();
     QString getSystemFont();
     QString getPrinterFont();
     QString getReceiptPrinterFont();
@@ -74,10 +78,14 @@ private slots:
 
 private:
     QCheckBox *m_useInputNetPriceCheck;
+    QCheckBox *m_useDiscountCheck;
     QCheckBox *m_useMaximumItemSoldCheck;
     QCheckBox *m_useDecimalQuantityCheck;
     QCheckBox *m_useGivenDialogCheck;
+    QCheckBox *m_salesWidgetCheck;
     QCheckBox *m_useReceiptPrintedDialogCheck;
+    QCheckBox *m_hideDebitcardCheck;
+    QCheckBox *m_hideCreditcardCheck;
 
     QComboBox *m_barcodePrefixesComboBox;
     QComboBox *m_defaultTaxComboBox;
@@ -103,6 +111,26 @@ private:
 
 };
 
+class ServerTab : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit ServerTab(QWidget *parent = 0);
+    QString getImportDirectory();
+    QString getImportCodePage();
+    bool getServerFullscreen();
+
+private slots:
+    void importDirectoryButton_clicked();
+
+private:
+    QLineEdit *m_importDirectoryEdit;
+    QComboBox *m_codePageCombo;
+    QCheckBox *m_serverFullscreen;
+
+};
+
 class GeneralTab : public QWidget
 {
     Q_OBJECT
@@ -111,7 +139,6 @@ public:
     explicit GeneralTab(QWidget *parent = 0);
     QString getBackupDirectory();
     QString getPdfDirectory();
-    QString getImportDirectory();
     QString getDataDirectory();
     QString getExternalDepDirectory();
 
@@ -121,7 +148,6 @@ public slots:
 private slots:
     void backupDirectoryButton_clicked();
     void pdfDirectoryButton_clicked();
-    void importDirectoryButton_clicked();
     void dataDirectoryButton_clicked();
     void externalDepDirectoryButton_clicked();
 
@@ -130,7 +156,6 @@ private:
 
     QLineEdit *m_backupDirectoryEdit;
     QLineEdit *m_pdfDirectoryEdit;
-    QLineEdit *m_importDirectoryEdit;
     QLineEdit *m_dataDirectoryEdit;
     QLineEdit *m_externalDepDirectoryEdit;
     QGroupBox *m_externalDepGroup;
@@ -232,6 +257,7 @@ public:
     bool getPrintCompanyNameBold();
     bool getPrintCollectionReceipt();
     QString getCollectionReceiptText();
+    int getCollectionReceiptCopies();
     bool getIsLogoRight();
     bool getPrintQRCode();
     bool getPrintQRCodeLeft();
@@ -267,6 +293,7 @@ private:
     QCheckBox *m_printCompanyNameBoldCheck;
     QCheckBox *m_printCollectionReceiptCheck;
     QLineEdit *m_collectionReceiptTextEdit;
+    QSpinBox  *m_collectionReceiptCopiesSpin;
     QCheckBox *m_useLogoRightCheck;
     QCheckBox *m_printQRCodeCheck;
     QCheckBox *m_printQRCodeLeftCheck;
@@ -359,6 +386,7 @@ private:
     ReceiptPrinterTab *m_receiptprinter;
     ReceiptTab *m_receipt;
     ExtraTab *m_extra;
+    ServerTab *m_server;
     SCardReaderTab *m_scardreader;
     Journal *m_journal;
 

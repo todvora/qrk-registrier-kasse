@@ -50,6 +50,12 @@ class QRK_EXPORT Utils
     static QString wordWrap(QString text, int width, QFont font);
     static QString normalizeNumber(QString value);
     static QString color_best_contrast(QString color);
+    static QString taxRoundUp(double value,unsigned short np);
+    static double getTax(double value, double tax, bool net = false);
+    static double getNet(double gross, double tax);
+    static double getGross(double net, double tax);
+    static QPixmap getQRCode(int id, bool &isDamaged);
+
 };
 
 #endif // UTILS_H

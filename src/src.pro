@@ -68,7 +68,8 @@ SOURCES += main.cpp \
     export/exportjournal.cpp \
     foninfo.cpp \
     flowlayout.cpp \
-    preferences/settingsdialog.cpp
+    preferences/settingsdialog.cpp \
+    salesinfo.cpp
 
 HEADERS  += \
     qsortfiltersqlquerymodel.h \
@@ -100,7 +101,8 @@ HEADERS  += \
     export/exportjournal.h \
     foninfo.h \
     flowlayout.h \
-    preferences/settingsdialog.h
+    preferences/settingsdialog.h \
+    salesinfo.h
 
 FORMS += \
     ui/qrk.ui \
@@ -120,7 +122,8 @@ FORMS += \
     import/csvimportwizardpage2.ui \
     import/csvimportwizardpage3.ui \
     export/exportdialog.ui \
-    ui/foninfo.ui
+    ui/foninfo.ui \
+    ui/salesinfo.ui
 
 RESOURCES += \
     qrk.qrc

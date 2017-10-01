@@ -60,7 +60,7 @@ void Journal::journalInsertReceipt(QJsonObject &data)
     var.append(QString("%1\t").arg(QString::number(o["singleprice"].toDouble(),'f', 2)));
     var.append(QString("%1\t").arg(QString::number(o["gross"].toDouble(),'f', 2)));
     var.append(QString("%1\t").arg(o["tax"].toDouble()));
-    var.append(QString("%1'").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+    var.append(QString("%1'").arg(data.value("receiptTime").toString()));
 
     bool ok = query.prepare(QString("INSERT INTO journal %1 VALUES(:version,:kasse,:receiptTime,:var)")
         .arg(val));
@@ -97,9 +97,9 @@ void Journal::journalInsertReceipt(QJsonObject &data)
   var.append(QString("%1\t").arg(QString::number(data.value("Satz-Null").toDouble(),'f',2)));
   var.append(QString("%1\t").arg(QString::number(data.value("Satz-Besonders").toDouble(),'f',2)));
   var.append(QString("%1\t").arg(QString::number(data.value("sumYear").toDouble(),'f',2)));
-  var.append(QString("%1").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+  var.append(QString("%1").arg(data.value("receiptTime").toString()));
 
-  bool ok = query.prepare(QString("INSERT INTO journal %1 VALUES(:version,:kasse,:receiptTime,:var)")
+  bool ok = query.prepare(QString("INSERT INTO journal %1 VALUES(:version,:kasse,:date,:var)")
       .arg(val));
 
   if (!ok) {
@@ -109,7 +109,7 @@ void Journal::journalInsertReceipt(QJsonObject &data)
 
   query.bindValue(":version", data.value("version").toString());
   query.bindValue(":kasse", data.value("kasse").toString());
-  query.bindValue(":receiptTime", data.value("receiptTime").toString());
+  query.bindValue(":date", QDateTime::currentDateTime());
   query.bindValue(":var", var);
 
   ok = query.exec();
@@ -135,7 +135,7 @@ void Journal::journalInsertLine(QString title,  QString text)
 
   query.bindValue(":version", QString("%1.%2").arg(QRK_VERSION_MAJOR).arg(QRK_VERSION_MINOR));
   query.bindValue(":kasse", Database::getCashRegisterId());
-  query.bindValue(":date", dt.toString(Qt::ISODate));
+  query.bindValue(":date", dt);
   query.bindValue(":text", title + "\t" + text + "\t" + dt.toString(Qt::ISODate));
 
   ok = query.exec();

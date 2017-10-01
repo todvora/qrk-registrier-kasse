@@ -93,6 +93,7 @@ class QRKRegister : public QWidget
 
     bool m_totallyup;
     bool m_useInputNetPrice;
+    bool m_useDiscount;
     bool m_useMaximumItemSold;
     bool m_useDecimalQuantity;
     bool m_useGivenDialog;

@@ -27,6 +27,7 @@
 #include "preferences/qrksettings.h"
 #include "reports.h"
 #include "qrkdelegate.h"
+#include "utils/utils.h"
 
 #include <QMessageBox>
 #include <QDesktopWidget>
@@ -54,7 +55,7 @@ QRKDocument::QRKDocument(QWidget *parent)
 
   connect(ui->cancelDocumentButton, SIGNAL(clicked()), this, SIGNAL(cancelDocumentButton_clicked()));
   connect(ui->printcopyButton, SIGNAL(clicked()), this, SLOT(onPrintcopyButton_clicked()));
-  connect(ui->invoiceCompanyPrintcopyButton, SIGNAL(clicked(bool)), this, SLOT(onInvoiceCompanyButton_clicked()));
+  connect(ui->invoiceCompanyPrintcopyButton, SIGNAL(clicked()), this, SLOT(onInvoiceCompanyButton_clicked()));
   connect(ui->cancellationButton, SIGNAL(clicked()), this, SLOT(onCancellationButton_clicked()));
 
 }
@@ -72,10 +73,10 @@ void QRKDocument::documentList()
 
   QString driverName = dbc.driverName();
   if ( driverName == "QMYSQL" ) {
-      m_documentListModel->setQuery("SELECT receipts.receiptNum, actionTypes.actionText, DATE_FORMAT(receipts.infodate, '%Y-%m-%d'),receipts.gross, receipts.timestamp FROM receipts INNER JOIN actionTypes ON receipts.payedBy=actionTypes.actionId", dbc);
+      m_documentListModel->setQuery("SELECT receipts.receiptNum, actionTypes.actionText, DATE_FORMAT(receipts.infodate, '%Y-%m-%d'),ROUND(receipts.gross,2), receipts.timestamp FROM receipts INNER JOIN actionTypes ON receipts.payedBy=actionTypes.actionId", dbc);
   }
   else if ( driverName == "QSQLITE" ) {
-      m_documentListModel->setQuery("SELECT receipts.receiptNum, actionTypes.actionText, strftime('%Y-%m-%d',receipts.infodate),receipts.gross, receipts.timestamp FROM receipts INNER JOIN actionTypes ON receipts.payedBy=actionTypes.actionId", dbc);
+      m_documentListModel->setQuery("SELECT receipts.receiptNum, actionTypes.actionText, strftime('%Y-%m-%d',receipts.infodate),ROUND(receipts.gross,2), receipts.timestamp FROM receipts INNER JOIN actionTypes ON receipts.payedBy=actionTypes.actionId", dbc);
   }
 
   m_documentListModel->setFilterColumn("receiptNum");
@@ -99,8 +100,10 @@ void QRKDocument::documentList()
   ui->documentContent->setModel(m_documentContentModel);
   ui->documentContent->setShowGrid(false);
 
+  ui->documentList->horizontalHeader()->setStretchLastSection(false);
   ui->documentList->resizeColumnsToContents();
   ui->documentContent->resizeColumnsToContents();
+  ui->documentList->horizontalHeader()->setStretchLastSection(true);
 
   ui->documentFilterLabel->setText("Filter " + m_documentListModel->getFilterColumnName());
 
@@ -129,12 +132,21 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
   double price = m_documentListModel->data(m_documentListModel->index(row, DOCUMENT_COL_TOTAL, QModelIndex())).toDouble();
   int type = Database::getActionTypeByName(payedByText);
 
+  bool isDamaged = false;
+  ui->pixmapLabel->setPixmap(Utils::getQRCode(receiptNum, isDamaged));
+  ui->pixmapLabel->show();
+  if (isDamaged)
+      ui->qrcodeTextLabel->setText(tr("Sicherheitseinrichtung ausgefallen"));
+  else
+      ui->qrcodeTextLabel->setText("");
+
+  ui->cancellationButton->setEnabled(!Database::isCashRegisterInAktive() && type < PAYED_BY_REPORT_EOD);
+  ui->invoiceCompanyPrintcopyButton->setEnabled(type < PAYED_BY_REPORT_EOD);
+
   if (type == PAYED_BY_REPORT_EOD || type == PAYED_BY_REPORT_EOM) { /* actionType Tagesbeleg*/
     ui->customerTextLabel->setHidden(true);
     ui->documentContent->setHidden(true);
     ui->textBrowser->setHidden(false);
-    ui->cancellationButton->setEnabled(false);
-    ui->invoiceCompanyPrintcopyButton->setEnabled(false);
     ui->printcopyButton->setEnabled(true);
     ui->textBrowser->setHtml(Reports::getReport(receiptNum));
 
@@ -142,8 +154,6 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     ui->customerTextLabel->setHidden(false);
     ui->documentContent->setHidden(false);
     ui->textBrowser->setHidden(true);
-    ui->cancellationButton->setEnabled(!Database::isCashRegisterInAktive());
-    ui->invoiceCompanyPrintcopyButton->setEnabled(true);
     ui->printcopyButton->setEnabled(true);
 
     QString stornoText = "";
@@ -158,15 +168,18 @@ void QRKDocument::onDocumentSelectionChanged(const QItemSelection &, const QItem
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     int id = ui->documentList->model()->data(m_documentListModel->index(row, REGISTER_COL_COUNT, QModelIndex())).toInt();
 
-    m_documentContentModel->setQuery(QString("SELECT orders.count, products.name, orders.tax, orders.net, orders.gross, orders.count * orders.gross AS Price FROM orders INNER JOIN products ON products.id=orders.product WHERE orders.receiptId=%1").arg(id), dbc);
+    m_documentContentModel->setQuery(QString("SELECT orders.count, products.name, round(orders.net,2), orders.tax, orders.gross, orders.discount * (-1), ROUND((orders.count * orders.gross) - ((orders.count * orders.gross / 100) * orders.discount),2) AS Price FROM orders INNER JOIN products ON products.id=orders.product WHERE orders.receiptId=%1").arg(id), dbc);
     m_documentContentModel->setHeaderData(REGISTER_COL_COUNT, Qt::Horizontal, tr("Anz."));
     m_documentContentModel->setHeaderData(REGISTER_COL_PRODUCT, Qt::Horizontal, tr("Artikel"));
-    m_documentContentModel->setHeaderData(REGISTER_COL_TAX, Qt::Horizontal, tr("MwSt."));
     m_documentContentModel->setHeaderData(REGISTER_COL_NET, Qt::Horizontal, tr("E-Netto"));
+    m_documentContentModel->setHeaderData(REGISTER_COL_TAX, Qt::Horizontal, tr("MwSt."));
     m_documentContentModel->setHeaderData(REGISTER_COL_SINGLE, Qt::Horizontal, tr("E-Preis"));
+    m_documentContentModel->setHeaderData(REGISTER_COL_DISCOUNT, Qt::Horizontal, tr("Rabatt %"));
     m_documentContentModel->setHeaderData(REGISTER_COL_TOTAL, Qt::Horizontal, tr("Preis"));
     ui->documentContent->setItemDelegateForColumn(REGISTER_COL_NET, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
+    ui->documentContent->setItemDelegateForColumn(REGISTER_COL_TAX, new QrkDelegate (QrkDelegate::COMBO_TAX, this));
     ui->documentContent->setItemDelegateForColumn(REGISTER_COL_SINGLE, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
+    ui->documentContent->setItemDelegateForColumn(REGISTER_COL_DISCOUNT, new QrkDelegate (QrkDelegate::DISCOUNT, this));
     ui->documentContent->setItemDelegateForColumn(REGISTER_COL_TOTAL, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
 
     ui->documentContent->resizeColumnsToContents();
@@ -205,20 +218,6 @@ void QRKDocument::onCancellationButton_clicked()
     }
 
     int payedBy = Database::getPayedBy(id);
-    if (payedBy > 2)
-    {
-        QString stornoText = "";
-        if (payedBy == 5)
-            stornoText = tr("NULL Belege können nicht storniert werden.");
-        else
-            stornoText = tr("Tages/Monatsabschlüsse können nicht storniert werden.");
-
-        QMessageBox::warning( this, tr("Storno"), stornoText);
-        emit documentButton_clicked();
-        return;
-    }
-
-
     Reports *rep = new Reports(this,true);
     bool ret = rep->checkEOAnyServerMode();
     delete rep;
@@ -273,11 +272,9 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
     QTextDocument doc;
     doc.setHtml(Reports::getReport(id));
 
-//    QApplication::setOverrideCursor(Qt::WaitCursor);
     DocumentPrinter *p = new DocumentPrinter(this);
     p->printDocument(&doc, DocumentTitle);
     delete p;
-//    QApplication::setOverrideCursor(Qt::ArrowCursor);
 
     QMessageBox::information(0, QObject::tr("Drucker"), QObject::tr("%1 wurde gedruckt.").arg(payedByText));
 
@@ -301,11 +298,9 @@ void QRKDocument::onPrintcopyButton_clicked(bool isInvoiceCompany)
     data["isInvoiceCompany"] = isInvoiceCompany;
     data["headerText"] = Database::getCustomerText(id);
 
-//    QApplication::setOverrideCursor(Qt::WaitCursor);
     DocumentPrinter *p = new DocumentPrinter(this);
     p->printReceipt(data);
     delete p;
-//    QApplication::setOverrideCursor(Qt::ArrowCursor);
     QMessageBox::information(0, QObject::tr("Drucker"), QObject::tr("%1 %2 ( Kopie) wurde gedruckt.").arg(data.value("comment").toString()).arg(m_currentReceipt));
 
     emit documentButton_clicked();

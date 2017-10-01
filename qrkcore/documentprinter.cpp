@@ -28,6 +28,7 @@
 #include "singleton/spreadsignal.h"
 #include "RK/rk_signaturemodule.h"
 #include "preferences/qrksettings.h"
+#include "3rdparty/qbcmath/bcmath.h"
 
 #include <QJsonObject>
 #include <QJsonArray>
@@ -57,6 +58,7 @@ DocumentPrinter::DocumentPrinter(QObject *parent)
     m_printerFont->setStretch(printerFontList.at(2).toInt());
     m_printCollectionsReceipt = settings.value("printCollectionReceipt", false).toBool();
     m_collectionsReceiptText  = settings.value("collectionReceiptText", tr("Abholbon für")).toString();
+    m_collectionsReceiptCopies = settings.value("collectionReceiptCopies", 1).toInt();
 
     m_receiptPrinterFont = new QFont(receiptPrinterFontList.at(0));
     m_receiptPrinterFont->setPointSize(receiptPrinterFontList.at(1).toInt());
@@ -146,14 +148,22 @@ void DocumentPrinter::printDocument(QTextDocument *document, QString title)
         document->adjustSize();
     }
 
-    QSizeF size(printer.width(), printer.height());
-    document->setPageSize(size);
+    if (settings.value("paperFormat").toString() == "POS") {
+        int height = document->size().height();
+        int paperHeight = settings.value("paperHeight", 210).toInt();
+        if (height > paperHeight)
+            printer.setPaperSize(QSizeF(settings.value("paperWidth", 80).toInt(),
+                                            height), QPrinter::Millimeter);
 
-    QPainter painter(&printer);
-    document->documentLayout()->setPaintDevice(painter.device());
-    document->drawContents(&painter);
+        QSizeF size(printer.width(),height);
+        document->setPageSize(size);
+        QPainter painter(&printer);
+        document->documentLayout()->setPaintDevice(painter.device());
+        document->drawContents(&painter);
+    } else {
+        document->print(&printer);
+    }
 
-//    document->print(&printer);
     SpreadSignal::setProgressBarWait(false);
 }
 
@@ -196,7 +206,9 @@ void DocumentPrinter::printCollectionReceipt(QJsonObject data, QPrinter &printer
 
     QFont font(*m_receiptPrinterFont);
 
-    // font.setFixedPitch(true);
+    if ( m_noPrinter || printer.outputFormat() == QPrinter::PdfFormat)
+        printer.setOutputFileName(QString(m_pdfPrinterPath + "/QRK-BON%1-ABHOLBON.pdf").arg( m_receiptNum ));
+
 
     QFont boldFont(*m_receiptPrinterFont);
     boldFont.setBold(true);
@@ -217,11 +229,12 @@ void DocumentPrinter::printCollectionReceipt(QJsonObject data, QPrinter &printer
         const QJsonObject& order = item.toObject();
 
         double count = order.value("count").toDouble();
+
         bool coupon = order.value("coupon").toString() == "1";
         if (!coupon)
             continue;
 
-        for (int i = 0; i< count; i++) {
+        for (int i = 0; i< m_collectionsReceiptCopies; i++) {
             QPainter painter(&printer);
             painter.setFont(font);
             QPen pen(Qt::black);
@@ -254,11 +267,22 @@ void DocumentPrinter::printCollectionReceipt(QJsonObject data, QPrinter &printer
             painter.save();
             painter.setFont(boldFont);
 
+            // CustomerText
+            if (! data.value("headerText").toString().isEmpty()) {
+                y += 5;
+                QString headerText = data.value("headerText").toString();
+                int headerTextHeight = headerText.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
+                painter.drawText(0, y, WIDTH, headerTextHeight, Qt::AlignCenter, headerText);
+                y += m_feedHeaderText + headerTextHeight + 4;
+                painter.drawLine(0, y, WIDTH, y);
+                y += 5;
+            }
+
             y += 5 + boldMetr.height();
             painter.drawText(0, y, WIDTH, boldMetr.height(), Qt::AlignCenter, m_collectionsReceiptText);
             y += 5 + boldMetr.height() * 2;
 
-            QString product = "1 x " + order.value("product").toString();
+            QString product = QString("%1 x %2").arg(count).arg(order.value("product").toString());
             product = Utils::wordWrap(product, WIDTH, boldFont);
             int productHeight = product.split(QRegExp("\n|\r\n|\r")).count() * boldMetr.height();
             painter.drawText(0,  y + 10, WIDTH,  productHeight, Qt::AlignCenter, product);
@@ -517,7 +541,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
         const QJsonObject& order = item.toObject();
 
-        double count = order.value("count").toDouble();
+        QBCMath count = order.value("count").toDouble();
 
         QString taxPercent;
 
@@ -528,8 +552,15 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
         if (taxPercent == "0") taxPercent = "00";
 
+        QBCMath discount = order.value("discount").toDouble();
+        discount.round(2);
+
         QString grossText = QString("%1").arg(QString::number(order.value("gross").toDouble(), 'f', 2));
-        QString singleGrossText = QString("%1 x %2").arg(QString::number(count)).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2));
+        QString singleGrossText;
+        if (discount > 0)
+            singleGrossText = QString("%1 x %2 Rabatt:\u00A0-%3%").arg(count.toString()).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2)).arg(QString::number(discount.toDouble(), 'f', 2));
+        else
+            singleGrossText = QString("%1 x %2").arg(count.toString()).arg(QString::number(order.value("singleprice").toDouble(), 'f', 2));
 
         if (data.value("isTestPrint").toBool()) {
             count = 0.0;
@@ -551,12 +582,15 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
 
         QRect usedRect;
 
-        painter.drawText(X_COUNT, y, WIDTH - X_COUNT, fontMetr.height(), Qt::AlignLeft, QString::number(count));
+        painter.drawText(X_COUNT, y, WIDTH - X_COUNT, fontMetr.height(), Qt::AlignLeft, count.toString());
         painter.drawText(X_NAME,  y, WIDTH,  productHeight, Qt::AlignLeft, product, &usedRect);
 
-        if (m_useDecimalQuantity || count > 1 || count < -1) {
+        if (m_useDecimalQuantity || discount.toDouble() > 0 || count.toDouble() > 1 || count.toDouble() < -1) {
             y += m_feedProdukt + usedRect.height();
-            painter.drawText(X_NAME,  y, WIDTH - X_NAME - grossWidth - 5,  fontMetr.height(), Qt::AlignLeft, singleGrossText);
+            singleGrossText = Utils::wordWrap(singleGrossText, WIDTH - grossWidth - X_NAME, font);
+            int singleGrossTextHeight = singleGrossText.split(QRegExp("\n|\r\n|\r")).count() * fontMetr.height();
+            painter.drawText(X_NAME,  y, WIDTH - X_NAME - grossWidth - 5, singleGrossTextHeight, Qt::AlignLeft, singleGrossText, &usedRect);
+            y += usedRect.height() - fontMetr.height();
         } else {
             y += usedRect.height() - fontMetr.height();
         }
@@ -611,7 +645,7 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
         if (taxValue != "0%"){
             painter.drawText(0, y, WIDTH, fontMetr.height(), Qt::AlignRight,
                              tr("MwSt %1: %2")
-                             .arg(tax.value("t1").toString())
+                             .arg(taxValue)
                              .arg(taxSum));
 
             y += m_feedTax + fontMetr.height();
@@ -700,22 +734,23 @@ void DocumentPrinter::printI(QJsonObject data, QPrinter &printer)
         QPixmap QR = qr->encodeTextToPixmap(qr_code_rep);
         delete qr;
 
-        if (QR.width() > WIDTH)
+        if (QR.width() > WIDTH) {
             QR =  QR.scaled(WIDTH, printer.pageRect().height(), Qt::KeepAspectRatio);
+        }
 
-            y += 5;
-            painter.drawLine(0, y, WIDTH, y);
-            y += 5;
+        y += 5;
+        painter.drawLine(0, y, WIDTH, y);
+        y += 5;
 
-            // check if new drawText is heigher than page height
-            if ( (y + QR.height() + 20) > printer.pageRect().height() )
-            {
-                printer.newPage();
-                y = 0;
-            }
-            painter.drawPixmap((WIDTH / 2) - (QR.width()/2) - 1, y, QR);
+        // check if new drawText is heigher than page height
+        if ( (y + QR.height() + 20) > printer.pageRect().height() )
+        {
+            printer.newPage();
+            y = 0;
+        }
+        painter.drawPixmap((WIDTH / 2) - (QR.width()/2) - 1, y, QR);
 
-            y += QR.height() + 20;
+        y += QR.height() + 20;
 
     } else if (!m_printQRCode && Database::getTaxLocation() == "AT") {
         y += 5;

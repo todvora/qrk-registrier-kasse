@@ -46,6 +46,19 @@ Database::~Database()
 {
 }
 
+QDateTime Database::getLastJournalEntryDate()
+{
+    QDateTime lastDateTime;
+
+    QSqlDatabase dbc = QSqlDatabase::database("CN");
+    QSqlQuery query(dbc);
+    query.prepare("SELECT DateTime FROM journal WHERE id = (SELECT MAX(id) FROM journal)");
+    query.exec();
+    query.next();
+    lastDateTime = query.value("datetime").toDateTime();
+    return lastDateTime;
+}
+
 QString Database::getLastExecutedQuery(const QSqlQuery& query)
 {
     QString str = query.lastQuery();
@@ -75,7 +88,7 @@ QString Database::getDayCounter()
     QSqlQuery query(dbc);
 
     /* Summe */
-    query.prepare(QString("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN :fromdate AND :todate AND payedBy < 3"));
+    query.prepare(QString("SELECT sum(ROUND(gross,2)) FROM receipts WHERE timestamp BETWEEN :fromdate AND :todate AND payedBy < 3"));
     query.bindValue(":fromdate", dateFrom.toString(Qt::ISODate));
     query.bindValue(":todate", dateTo.toString(Qt::ISODate));
 
@@ -103,7 +116,7 @@ QString Database::getMonthCounter()
     QSqlQuery query(dbc);
 
     /* Summe */
-    query.prepare(QString("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN :fromdate AND :todate AND payedBy < 3"));
+    query.prepare(QString("SELECT sum(ROUND(gross,2)) FROM receipts WHERE timestamp BETWEEN :fromdate AND :todate AND payedBy < 3"));
     query.bindValue(":fromdate", dateFrom.toString(Qt::ISODate));
     query.bindValue(":todate", dateTo.toString(Qt::ISODate));
 
@@ -133,7 +146,7 @@ QString Database::getYearCounter()
     QSqlQuery query(dbc);
 
     /* Summe */
-    query.prepare(QString("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN :fromdate AND :todate AND payedBy < 3"));
+    query.prepare(QString("SELECT sum(ROUND(gross,2)) FROM receipts WHERE timestamp BETWEEN :fromdate AND :todate AND payedBy < 3"));
     query.bindValue(":fromdate", dateFrom.toString(Qt::ISODate));
     query.bindValue(":todate", dateTo.toString(Qt::ISODate));
 
@@ -421,7 +434,7 @@ bool Database::addProduct(const QList<QVariant> &data)
     bool ok = query.prepare(q);
 
     query.bindValue(":name", data.at(0).toString());
-    query.bindValue(":tax", data.at(1).toInt());
+    query.bindValue(":tax", data.at(1).toDouble());
     query.bindValue(":net", data.at(2).toDouble());
     query.bindValue(":gross", data.at(3).toDouble());
     query.bindValue(":visible", visible);
@@ -582,6 +595,17 @@ QString Database::getShopMasterData()
 
 }
 
+QString Database::getLastVersionInfo()
+{
+    QSqlDatabase dbc = QSqlDatabase::database("CN");
+    QSqlQuery query(dbc);
+
+    query.prepare("SELECT version FROM journal WHERE id = (SELECT MAX(id) FROM journal)");
+    query.exec();
+    query.next();
+    return query.value("version").toString();
+}
+
 //--------------------------------------------------------------------------------
 void Database::reopen()
 {
@@ -592,7 +616,7 @@ void Database::reopen()
 
 bool Database::open(bool dbSelect)
 {
-    const int CURRENT_SCHEMA_VERSION = 15;
+    const int CURRENT_SCHEMA_VERSION = 16;
     // read global defintions (DB, ...)
     QrkSettings settings;
 

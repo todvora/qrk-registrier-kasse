@@ -164,6 +164,7 @@ void ImportData::run()
 
         if (m_updateExistingProduct && id > 0) {
             ok= query.prepare("UPDATE products SET name=:name, itemnum=:itemnum, barcode=:barcode, tax=:tax, net=:net, gross=:gross, visible=:visible, color=:color, coupon=:coupon,  `group`=:group WHERE id=:id");
+            query.bindValue(":id", id);
             emit info(tr("Update %1").arg(name));
         } else {
             ok= query.prepare("INSERT INTO products (name, `group`, itemnum, barcode, visible, net, gross, tax, color, coupon) VALUES (:name, :group, :itemnum, :barcode, :visible, :net, :gross, :tax, :color, :coupon)");
@@ -174,12 +175,18 @@ void ImportData::run()
             qWarning() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(query);
         }
 
-        double net = getItemValue(row, m_map->value(tr("Netto Preis").replace(",",".")).toDouble(),true).toDouble();
-        double gross = getItemValue(row, m_map->value(tr("Brutto Preis").replace(",",".")).toDouble(),true).toDouble();
-        double tax = getItemValue(row, m_map->value(tr("Steuersatz").replace(",",".")).toDouble(),true).toDouble();
+        double net = getItemValue(row, m_map->value(tr("Netto Preis")).toInt(),true).toDouble();
+        double gross = getItemValue(row, m_map->value(tr("Brutto Preis")).toInt(),true).toDouble();
+        double tax;
+        if (m_map->value(tr("Steuersatz")).toInt() == 0)
+            tax = Database::getDefaultTax().toDouble();
+        else
+            tax = getItemValue(row, m_map->value(tr("Steuersatz")).toInt(),true).toDouble();
+
 
         if (tax < 1) tax = tax * 100.0;
         if (gross < net) gross = net * (1.0 + tax / 100.0);
+        if (gross != 0.00 && net == 0.00) net = gross / (1.0 + tax / 100.0);
 
         query.bindValue(":itemnum", itemnum);
         query.bindValue(":barcode", barcode);
@@ -227,6 +234,8 @@ void ImportData::run()
         }
 
         ok = query.exec();
+        qDebug() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(query);
+
         if (!ok) {
             qWarning() << "Function Name: " << Q_FUNC_INFO << " Error: " << query.lastError().text();
             qWarning() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(query);
@@ -244,8 +253,11 @@ QString ImportData::getItemValue(int row, int col, bool replace)
     if (col >= 0) {
         QStandardItem *item;
         item = m_model->item(row, col);
+        if (!item)
+            return "";
+
         if (replace)
-            return item->text().replace(",",".");
+            return item->text().remove(QRegExp("[^0-9,.]")).replace(",",".");
 
         QString text = item->text();
         if (text.isNull())
@@ -331,11 +343,15 @@ int ImportData::createGroup(QString name)
 
 int ImportData::exists(QString itemnum, QString barcode, QString name)
 {
+
+    if (name.isEmpty())
+        return 0;
+
     QSqlDatabase dbc = QSqlDatabase::database("CN");
     QSqlQuery query(dbc);
 
     if (!itemnum.isEmpty()) {
-        bool ok = query.prepare("SELECT id FROM products WHERE itemnum=:itemnum");
+        bool ok = query.prepare("SELECT id, name FROM products WHERE itemnum=:itemnum");
         query.bindValue(":itemnum", itemnum);
 
         if (!ok) {
@@ -344,21 +360,33 @@ int ImportData::exists(QString itemnum, QString barcode, QString name)
         }
 
         query.exec();
-        if (query.next())
+        if (query.next()) {
+            if (query.value(1).toString() != name) {
+                emit info(tr("Artiklenummer %1 (%2) ist bereits für Artikel %3 vergeben. Kein Import möglich.").arg(itemnum).arg(name).arg(query.value(1).toString()));
+                return 0;
+            }
             return query.value(0).toInt();
+        }
     }
     if (!barcode.isEmpty()) {
 
-        bool ok = query.prepare("SELECT id FROM products WHERE barcode=:barcode");
+        bool ok = query.prepare("SELECT id, name FROM products WHERE barcode=:barcode");
         query.bindValue(":barcode", barcode);
+
         if (!ok) {
             qWarning() << "Function Name: " << Q_FUNC_INFO << " Error: " << query.lastError().text();
             qWarning() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(query);
         }
 
         query.exec();
-        if (query.next())
+        if (query.next()) {
+            if (query.value(1).toString() != name) {
+                emit info(tr("Barcode %1 (%2) ist bereits für Artikel %3 vergeben. Kein Import möglich.").arg(barcode).arg(name).arg(query.value(1).toString()));
+                return 0;
+            }
+
             return query.value(0).toInt();
+        }
     }
 
     bool ok = query.prepare("SELECT id FROM products WHERE name=:name");
@@ -367,9 +395,6 @@ int ImportData::exists(QString itemnum, QString barcode, QString name)
         qWarning() << "Function Name: " << Q_FUNC_INFO << " Error: " << query.lastError().text();
         qWarning() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(query);
     }
-
-    if (name.isEmpty())
-        return 0;
 
     query.exec();
     if (query.next())

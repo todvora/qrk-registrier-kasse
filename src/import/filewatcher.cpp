@@ -174,6 +174,7 @@ void FileWatcher::start()
     qDebug()<<"From main thread: "<<QThread::currentThreadId();
 
     QThread *thread = new QThread;
+    thread->sleep(1); // Sometimes the File was not finished
     m_worker = new ImportWorker(*m_queue);
     m_worker->clear();
     m_worker->moveToThread(thread);

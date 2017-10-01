@@ -81,6 +81,8 @@ ProductEdit::ProductEdit(QWidget *parent, int id)
         query.next();
 
         ui->name->setText(query.value(0).toString());
+        ui->name->setReadOnly(true);
+        ui->name->setToolTip(tr("Bestehende Artikelnamen dürfen nicht umbenannt werden. Versuchen Sie diesen Artikel zu löschen und legen danach einen neuen Artikel an."));
         ui->visibleCheckBox->setChecked(query.value(2).toBool());
         ui->net->setText(QString::number(query.value(3).toDouble(), 'f', 2));
         ui->gross->setText(QString::number(query.value(4).toDouble(), 'f', 2));

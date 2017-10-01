@@ -37,6 +37,7 @@ GivenDialog::GivenDialog(double &sum, QWidget *parent) :
 
     connect (ui->givenEdit, SIGNAL(textChanged(QString)), SLOT(textChanged(QString)));
     connect (ui->pushButton, SIGNAL(clicked(bool)), SLOT(accept()));
+    connect (ui->cancelButton, SIGNAL(clicked(bool)), SLOT(deleteLater()));
 
 }
 
@@ -49,6 +50,7 @@ void GivenDialog::accept()
 {
 
   QDialog::accept();
+  deleteLater();
 }
 
 void GivenDialog::textChanged(QString given)

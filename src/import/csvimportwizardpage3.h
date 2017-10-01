@@ -96,6 +96,7 @@ class ImportData : public QObject
     bool m_autoGroup;
     bool m_visibleGroup;
     bool m_visibleProduct;
+    double m_defaulttax;
 
 };
 

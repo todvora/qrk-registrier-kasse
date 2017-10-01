@@ -81,6 +81,7 @@ CREATE TABLE `orders` (
     `receiptId`	INTEGER NOT NULL,
     `product`	INTEGER NOT NULL,
     `count`	double NOT NULL DEFAULT '1',
+    `discount`	double NOT NULL DEFAULT '0',
     `net`	double NOT NULL,
     `gross`	double NOT NULL,
     `tax`	double NOT NULL DEFAULT '0.0',

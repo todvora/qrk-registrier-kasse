@@ -28,16 +28,17 @@
 class QrkDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
-  public:
+public:
 
     enum TYPE
     {
-      SPINBOX,
-      COMBO_TAX,
-      PRODUCTS,
-      NUMBERFORMAT_DOUBLE,
-      NUMBERFORMAT_INT,
-      DOUBLE_SPINBOX
+        SPINBOX,
+        COMBO_TAX,
+        PRODUCTS,
+        NUMBERFORMAT_DOUBLE,
+        NUMBERFORMAT_INT,
+        DOUBLE_SPINBOX,
+        DISCOUNT
     };
 
     explicit QrkDelegate(int type, QObject *parent = 0);
@@ -51,12 +52,12 @@ class QrkDelegate : public QStyledItemDelegate
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex & index) const;
 
 
-  signals:
+signals:
 
-  private slots:
+private slots:
     void commitAndCloseEditor() ;
 
-  private:
+private:
     int m_type;
     QString m_shortcurrency;
     QString m_taxlocation;

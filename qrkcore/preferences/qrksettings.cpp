@@ -70,7 +70,7 @@ void QrkSettings::save2Database(QString name, QString value)
         oldValue = query.value("strValue").toString();
     }
 
-    if (oldValue.isEmpty() && !value.isEmpty() || oldValue != value) {
+    if ((oldValue.isEmpty() && !value.isEmpty()) || oldValue != value) {
         if (id > 0)
             ok = query.prepare("UPDATE globals set strValue=:value WHERE name=:name;");
         else
@@ -92,7 +92,11 @@ void QrkSettings::save2Database(QString name, QString value)
             qWarning() << "Function Name: " << Q_FUNC_INFO << " " << Database::getLastExecutedQuery(query);
         }
 
-        QString text = QString("Parameter '%1' aus der Datenbanktabelle 'globals' wurde von '%2' auf '%3' geändert").arg(name).arg(oldValue).arg(value);
+        QString text;
+        if (name == "version")
+            text= QString("Softwareupdate von Version '%1' auf Version '%2'").arg(Database::getLastVersionInfo()).arg(value);
+        else
+            text= QString("Parameter '%1' aus der Datenbanktabelle 'globals' wurde von '%2' auf '%3' geändert").arg(name).arg(oldValue).arg(value);
         m_journal->journalInsertLine("Konfigurationsänderung", text);
     }
 }

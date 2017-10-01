@@ -89,6 +89,7 @@ bool ASignCARDOS_53::selectDF_SIG()
     if (m_DF_SIG_Selected)
         return true;
 
+    transmit(ASIGN_OS53_MASTER_FILE,7);
     transmit(ASIGN_OS53_DF_SIG, 7);
     m_DF_SIG_Selected = true;
     return true;

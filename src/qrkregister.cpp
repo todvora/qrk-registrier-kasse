@@ -165,10 +165,13 @@ void QRKRegister::init()
 
     ui->barcodeLineEdit->setEnabled(true);
     ui->dateEdit->setDateRange(last, QDate::currentDate());
+    ui->debitcardReceipt->setHidden(settings.value("hideDebitcardButton", false).toBool());
+    ui->creditcardReceipt->setHidden(settings.value("hideCreditcardButton", false).toBool());
 
     ui->orderList->setModel(m_orderListModel);
 
     m_useInputNetPrice = settings.value("useInputNetPrice", false).toBool();
+    m_useDiscount = settings.value("useDiscount", false).toBool();
     m_useMaximumItemSold = settings.value("useMaximumItemSold", false).toBool();
     m_useDecimalQuantity = settings.value("useDecimalQuantity", false).toBool();
     m_useGivenDialog = settings.value("useGivenDialog", false).toBool();
@@ -272,7 +275,7 @@ void QRKRegister::quickProductButtons(int id)
     if (query.next())
         bordercolor = (query.value(0).toString() == "")?bordercolor: query.value(0).toString();
 
-    ok = query.prepare(QString("SELECT id, name, gross, color FROM products WHERE `group`=%1 AND visible=1").arg(id));
+    ok = query.prepare(QString("SELECT id, name, gross, color FROM products WHERE `group`=%1 AND visible=1 ORDER by name").arg(id));
 
     if (!ok) {
         qWarning() << "Function Name: " << Q_FUNC_INFO << " Error: " << query.lastError().text();
@@ -505,13 +508,15 @@ void QRKRegister::newOrder()
     ui->orderList->setItemDelegateForColumn(REGISTER_COL_TAX, new QrkDelegate (QrkDelegate::COMBO_TAX, this));
     ui->orderList->setItemDelegateForColumn(REGISTER_COL_NET, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
     ui->orderList->setItemDelegateForColumn(REGISTER_COL_SINGLE, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
+    ui->orderList->setItemDelegateForColumn(REGISTER_COL_DISCOUNT, new QrkDelegate (QrkDelegate::DISCOUNT, this));
     ui->orderList->setItemDelegateForColumn(REGISTER_COL_TOTAL, new QrkDelegate (QrkDelegate::NUMBERFORMAT_DOUBLE, this));
 
     ui->orderList->horizontalHeader()->setSectionResizeMode(REGISTER_COL_PRODUCT, QHeaderView::Stretch);
     ui->orderList->setColumnHidden(REGISTER_COL_NET, !m_useInputNetPrice);
+    ui->orderList->setColumnHidden(REGISTER_COL_DISCOUNT, !m_useDiscount);
     ui->orderList->setColumnHidden(REGISTER_COL_SAVE, true); /* TODO: Make usable and add code to Settings */
 
-    updateOrderSum();
+    // updateOrderSum();
     plusSlot();
 
 }
@@ -677,10 +682,12 @@ void QRKRegister::onButtonGroup_payNow_clicked(int payedBy)
     }
 
     if (m_useGivenDialog && payedBy == PAYED_BY_CASH) {
-
         double sum = ui->sumLabel->text().replace(Database::getCurrency() ,"").toDouble();
         GivenDialog *given = new GivenDialog(sum, this);
-        given->exec();
+        if (given->exec() == 0) {
+            setButtonGroupEnabled(true);
+            return;
+        }
     }
 
     if (m_orderListModel->rowCount() > 0)
@@ -782,8 +789,10 @@ void QRKRegister::receiptToInvoiceSlot()
             m_orderListModel->blockSignals(true);
             m_orderListModel->item(0, REGISTER_COL_COUNT)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             m_orderListModel->item(0, REGISTER_COL_PRODUCT)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            m_orderListModel->item(0, REGISTER_COL_NET)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             m_orderListModel->item(0, REGISTER_COL_TAX)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             m_orderListModel->item(0, REGISTER_COL_SINGLE)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            m_orderListModel->item(0, REGISTER_COL_DISCOUNT)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             m_orderListModel->item(0, REGISTER_COL_TOTAL)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
             m_orderListModel->item(0, REGISTER_COL_COUNT)->setText( "1" );

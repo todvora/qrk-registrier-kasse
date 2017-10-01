@@ -227,9 +227,6 @@ int main(int argc, char *argv[])
     QCommandLineOption debugModeOption(QStringList() << "d" << "debug", QObject::tr("Schreibt DEBUG Ausgaben in die Log-Datei"));
     parser.addOption(debugModeOption);
 
-    QCommandLineOption reminderOffOption(QStringList() << "noreminder", QObject::tr("Unterdrückt die RKSV Information"));
-    parser.addOption(reminderOffOption);
-
     parser.process(app);
 
     bool dbSelect = parser.isSet(dbSelectOption);
@@ -238,7 +235,6 @@ int main(int argc, char *argv[])
     bool noPrinter = parser.isSet(noPrinterOption);
     bool servermode = parser.isSet(serverModeOption);
     bool debugMsg = parser.isSet(debugModeOption);
-    bool reminderOff  = parser.isSet(reminderOffOption);
 
 #ifdef QT_DEBUG
     debugMsg = true;
@@ -262,9 +258,29 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // DateTime check
+    if (Database::getLastJournalEntryDate().secsTo(QDateTime::currentDateTime()) < 0) {
+        QMessageBox messageBox(QMessageBox::Critical,
+                               QObject::tr("Eventueller Datum/Uhrzeit Fehler"),
+                               QObject::tr("ACHTUNG! Die Uhrzeit des Computers ist eventuell falsch.\n\nLetzter Datenbankeintrag: %1\nDatum/Uhrzeit: %2").arg(Database::getLastJournalEntryDate().toString()).arg(QDateTime::currentDateTime().toString()),
+                               QMessageBox::Yes | QMessageBox::No,
+                               0);
+        messageBox.setButtonText(QMessageBox::Yes, QObject::tr("QRK beenden?"));
+        messageBox.setButtonText(QMessageBox::No, QObject::tr("Weiter machen"));
+
+        if (messageBox.exec() == QMessageBox::Yes )
+        {
+            QrkSettings settings;
+            settings.removeSettings("QRK_RUNNING", false);
+
+            return 0;
+        }
+    }
+
     QRK *mainWidget = new QRK(servermode);
     mainWidget->show();
 
+    // DEP Check
     if (!Database::isCashRegisterInAktive() && !DemoMode::isDemoMode() && RKSignatureModule::isDEPactive() && !Utils::checkTurnOverCounter()) {
         QMessageBox messageBox(QMessageBox::Critical,
                                QObject::tr("DEP Fehler"),
@@ -316,21 +332,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!(Database::getTaxLocation() == "AT"))
-        reminderOff = true;
-
-    /* RKSV Reminder */
-    if (!RKSignatureModule::isDEPactive() && !reminderOff) {
-        QMessageBox messageBox(QMessageBox::Information,
-                               QObject::tr("RKSV"),
-                               QObject::tr("Ab dem 1.4.2017 benötigen Sie ein Zertifikat welches Sie bei uns beziehen können. http://www.ckvsoft.at"),
-                               QMessageBox::Yes,
-                               0);
-        messageBox.setButtonText(QMessageBox::Yes, QObject::tr("OK"));
-
-        messageBox.exec();
-    }
-
     /*Check for MasterData*/
     QString cri = Database::getCashRegisterId();
     if ( cri.isEmpty() ) {
@@ -359,6 +360,11 @@ int main(int argc, char *argv[])
     // Check for updates automatically
     FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
 #endif
+
+    if (Database::getLastVersionInfo() < QApplication::applicationVersion()) {
+        QrkSettings settings;
+        settings.save2Database("version", QApplication::applicationVersion());
+    }
 
     signal(SIGTERM, sighandler);
 

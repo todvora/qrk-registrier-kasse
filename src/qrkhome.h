@@ -62,6 +62,9 @@ class QRKHome : public QWidget
     void settingsSlot();
     void serverModeCheckBox_clicked(bool checked);
     void importInfo(QString str, bool isError);
+    void dayPushButton_clicked(bool);
+    void monthPushButton_clicked(bool);
+    void yearPushButton_clicked(bool);
 
   private:
     Ui::QRKHome *ui;

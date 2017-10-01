@@ -94,6 +94,7 @@ public slots:
     void setStatusBarProgressBarWait(bool on_off);
 
 private:
+    void DateTimeCheck();
     void closeEvent (QCloseEvent *event);
     Ui::MainWindow *ui;
 
@@ -115,6 +116,7 @@ private:
     QStackedWidget *m_stackedWidget;
 
     QTimer *m_timer;
+    QDateTime m_checkDateTime;
 
     int m_currentRegisterYear;
     QString m_cashRegisterId;

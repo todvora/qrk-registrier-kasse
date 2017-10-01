@@ -29,6 +29,7 @@
 #include "preferences/qrksettings.h"
 #include "database.h"
 #include "utils/utils.h"
+#include "salesinfo.h"
 
 #include <QMessageBox>
 #include <QDesktopWidget>
@@ -121,6 +122,10 @@ QRKHome::QRKHome(bool servermode, QWidget *parent)
     connect(ui->serverModeCheckBox, SIGNAL(clicked(bool)), this, SLOT(serverModeCheckBox_clicked(bool)));
     connect(Spread::Instance(),SIGNAL(updateImportInfo(QString, bool)), this,SLOT(importInfo(QString, bool)));
 
+    connect(ui->dayPushButton, SIGNAL(clicked(bool)), this, SLOT(dayPushButton_clicked(bool)));
+    connect(ui->monthPushButton, SIGNAL(clicked(bool)), this, SLOT(monthPushButton_clicked(bool)));
+    connect(ui->yearPushButton, SIGNAL(clicked(bool)), this, SLOT(yearPushButton_clicked(bool)));
+
     ui->importWidget->setVisible(true);
     setMinimumHeight(400);
 
@@ -133,6 +138,49 @@ QRKHome::QRKHome(bool servermode, QWidget *parent)
 QRKHome::~QRKHome()
 {
     delete m_fw;
+}
+
+void QRKHome::dayPushButton_clicked(bool)
+{
+    QDateTime from;
+    QDateTime to;
+    // ---------- DAY -----------------------------
+    from.setDate(QDate::currentDate());
+    to.setDate(QDate::currentDate());
+    to.setTime(QTime::fromString("23:59:59"));
+
+    SalesInfo *info = new SalesInfo(from.toString(Qt::ISODate), to.toString(Qt::ISODate), this);
+    info->show();
+}
+
+void QRKHome::monthPushButton_clicked(bool)
+{
+
+    QDateTime from;
+    QDateTime to;
+
+    // ---------- MONTH -----------------------------
+    from.setDate(QDate::fromString(QString("%1-%2-01").arg(QDate::currentDate().year()).arg(QDate::currentDate().month()),"yyyy-M-d"));
+    to.setDate(QDate::fromString(QDate::currentDate().toString()));
+    to.setTime(QTime::fromString("23:59:59"));
+
+    SalesInfo *info = new SalesInfo(from.toString(Qt::ISODate), to.toString(Qt::ISODate), this);
+    info->show();
+}
+
+void QRKHome::yearPushButton_clicked(bool)
+{
+    QDateTime from;
+    QDateTime to;
+
+    // ----------- YEAR ---------------------------
+    QString fromString = QString("%1-01-01").arg(QDate::currentDate().year());
+    from.setDate(QDate::fromString(fromString, "yyyy-MM-dd"));
+    to.setDate(QDate::fromString(QDate::currentDate().toString()));
+    to.setTime(QTime::fromString("23:59:59"));
+
+    SalesInfo *info = new SalesInfo(from.toString(Qt::ISODate), to.toString(Qt::ISODate), this);
+    info->show();
 }
 
 void QRKHome::safetyDevice(bool active)
@@ -220,10 +268,18 @@ void QRKHome::init()
         ui->externalDepDirlabel->setText(externalDepDir);
     }
 
-    ui->lcdNumberDay->display(Database::getDayCounter());
-    ui->lcdNumberMonth->display(Database::getMonthCounter());
-    ui->lcdNumberYear->display(Database::getYearCounter());
-    ui->serverModeCheckBox->setText(tr("Server Modus (Importverzeichnis: %1)").arg(settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString()));
+    if (settings.value("showSalesWidget", true).toBool()) {
+        ui->salesFrame->setHidden(false);
+        ui->lcdNumberDay->display(Database::getDayCounter());
+        ui->lcdNumberMonth->display(Database::getMonthCounter());
+        ui->lcdNumberYear->display(Database::getYearCounter());
+    } else {
+        ui->salesFrame->setHidden(true);
+    }
+
+    ui->serverModeCheckBox->setText(tr("Server Modus (Importverzeichnis: %1, Zeichensatz: %2)")
+                                    .arg(settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString())
+                                    .arg(settings.value("importCodePage", "UTF-8").toString()));
 
     m_watcherpath = settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString();
 
@@ -304,6 +360,15 @@ void QRKHome::serverModeCheckBox_clicked(bool checked)
     ui->importWidget->setVisible(checked);
     ui->registerButton->setEnabled(!checked);
     ui->taskButton->setEnabled(!checked);
+
+    QrkSettings settings;
+    if (settings.value("importServerFullscreen", false).toBool()) {
+        ui->salesFrame->setHidden(checked);
+        ui->pathFrame->setHidden(checked);
+    } else {
+        ui->salesFrame->setHidden(!settings.value("showSalesWidget", true).toBool());
+        ui->pathFrame->setHidden(false);
+    }
 
     if (checked) {
         if (Utils::isDirectoryWritable(m_watcherpath)) {

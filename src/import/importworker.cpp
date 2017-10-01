@@ -22,6 +22,7 @@
 
 #include "importworker.h"
 #include "singleton/spreadsignal.h"
+#include "preferences/qrksettings.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -31,6 +32,7 @@
 #include <QQueue>
 #include <QThread>
 #include <QWidget>
+#include <QTextCodec>
 #include <QDebug>
 
 ImportWorker::ImportWorker(QQueue<QString> &queue, QWidget *parent)
@@ -102,8 +104,12 @@ bool ImportWorker::loadJSonFile(QString filename)
         receiptInfo = receiptInfo.mid(begin,end);
     }
 
-    QString json = receiptInfo;
-    QJsonDocument jd = QJsonDocument::fromJson(json.toUtf8());
+    QrkSettings settings;
+    QJsonParseError jerror;
+
+    QTextCodec *codec = QTextCodec::codecForName (settings.value("importCodePage", "UTF-8").toString().toUtf8());
+    QString json = codec->toUnicode(receiptInfo);
+    QJsonDocument jd = QJsonDocument::fromJson(json.toUtf8(), &jerror);
     QJsonObject data = jd.object();
 
     if (data.contains("r2b")) {
@@ -136,7 +142,7 @@ bool ImportWorker::loadJSonFile(QString filename)
         }
 
     } else {
-        SpreadSignal::setImportInfo(tr("Import Fehler -> Falsches Dateiformat (%1).").arg(filename), true);
+        SpreadSignal::setImportInfo(tr("Import Fehler -> %1 [Offset: %2] (%3)").arg(jerror.errorString()).arg(jerror.offset).arg(filename), true);
         fileMover(filename, ".false");
     }
 
@@ -212,7 +218,11 @@ bool ImportWorker::fileMover(QString filename, QString ext)
 {
     qDebug() << "Function Name: " << Q_FUNC_INFO << " filename: " << filename << " ext: " << ext;
     QString originalfilename = filename;
-    QFileInfo fi(filename.replace(".json", ext));
+
+    QFileInfo ofi(originalfilename);
+    QString original_ext = "." + ofi.suffix();
+
+    QFileInfo fi(filename.replace(original_ext, ext));
     QDir directory(fi.absoluteDir());
     QStringList filter;
     filter.append(fi.baseName() + ext + "*");

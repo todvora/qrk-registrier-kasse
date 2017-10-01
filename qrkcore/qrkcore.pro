@@ -116,6 +116,11 @@ FORMS = databasedefinition.ui \
     error("Unable to include qrencode.")
 }
 
+# qbcmath
+!include("3rdparty/qbcmath/qbcmath.pri") {
+    error("Unable to include qbcmath.")
+}
+
 unix:!macx {
  INCLUDEPATH += /usr/include/PCSC
  LIBS += -lpcsclite

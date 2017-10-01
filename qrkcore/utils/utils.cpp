@@ -23,6 +23,8 @@
 #include "singleton/spreadsignal.h"
 #include "RK/rk_signaturemodule.h"
 #include "RK/rk_signaturemodulefactory.h"
+#include "3rdparty/qbcmath/bcmath.h"
+#include "qrcode.h"
 
 #include <QDateTime>
 #include <QSqlDatabase>
@@ -34,6 +36,8 @@
 #include <QFont>
 #include <QFontMetrics>
 #include <QStringList>
+#include <QPixmap>
+#include <QtMath>
 #include <QDebug>
 
 Utils::Utils()
@@ -72,10 +76,12 @@ QString Utils::getSignature(QJsonObject data)
     qlonglong counter = 0;
     while(query.next()){
         double tax = query.value(0).toDouble();
-        double gross = data.value(Database::getTaxType(query.value(0).toDouble())).toDouble();
+        QBCMath gross = data.value(Database::getTaxType(tax)).toDouble();
+        gross.round(2);
 
-        sign[Database::getTaxType( tax )] = QString::number( gross , 'f', 2);
-        counter += QString::number( gross * 100, 'f', 0).toLongLong();
+        sign[Database::getTaxType( tax )] = gross.toString();
+        // counter += sign.value(Database::getTaxType( tax )).toString().toDouble() * 100;
+        counter += sign.value(Database::getTaxType( tax )).toString().replace(".","").toLongLong();
     }
 
     QString concatenatedValue = sign["Kassen-ID"].toString() + sign["Belegnummer"].toString();
@@ -329,8 +335,7 @@ bool Utils::checkTurnOverCounter()
         QString encTOC = list.at(10);
         for (int y = 5; y < 9; y++) {
             QString current = list.at(y);
-            double gross = current.replace(',','.').toDouble();
-            counter2 += QString::number( gross * 100, 'f', 0).toLongLong();
+            counter2 += current.replace(",","").toLongLong();
         }
         counter += counter2;
         QString newEncTOC = sm->encryptTurnoverCounter(con,counter,key);
@@ -381,4 +386,71 @@ QString Utils::color_best_contrast(QString color){
     }
 
     return ((hash)?"#":"") + r + g + b;
+}
+
+QString Utils::taxRoundUp(double value,unsigned short np)
+{
+    double x,factor;
+    QBCMath result;
+    factor = pow(10, np);
+    x = floor(value*factor+0.9)*factor;
+    result = floor(x/factor)/factor;
+    return result.toString();
+}
+
+double Utils::getTax(double value, double tax, bool net)
+{
+    QBCMath v(value);
+    v.round(2);
+    QBCMath t(100 + tax);
+    t.round(2);
+    QBCMath result;
+
+    if (net) {
+        result = v / 100 *t;
+        result -= v;
+    } else {
+        result = v / t * 100;
+        result = v - result;
+    }
+
+    result.round(2);
+    return result.toDouble();
+}
+
+double Utils::getNet(double gross, double tax)
+{
+    double g = QString::number(gross, 'f',2).toDouble();
+    double t = Utils::getTax(gross, tax);
+    return QString::number(g - t, 'f',2).toDouble();
+}
+
+double Utils::getGross(double net, double tax)
+{
+    double n = QString::number(net, 'f',2).toDouble();
+    double t = Utils::getTax(net, tax, true);
+    return QString::number(n + t, 'f',2).toDouble();
+}
+
+QPixmap Utils::getQRCode(int id, bool &isDamaged )
+{
+    if (id < 1)
+        return QPixmap();
+
+    isDamaged = false;
+
+    QString qr_code_rep = "";
+    QString signature = Utils::getReceiptSignature(id,true);
+    if (signature.split('.').size() == 3) {
+        qr_code_rep = signature.split('.').at(1);
+        qr_code_rep = RKSignatureModule::base64Url_decode(qr_code_rep);
+        qr_code_rep = qr_code_rep + "_" + RKSignatureModule::base64Url_decode(signature.split('.').at(2)).toBase64();
+        if (signature.split('.').at(2) == RKSignatureModule::base64Url_encode("Sicherheitseinrichtung ausgefallen"))
+            isDamaged = true;
+    }
+    QRCode *qr = new QRCode;
+    QPixmap QR = qr->encodeTextToPixmap(qr_code_rep);
+    delete qr;
+
+    return QR;
 }

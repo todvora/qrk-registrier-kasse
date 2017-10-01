@@ -109,6 +109,39 @@
          <property name="text">
           <string>Weiter</string>
          </property>
+         <property name="icon">
+          <iconset resource="../qrk.qrc">
+           <normaloff>:/icons/arrow-right.png</normaloff>:/icons/arrow-right.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="cancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Abbruch</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../qrk.qrc">
+           <normaloff>:/icons/cancel.png</normaloff>:/icons/cancel.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
         </widget>
        </item>
       </layout>
@@ -117,6 +150,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../qrk.qrc"/>
+ </resources>
  <connections/>
 </ui>

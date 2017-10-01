@@ -608,7 +608,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     QSqlQuery query(dbc);
 
     /* Anzahl verkaufter Artikel oder Leistungen */
-    query.prepare("SELECT sum(orders.count) FROM orders WHERE receiptId IN (SELECT id FROM receipts WHERE timestamp BETWEEN :fromDate AND :toDate AND payedBy <= 2)");
+    query.prepare("SELECT sum(ROUND(orders.count,2)) FROM orders WHERE receiptId IN (SELECT id FROM receipts WHERE timestamp BETWEEN :fromDate AND :toDate AND payedBy <= 2)");
     query.bindValue(":fromDate", from.toString(Qt::ISODate));
     query.bindValue(":toDate", to.toString(Qt::ISODate));
     bool ok = query.exec();
@@ -656,7 +656,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
 
     /* Umsätze Zahlungsmittel */
     // query = QString("SELECT c.actionText, a.tax, a.gross FROM (SELECT * from orders where receiptId IN (select id from receipts where timestamp between '%1' AND '%2')) AS a INNER JOIN receipts AS b ON a.receiptId = b.id INNER JOIN actionTypes AS c ON c.actionId=b.payedBy GROUP BY b.payedBy, a.tax").arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
-    query.prepare("SELECT actionTypes.actionText, orders.tax, SUM(orders.count * orders.gross) from orders "
+    query.prepare("SELECT actionTypes.actionText, orders.tax, SUM(ROUND(orders.count * orders.gross,2)) from orders "
                   " LEFT JOIN receipts on orders.receiptId=receipts.receiptNum"
                   " LEFT JOIN actionTypes on receipts.payedBy=actionTypes.actionId"
                   " WHERE receipts.timestamp between :fromDate AND :toDate AND receipts.payedBy < 3"
@@ -673,20 +673,42 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     stat.append(tr("Umsätze nach Zahlungsmittel"));
 
     QString zm = "";
+    QString zmTemp = "";
+
+    double tmpSum = 0.0;
     while (query.next())
     {
-        if (!(zm == query.value(0).toString())){
+        if (zm.isEmpty())
+            zmTemp = query.value(0).toString();
+
+        if (!(zm == query.value(0).toString())) {
             zm = query.value(0).toString();
+            if (!(zm == zmTemp)){
+                stat.append("-");
+                stat.append(QString("Summe %1: %2").arg(zmTemp).arg(QString::number(tmpSum, 'f', 2)));
+                stat.append("-");
+                tmpSum = 0.0;
+                zmTemp = zm;
+            }
             stat.append(QString("%1").arg(query.value(0).toString()));
         }
+
+
+        tmpSum += query.value(2).toDouble();
+
         stat.append(QString("%1%: %2")
-                    .arg(query.value(1).toInt())
+                    .arg(query.value(1).toString())
                     .arg(QString::number(query.value(2).toDouble(), 'f', 2).replace(".",",")));
+
+    }
+    if (!zm.isEmpty()) {
+        stat.append("-");
+        stat.append(QString("Summe %1: %2").arg(zmTemp).arg(QString::number(tmpSum, 'f', 2)));
     }
     stat.append("-");
 
     /* Umsätze Steuern */
-    query.prepare("SELECT orders.tax, SUM(orders.count * orders.gross) from receipts LEFT JOIN orders on orders.receiptId=receipts.receiptNum WHERE receipts.timestamp between :fromDate AND :toDate AND receipts.payedBy < 3 GROUP by orders.tax ORDER BY orders.tax");
+    query.prepare("SELECT orders.tax, SUM(ROUND(orders.count * orders.gross,2)) from receipts LEFT JOIN orders on orders.receiptId=receipts.receiptNum WHERE receipts.timestamp between :fromDate AND :toDate AND receipts.payedBy < 3 GROUP by orders.tax ORDER BY orders.tax");
     query.bindValue(":fromDate", from.toString(Qt::ISODate));
     query.bindValue(":toDate", to.toString(Qt::ISODate));
 
@@ -706,7 +728,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     stat.append("-");
 
     /* Summe */
-    query.prepare("SELECT sum(gross) FROM receipts WHERE timestamp BETWEEN :fromDate AND :toDate AND payedBy < 3");
+    query.prepare("SELECT sum(ROUND(gross,2)) FROM receipts WHERE timestamp BETWEEN :fromDate AND :toDate AND payedBy < 3");
     query.bindValue(":fromDate", from.toString(Qt::ISODate));
     query.bindValue(":toDate", to.toString(Qt::ISODate));
     ok = query.exec();
@@ -744,7 +766,7 @@ QStringList Reports::createStat(int id, QString type, QDateTime from, QDateTime 
     stat.append(QString("%1: %2").arg(type).arg(sales));
     stat.append("=");
 
-    query.prepare("SELECT sum(orders.count) AS count, products.name, orders.gross, sum(orders.count * orders.gross) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN :fromDate AND :toDate GROUP BY products.name, orders.gross ORDER BY orders.tax, products.name ASC");
+    query.prepare("SELECT sum(ROUND(orders.count,2)) AS count, products.name, orders.gross, sum(ROUND(orders.count * orders.gross,2)) AS total, orders.tax FROM orders LEFT JOIN products ON orders.product=products.id  LEFT JOIN receipts ON receipts.receiptNum=orders.receiptId WHERE receipts.timestamp BETWEEN :fromDate AND :toDate AND receipts.payedBy < 3 GROUP BY products.name, orders.gross ORDER BY orders.tax, products.name ASC");
     query.bindValue(":fromDate", from.toString(Qt::ISODate));
     query.bindValue(":toDate", to.toString(Qt::ISODate));
     //  qInfo() << "Function Name: " << Q_FUNC_INFO << " Query: " << Database::getLastExecutedQuery(query);

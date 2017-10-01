@@ -52,6 +52,7 @@ class QRK_EXPORT DocumentPrinter : public QObject
     bool m_noPrinter;
     QString m_pdfPrinterPath;
     bool m_printCollectionsReceipt;
+    int m_collectionsReceiptCopies;
     bool m_smallPrinter;
     bool m_printQRCode;
     int m_receiptNum;

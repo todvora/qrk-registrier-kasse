@@ -1,4 +1,4 @@
-/*currentCardReader
+/*
  * This file is part of QRK - Qt Registrier Kasse
  *
  * Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
@@ -47,6 +47,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_receiptprinter = new ReceiptPrinterTab(this);
     m_receipt = new ReceiptTab(this);
     m_extra = new ExtraTab(this);
+    m_server = new ServerTab(this);
     m_scardreader = new SCardReaderTab(this);
 
     m_general->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
@@ -59,6 +60,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_tabWidget->addTab(m_receipt, tr("Kassa BON"));
     m_tabWidget->addTab(m_general, tr("Verzeichnispfade"));
     m_tabWidget->addTab(m_extra, tr("Extra"));
+    m_tabWidget->addTab(m_server, tr("Import Server"));
     if (m_master->getShopTaxes() == "AT" && !Database::isCashRegisterInAktive())
         m_tabWidget->addTab(m_scardreader, tr("SignaturErstellungsEinheit"));
 
@@ -145,7 +147,10 @@ void SettingsDialog::accept()
         Database::reopen();
     }
 
-    settings->save2Settings("importDirectory", m_general->getImportDirectory());
+    settings->save2Settings("importDirectory", m_server->getImportDirectory());
+    settings->save2Settings("importCodePage", m_server->getImportCodePage());
+    settings->save2Settings("importServerFullscreen", m_server->getServerFullscreen());
+
     settings->save2Settings("backupDirectory", m_general->getBackupDirectory());
     settings->save2Settings("pdfDirectory", m_general->getPdfDirectory());
     settings->save2Settings("externalDepDirectory", m_general->getExternalDepDirectory());
@@ -161,11 +166,15 @@ void SettingsDialog::accept()
     }
 
     settings->save2Settings("useInputNetPrice", m_extra->getInputNetPrice());
+    settings->save2Settings("useDiscount", m_extra->getDiscount());
     settings->save2Settings("useMaximumItemSold", m_extra->getMaximumItemSold());
     settings->save2Settings("useDecimalQuantity", m_extra->getDecimalQuantity());
     settings->save2Settings("useGivenDialog", m_extra->getGivenDialog());
+    settings->save2Settings("showSalesWidget", m_extra->getSalesWidget());
     settings->save2Settings("useReceiptPrintedDialog", m_extra->getReceiptPrintedDialog());
     settings->save2Settings("barcodeReaderPrefix", m_extra->getBarcodePrefix());
+    settings->save2Settings("hideCreditcardButton", m_extra->hideCreditcardButton());
+    settings->save2Settings("hideDebitcardButton", m_extra->hideDebitcardButton());
 
     settings->save2Settings("reportPrinterPDF", m_printer->getReportPrinterPDF());
     settings->save2Settings("reportPrinter", m_printer->getReportPrinter());
@@ -181,6 +190,7 @@ void SettingsDialog::accept()
     settings->save2Settings("receiptPrinterHeading", m_receipt->getReceiptPrinterHeading());
     settings->save2Settings("receiptPrinter", m_receiptprinter->getReceiptPrinter());
     settings->save2Settings("printCollectionReceipt", m_receipt->getPrintCollectionReceipt());
+    settings->save2Settings("collectionReceiptCopies", m_receipt->getCollectionReceiptCopies());
     settings->save2Settings("collectionReceiptText", m_receipt->getCollectionReceiptText());
     settings->save2Settings("printCompanyNameBold", m_receipt->getPrintCompanyNameBold());
     settings->save2Settings("useReportPrinter", m_receiptprinter->getUseReportPrinter());
@@ -221,6 +231,9 @@ ExtraTab::ExtraTab(QWidget *parent)
     m_useInputNetPriceCheck = new QCheckBox;
     m_useInputNetPriceCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
+    m_useDiscountCheck = new QCheckBox;
+    m_useDiscountCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+
     m_useMaximumItemSoldCheck = new QCheckBox;
     m_useMaximumItemSoldCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
@@ -229,6 +242,15 @@ ExtraTab::ExtraTab(QWidget *parent)
 
     m_useGivenDialogCheck = new QCheckBox;
     m_useGivenDialogCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+
+    m_salesWidgetCheck = new QCheckBox;
+    m_salesWidgetCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+
+    m_hideDebitcardCheck = new QCheckBox;
+    m_hideDebitcardCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+
+    m_hideCreditcardCheck = new QCheckBox;
+    m_hideCreditcardCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
     m_useReceiptPrintedDialogCheck = new QCheckBox;
     m_useReceiptPrintedDialogCheck->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
@@ -282,15 +304,34 @@ ExtraTab::ExtraTab(QWidget *parent)
 
     QGroupBox *registerGroup = new QGroupBox();
     registerGroup->setTitle(tr("Kasse"));
-    QFormLayout *extraLayout = new QFormLayout;
+
+    QGridLayout *extraLayout = new QGridLayout;
     extraLayout->setAlignment(Qt::AlignLeft);
-    extraLayout->addRow(tr("Netto Eingabe ermöglichen:"),m_useInputNetPriceCheck);
-    extraLayout->addRow(tr("Meistverkauften Artikel als Standard Artikel verwenden:"),m_useMaximumItemSoldCheck);
-    extraLayout->addRow(tr("Dezimale Eingabe bei Anzahl Artikel:"),m_useDecimalQuantityCheck);
-    extraLayout->addRow(tr("Standard Steuersatz:"),m_defaultTaxComboBox);
-    extraLayout->addRow(tr("Barcodereader prefix:"),m_barcodePrefixesComboBox);
+
+    extraLayout->addWidget( new QLabel(tr("Netto Eingabe ermöglichen:")), 1,1,1,1);
+    extraLayout->addWidget( m_useInputNetPriceCheck, 1,2,1,1);
+    extraLayout->addWidget( new QLabel(tr("Dezimale Eingabe bei Anzahl Artikel:")), 1,3,1,1);
+    extraLayout->addWidget( m_useDecimalQuantityCheck, 1,4,1,1);
+
+    extraLayout->addWidget( new QLabel(tr("Discount Eingabe ermöglichen:")), 2,1,1,1);
+    extraLayout->addWidget( m_useDiscountCheck, 2,2,1,1);
+    extraLayout->addWidget( new QLabel(tr("Standard Steuersatz:")), 3,1,1,1);
+    extraLayout->addWidget( m_defaultTaxComboBox, 3,2,1,1);
+    extraLayout->addWidget( new QLabel(tr("Barcodereader prefix:")), 4,1,1,1);
+    extraLayout->addWidget( m_barcodePrefixesComboBox, 4,2,1,1);
+
+    extraLayout->addWidget( new QLabel(tr("Kreditkarten Taste verbergen:")), 2,3,1,1);
+    extraLayout->addWidget( m_hideCreditcardCheck, 2,4,1,1);
+    extraLayout->addWidget( new QLabel(tr("Bankomat Taste verbergen:")), 3,3,1,1);
+    extraLayout->addWidget( m_hideDebitcardCheck, 3,4,1,1);
+
+    extraLayout->addWidget( new QLabel(tr("Meistverkauften Artikel als Standard Artikel verwenden:")), 4,3,1,1);
+    extraLayout->addWidget( m_useMaximumItemSoldCheck, 4,4,1,1);
 
     registerGroup->setLayout(extraLayout);
+
+    QGridLayout *groupLayout = new QGridLayout;
+    groupLayout->setAlignment(Qt::AlignLeft);
 
     QGroupBox *dialogGroup = new QGroupBox();
     dialogGroup->setTitle(tr("Dialoge"));
@@ -300,6 +341,19 @@ ExtraTab::ExtraTab(QWidget *parent)
     dialogLayout->addRow(tr("Beleg wurde gedruckt:"), m_useReceiptPrintedDialogCheck);
 
     dialogGroup->setLayout(dialogLayout);
+
+    QGroupBox *widgetGroup = new QGroupBox();
+    widgetGroup->setTitle(tr("Widgets"));
+    QFormLayout *widgetLayout = new QFormLayout;
+    widgetLayout->setAlignment(Qt::AlignLeft);
+    widgetLayout->addRow(tr("Umsatz am Startschirm Anzeigen:"),m_salesWidgetCheck);
+
+    dialogGroup->setLayout(dialogLayout);
+    widgetGroup->setLayout(widgetLayout);
+
+
+    groupLayout->addWidget(dialogGroup,1,1);
+    groupLayout->addWidget(widgetGroup,1,2);
 
     m_fontsGroup = new QGroupBox();
     m_fontsGroup->setCheckable(true);
@@ -367,16 +421,19 @@ ExtraTab::ExtraTab(QWidget *parent)
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(registerGroup);
-    mainLayout->addWidget(dialogGroup);
+    //mainLayout->addWidget(dialogGroup);
+    mainLayout->addLayout(groupLayout);
     mainLayout->addWidget(m_fontsGroup);
 
     mainLayout->addStretch(1);
     setLayout(mainLayout);
 
     m_useInputNetPriceCheck->setChecked(settings.value("useInputNetPrice", false).toBool());
+    m_useDiscountCheck->setChecked(settings.value("useDiscount", false).toBool());
     m_useMaximumItemSoldCheck->setChecked(settings.value("useMaximumItemSold", false).toBool());
     m_useDecimalQuantityCheck->setChecked(settings.value("useDecimalQuantity", false).toBool());
     m_useGivenDialogCheck->setChecked(settings.value("useGivenDialog", false).toBool());
+    m_salesWidgetCheck->setChecked(settings.value("showSalesWidget", true).toBool());
     if (m_useReceiptPrintedDialogCheck->isEnabled())
         m_useReceiptPrintedDialogCheck->setChecked(settings.value("useReceiptPrintedDialog", true).toBool());
     else
@@ -386,6 +443,9 @@ ExtraTab::ExtraTab(QWidget *parent)
     if ( idx != -1 ) {
         m_barcodePrefixesComboBox->setCurrentIndex(idx);
     }
+
+    m_hideCreditcardCheck->setChecked(settings.value("hideCreditcardButton", false).toBool());
+    m_hideDebitcardCheck->setChecked(settings.value("hideDebitcardButton", false).toBool());
 
     connect(m_systemFontButton, SIGNAL(clicked(bool)), this, SLOT(systemFontButton_clicked(bool)));
     connect(m_printerFontButton, SIGNAL(clicked(bool)), this, SLOT(printerFontButton_clicked(bool)));
@@ -513,6 +573,11 @@ bool ExtraTab::getInputNetPrice()
     return m_useInputNetPriceCheck->isChecked();
 }
 
+bool ExtraTab::getDiscount()
+{
+    return m_useDiscountCheck->isChecked();
+}
+
 bool ExtraTab::getMaximumItemSold()
 {
     return m_useMaximumItemSoldCheck->isChecked();
@@ -528,9 +593,99 @@ bool ExtraTab::getGivenDialog()
     return m_useGivenDialogCheck->isChecked();
 }
 
+bool ExtraTab::getSalesWidget()
+{
+    return m_salesWidgetCheck->isChecked();
+}
+
 bool ExtraTab::getReceiptPrintedDialog()
 {
     return m_useReceiptPrintedDialogCheck->isChecked();
+}
+
+bool ExtraTab::hideCreditcardButton()
+{
+    return m_hideCreditcardCheck->isChecked();
+}
+
+bool ExtraTab::hideDebitcardButton()
+{
+    return m_hideDebitcardCheck->isChecked();
+}
+
+ServerTab::ServerTab(QWidget *parent)
+    : QWidget(parent)
+{
+    m_importDirectoryEdit = new QLineEdit();
+    m_importDirectoryEdit->setEnabled(false);
+    m_codePageCombo = new QComboBox();
+    m_codePageCombo->addItem("UTF-8",0);
+    m_codePageCombo->addItem("Windows-1252",1);
+    m_codePageCombo->addItem("IBM-850",2);
+    m_serverFullscreen = new QCheckBox();
+
+    QPushButton *importDirectoryButton = new QPushButton;
+
+    QIcon icon = QIcon(":icons/save.png");
+    QSize size = QSize(24,24);
+
+    importDirectoryButton->setIcon(icon);
+    importDirectoryButton->setIconSize(size);
+    importDirectoryButton->setText(tr("Auswahl"));
+
+    QGroupBox *serverGroup = new QGroupBox;
+    QGridLayout *serverLayout = new QGridLayout;
+    serverLayout->addWidget(new QLabel(tr("Server Mode Import Verzeichnis:")), 1,1);
+    serverLayout->addWidget(new QLabel(tr("Import Zeichensatz:")), 2,1);
+    serverLayout->addWidget(new QLabel(tr("Import Info Vollbild:")), 3,1);
+
+    serverLayout->addWidget(m_importDirectoryEdit, 1,2);
+    serverLayout->addWidget(m_codePageCombo, 2,2);
+    serverLayout->addWidget(m_serverFullscreen, 3,2);
+
+    serverLayout->addWidget(importDirectoryButton, 1,3);
+    serverGroup->setLayout(serverLayout);
+
+    connect(importDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(importDirectoryButton_clicked()));
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(serverGroup);
+
+    mainLayout->addStretch(1);
+    setLayout(mainLayout);
+
+    QrkSettings settings;
+    m_importDirectoryEdit->setText(settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
+    m_codePageCombo->setCurrentText(settings.value("importCodePage", "UTF-8").toString());
+    m_serverFullscreen->setChecked(settings.value("importServerFullscreen", false).toBool());
+}
+
+void ServerTab::importDirectoryButton_clicked()
+{
+
+    QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
+                                                     getImportDirectory(),
+                                                     QFileDialog::ShowDirsOnly
+                                                     | QFileDialog::DontResolveSymlinks);
+
+    if (!path.isEmpty())
+        m_importDirectoryEdit->setText(path);
+}
+
+QString ServerTab::getImportDirectory()
+{
+    return m_importDirectoryEdit->text();
+}
+
+QString ServerTab::getImportCodePage()
+{
+    int idx  = m_codePageCombo->currentIndex();
+    return m_codePageCombo->itemText(idx);
+}
+
+bool ServerTab::getServerFullscreen()
+{
+    return m_serverFullscreen->isChecked();
 }
 
 GeneralTab::GeneralTab(QWidget *parent)
@@ -542,15 +697,12 @@ GeneralTab::GeneralTab(QWidget *parent)
     m_backupDirectoryEdit->setEnabled(false);
     m_pdfDirectoryEdit = new QLineEdit();
     m_pdfDirectoryEdit->setEnabled(false);
-    m_importDirectoryEdit = new QLineEdit();
-    m_importDirectoryEdit->setEnabled(false);
     m_externalDepDirectoryEdit = new QLineEdit();
     m_externalDepDirectoryEdit->setEnabled(false);
 
     QPushButton *dataDirectoryButton = new QPushButton;
     QPushButton *backupDirectoryButton = new QPushButton;
     QPushButton *pdfDirectoryButton = new QPushButton;
-    QPushButton *importDirectoryButton = new QPushButton;
     QPushButton *externalDepDirectoryButton = new QPushButton;
 
     QIcon icon = QIcon(":icons/save.png");
@@ -559,10 +711,6 @@ GeneralTab::GeneralTab(QWidget *parent)
     dataDirectoryButton->setIcon(icon);
     dataDirectoryButton->setIconSize(size);
     dataDirectoryButton->setText(tr("Auswahl"));
-
-    importDirectoryButton->setIcon(icon);
-    importDirectoryButton->setIconSize(size);
-    importDirectoryButton->setText(tr("Auswahl"));
 
     backupDirectoryButton->setIcon(icon);
     backupDirectoryButton->setIconSize(size);
@@ -592,19 +740,16 @@ GeneralTab::GeneralTab(QWidget *parent)
     QGroupBox *pathGroup = new QGroupBox;
     QGridLayout *pathLayout = new QGridLayout;
     pathLayout->addWidget(new QLabel(tr("Daten Verzeichnis:")), 1,1);
-    pathLayout->addWidget(new QLabel(tr("Server Mode Import Verzeichnis:")), 2,1);
-    pathLayout->addWidget(new QLabel(tr("Backup Verzeichnis:")), 3,1);
-    pathLayout->addWidget(new QLabel(tr("Pdf Verzeichnis:")), 4,1);
+    pathLayout->addWidget(new QLabel(tr("Backup Verzeichnis:")), 2,1);
+    pathLayout->addWidget(new QLabel(tr("Pdf Verzeichnis:")), 3,1);
 
     pathLayout->addWidget(m_dataDirectoryEdit, 1,2);
-    pathLayout->addWidget(m_importDirectoryEdit, 2,2);
-    pathLayout->addWidget(m_backupDirectoryEdit, 3,2);
-    pathLayout->addWidget(m_pdfDirectoryEdit, 4,2);
+    pathLayout->addWidget(m_backupDirectoryEdit, 2,2);
+    pathLayout->addWidget(m_pdfDirectoryEdit, 3,2);
 
     pathLayout->addWidget(dataDirectoryButton, 1,3);
-    pathLayout->addWidget(importDirectoryButton, 2,3);
-    pathLayout->addWidget(backupDirectoryButton, 3,3);
-    pathLayout->addWidget(pdfDirectoryButton, 4,3);
+    pathLayout->addWidget(backupDirectoryButton, 2,3);
+    pathLayout->addWidget(pdfDirectoryButton, 3,3);
 
     pathGroup->setLayout(pathLayout);
 
@@ -619,7 +764,6 @@ GeneralTab::GeneralTab(QWidget *parent)
 
     connect(backupDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(backupDirectoryButton_clicked()));
     connect(pdfDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(pdfDirectoryButton_clicked()));
-    connect(importDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(importDirectoryButton_clicked()));
     connect(dataDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(dataDirectoryButton_clicked()));
     connect(externalDepDirectoryButton, SIGNAL(clicked(bool)), this, SLOT(externalDepDirectoryButton_clicked()));
 
@@ -632,7 +776,6 @@ GeneralTab::GeneralTab(QWidget *parent)
 
     QrkSettings settings;
     m_dataDirectoryEdit->setText(settings.value("sqliteDataDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/data").toString());
-    m_importDirectoryEdit->setText(settings.value("importDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
     m_backupDirectoryEdit->setText(settings.value("backupDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).toString());
     m_pdfDirectoryEdit->setText(settings.value("pdfDirectory", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)+ "/pdf").toString());
     m_externalDepDirectoryEdit->setText(settings.value("externalDepDirectory", "").toString());
@@ -657,7 +800,7 @@ void GeneralTab::backupDirectoryButton_clicked()
     QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
                                                      getBackupDirectory(),
                                                      QFileDialog::ShowDirsOnly
-                                                     | QFileDialog::DontResolveSymlinks);
+                                                     | QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
 
     if (!path.isEmpty())
         m_backupDirectoryEdit->setText(path);
@@ -670,7 +813,7 @@ void GeneralTab::pdfDirectoryButton_clicked()
     QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
                                                      getPdfDirectory(),
                                                      QFileDialog::ShowDirsOnly
-                                                     | QFileDialog::DontResolveSymlinks);
+                                                     | QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
 
     if (!path.isEmpty())
         m_pdfDirectoryEdit->setText(path);
@@ -683,7 +826,7 @@ void GeneralTab::dataDirectoryButton_clicked()
     QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
                                                      getDataDirectory(),
                                                      QFileDialog::ShowDirsOnly
-                                                     | QFileDialog::DontResolveSymlinks);
+                                                     | QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
 
     if (!path.isEmpty()) {
         if ( !moveDataFiles( getDataDirectory(), path)) {
@@ -725,25 +868,13 @@ bool GeneralTab::moveDataFiles( QString fromDir, QString toDir)
     return true;
 }
 
-void GeneralTab::importDirectoryButton_clicked()
-{
-
-    QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
-                                                     getImportDirectory(),
-                                                     QFileDialog::ShowDirsOnly
-                                                     | QFileDialog::DontResolveSymlinks);
-
-    if (!path.isEmpty())
-        m_importDirectoryEdit->setText(path);
-}
-
 void GeneralTab::externalDepDirectoryButton_clicked()
 {
 
     QString path = QFileDialog::getExistingDirectory(this, tr("Verzeichnis Auswahl"),
                                                      getExternalDepDirectory(),
                                                      QFileDialog::ShowDirsOnly
-                                                     | QFileDialog::DontResolveSymlinks);
+                                                     | QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
 
     if (!path.isEmpty())
         m_externalDepDirectoryEdit->setText(path);
@@ -762,11 +893,6 @@ QString GeneralTab::getPdfDirectory()
 QString GeneralTab::getDataDirectory()
 {
     return m_dataDirectoryEdit->text();
-}
-
-QString GeneralTab::getImportDirectory()
-{
-    return m_importDirectoryEdit->text();
 }
 
 QString GeneralTab::getExternalDepDirectory()
@@ -1320,6 +1446,9 @@ ReceiptTab::ReceiptTab(QWidget *parent)
     m_collectionReceiptTextEdit = new QLineEdit();
     m_collectionReceiptTextEdit->setPlaceholderText(tr("Abholbon für"));
 
+    m_collectionReceiptCopiesSpin = new QSpinBox();
+    m_collectionReceiptCopiesSpin->setMinimum(1);
+
     m_printCompanyNameBoldCheck = new QCheckBox();
     m_printQRCodeCheck = new QCheckBox();
     m_printQRCodeLeftCheck = new QCheckBox();
@@ -1357,6 +1486,8 @@ ReceiptTab::ReceiptTab(QWidget *parent)
 
     QHBoxLayout *collectionBonLayout = new QHBoxLayout;
     collectionBonLayout->addWidget(m_printCollectionReceiptCheck);
+    collectionBonLayout->addWidget(new QLabel(tr("Anzahl Kopien:")));
+    collectionBonLayout->addWidget(m_collectionReceiptCopiesSpin);
     collectionBonLayout->addWidget(new QLabel(tr("Extrabon Text:")));
     collectionBonLayout->addWidget(m_collectionReceiptTextEdit);
 
@@ -1412,7 +1543,7 @@ ReceiptTab::ReceiptTab(QWidget *parent)
     m_receiptPrinterHeading->addItem("KASSABON");
     m_receiptPrinterHeading->addItem("KASSENBON");
     m_receiptPrinterHeading->addItem("Zahlungsbestätigung");
-    m_receiptPrinterHeading->addItem("");
+//    m_receiptPrinterHeading->addItem("");
 
     m_receiptPrinterHeading->setCurrentText(settings.value("receiptPrinterHeading", "KASSABON").toString());
 
@@ -1428,6 +1559,8 @@ ReceiptTab::ReceiptTab(QWidget *parent)
     m_printCollectionReceiptCheck->setChecked(settings.value("printCollectionReceipt", false).toBool());
     QString collectionReceiptText = settings.value("collectionReceiptText", tr("Abholbon für")).toString();
     m_collectionReceiptTextEdit->setText(collectionReceiptText);
+
+    m_collectionReceiptCopiesSpin->setValue(settings.value("collectionReceiptCopies", 1).toInt());
 
     m_printQRCodeCheck->setChecked(settings.value("qrcode", true).toBool());
     m_printQRCodeLeftCheck->setChecked(settings.value("qrcodeleft", false).toBool());
@@ -1519,6 +1652,12 @@ bool ReceiptTab::getPrintCollectionReceipt()
 {
     return m_printCollectionReceiptCheck->isChecked();
 }
+
+int ReceiptTab::getCollectionReceiptCopies()
+{
+    return m_collectionReceiptCopiesSpin->value();
+}
+
 
 QString ReceiptTab::getCollectionReceiptText()
 {

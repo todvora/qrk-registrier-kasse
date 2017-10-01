@@ -1,4 +1,4 @@
-#
+﻿#
 # This file is part of QRK - Qt Registrier Kasse
 #
 # Copyright (C) 2015-2017 Christian Kvasny <chris@ckvsoft.at>
@@ -20,39 +20,78 @@
 #
 #
 
-VERSION 1.03 Build ???
+VERSION 1.05 Build ????
+
+VERSION 1.05 Build 20170930
+  + Datum/Uhrzeit check
+  + Rabatt pro Artikel in Prozenten (%) möglich
+  + UmsatzInfo Dialog (Startschirm Buttons)
+  + CodePage für Serverimport kann in den Settings eingestellt werden. (Einstellung/Import Server)
+  * Kundentext wird auch auf Abholbon geschrieben
+  * Anzahl Kopien von Abholbon konfigurierbar
+  * Punkt/Komma fix bei JSon Import (count)
+  * Reminder wurde entfernt.
+  * Serverimport Infoausgabe als Fullscreen. (Einstellung/Import Server)
+  * Umsatz Widget am Startschirm ausblendbar. (Einstellungen/Extra)
+
+VERSION 1.04 Build 170531
+  * Artikel innerhalb einer Gruppe werden nach "name" sortiert
+  * CSV Import erweitert
+  * Bestehende Artikelnamen können im Artikel Manager nicht geändert werden. Um einen Artikelnamen
+    zu ändern muss der Artikel gelöscht und neu angelegt werden. Sollte ein Artikel schon in
+    Verwendung sein (verkauft) kann man diesen nicht mehr löschen.
+
+VERSION 1.04 Build 170425
+  + Kreditkarten/Bankomat Tasten können ausgeblendet werden
+  + Tages/Monats-Abschluß Zahlungsmittel Summe
+  + Wenn beim CSV Import kein Steuersatz zugewiesen ist wird der Standard Steuersatz verwendet
+  * fix CardOS_53 Warnung
+  * fix Update beim CSV Import
+  * Anpassungen beim CSV Import
+  * Einheitliche Datei/Verzeichnis Dialoge
+
+VERSION 1.03 Build 170404
+  * fix Tages/Monats Abschluß am BON Drucker drucken (experimentell) wenn Ausdruck länger
+    als die eingestellte Papierlänge ist.
+  * fix Druck Tages/Monatsabschluss
+  * fix ServerMode import. Dateien mit Großbuchstaben wurden nicht umbenannt.
+    Json Datei wurde dadurch in einer Schleife eingelesen.
+
+VERSION 1.03 Build 170403
+  + Tages/Monats-Abschluß am BON Drucker drucken (experimentell)
+  * FONInfo wird nur angezeiget wenn das DEP aktiviert ist und die Kasse nicht im DEMO-Modus ist
   * fix FONInfo Seriennummeranzeige bei ATrust Online
   * fix feedTimeStamp Einstellungen
 
 VERSION 1.03 Build 170330
-  * fix mehrzeiligen Bondruck bei Decimaler Stückzahl
+  * fix mehrzeiligen Bondruck bei Dezimaler Stückzahl
   * fix Online Zertifikat bei Sicherheitseinrichtung ausgefallen
   * fix unnötige ESC Steuerzeichen werden beim Import von JSON entfernt
   * fix Ist ein Kartenleser angeschlossen aber eine ATrust Online SEE ausgewählt
         dann wird im Einstellungsdialog der Kartenleser nicht mehr aktiv angezeigt.
 
-VERSION 1.03 Build 170327
+ VERSION 1.03 Build 170327
     * fix seltenen Rundungsfehler beim Summenzähler
     * fix für MySQL
-    + add Funktion um eine geschloßene Kasse wieder als neue Kasse zu aktivieren
+    + add Funktion um eine geschlossene Kasse wieder als neue Kasse zu aktivieren
 
-VERSION 1.03 Build 170322
+ VERSION 1.03 Build 170322
   + Plugin Support
   + neue Kommandozeilen Parameter
     -m, --minimize  startet QRK minimiert
     --servermode startet QRK im ServerModus
     -d, --debug schreibt debug Ausgaben in die Logdatei
-  + Die letzte Einstellung beim ImportWizard wird sich gemerkt
+  + Die letzte Einstellung beim ImportWizard wird gespeichert
   + Belegdruck - Anpassungen und Einstellmöglichkeiten erweitert
-  + Kasse kann geschloßen werden. SCHLUSSBELEG
-  * fix bei aktivierten DEP konnten keine alten, vor der DEP aktivierung, erstellten Belege gedruckz werden
+  + Kasse kann geschlossen werden. SCHLUSSBELEG
+  * fix bei aktivierten DEP konnten keine alten, vor der DEP aktivierung, erstellten Belege gedruckt werden
   * fix MySQL (fehlendes DLL in der WindowsVersion)
   * fix MySQL erstellen der Datenbank
-  * fix Manager, doppeltes anlegen von Artikel ist nicht mehr möglich
+  * fix Manager, doppeltes anlegen von Artikeln ist nicht mehr möglich
   * fix verlassen des Vollbild Modus war nicht möglich
   * fix Journaling export
   * fix Wenn kein Standard TAX Wert gespeichert war, wurde der falsche TAX Wert "" gesetzt
-  * fix Rundung wenn die Anzahl der produkte kleiner 0 sind
+  * fix Rundung wenn die Anzahl der Produkte kleiner 0 sind
   * fix DEP backup
 
 VERSION 1.02 Build 170117
@@ -68,31 +107,31 @@ VERSION 1.01 Build 170106
   + BON Werbung (image)
   + Der "Beleg wurde gedruckt" Dialog ist ausschaltbar (Einstellungen)
   * fix Csv Import
-  * fix Storno bei mehr als einen Artikel
+  * fix Storno bei mehr als einem Artikel
   * fix deutsche Übersetzung in diversen Dialogen
 
 VERSION 1.00 Build 161220
  + Alle Voraussetzungen für RKSV 2017 (Österreich) wurden fertig gestellt
-   und stehen zu Verfügung.
+   und stehen zur Verfügung.
  + SmartCard Reader Support
  + A-Trust SmartCard Support
  + A-Trust Mobile (Online Signatur) Support
- + DEP aktivierung mit automatischer Startbon Erstellung
+ + DEP Aktivierung mit automatischer Startbon Erstellung
  + DEP Export (JSON)
  + CSV ImportWizard (zZ. nur für Artikel)
  + BarcodeReader
  + Extra Bon (z.B. Abholbon) pro verkauften Artikel
-   Bei den Kassa BON Einstellungen global aktivierbar, im Manager in der
+  Bei den Kassa BON Einstellungen global aktivierbar, im Manager in der
    Artikelverwaltung beim jeweiligen Produkt zu aktivieren.
  + MAC OSX Online Update
 
  - Nachbonierung wurde entfernt. Lt. BMF ist das Datum des Geschäftsvorfall
-   nicht das Datum der Signierung. Hier muss das Aktuelle Datum verwendet werden.
+   nicht das Datum der Signierung. Hier muss das aktuelle Datum verwendet werden.
    Ein Verweis auf den Ersatzbon ist möglich.
 
  * Größe interne Code Änderungen
  * Änderungen beim Einstellungs-Dialog
- * ServerMode (JSON Schnittstelle )wurde erweitert, es können jetzt auch "normale" Bons automatisch erstellt werden
+ * ServerMode (JSON Schnittstelle ) wurde erweitert, es können jetzt auch "normale" Bons automatisch erstellt werden
  * Das Format sollte selbsterklärend sein
  * {"receipt":[
  * {"customerText": "Customer Text",
@@ -108,31 +147,31 @@ VERSION 1.00 Build 161220
  * Gruppen Textfarbe wurde mit "Best Kontrast" angepasst
  * Angepasste Debug ausgaben (Logfile)
  * fixed - > Wird ein bereits vorhandenes Produkt mit nur einem Mausklick
-             ausgewählt wird der Produktpreis nicht aktualisiert.
+     ausgewählt wird der Produktpreis nicht aktualisiert.
  * fixed - > Komma und Punkteingabe beim Artikel Manager
-             (Eingabe mit Komma wurde nicht gespeichert)
+         (Eingabe mit Komma wurde nicht gespeichert) 
 
 
 VERSION 0.16.0725
- * fix restart nach Update
- * fix storno nach Tagesbericht
- * fix Storno CancelButton wurde ignoriert
+ * fix >Restart nach Update
+ * fix Storno nach Tagesbericht
+ * fix Storno CancelButton wurde ignoriert 
 
 
 VERSION 0.16.0717
  + Es wird jetzt Überprüft ob QRK schon gestartet ist. Ein Dialog wird angezeigt.
  * Fix Storno wurde im Tagesbericht nicht berücksichtigt
- * Fix QuickButton bringt QRK zum absturz wenn R2B aktiv ist
+ * Fix QuickButton bringt QRK zum Absturz wenn R2B aktiv ist
  * R2B Bei der Dialogeingabe wird die Eingabe der Rechnungsnummer auf GROSS gestellt
- * Fix wenn bei R2B eine Rechnungsnummer mehrmals vergeben wird. Ein WARN Dialog wird angezeigt.
+ * Fix wenn bei R2B eine Rechnungsnummer mehrmals vergeben wird. Ein WARN-Dialog wird angezeigt.
 
 VERSION 0.16.0523
  + Benutzerdefinierbares Datenverzeichnis
  * fix für TerminalServer wenn <Applikationspfad>/data
-   schon vorhanden ist wird dieser weiterhin verwendet.
+   schon vorhanden ist wird dieser weiterhin verwendet. 
 
 VERSION 0.16.0517
- + Schriftarten für System,Drucker und BON Drucker einstellbar
+ + Schriftarten für System, Drucker und BON Drucker einstellbar
  + SmardCard Libs
 
 VERSION 0.16.0515
@@ -141,31 +180,31 @@ VERSION 0.16.0515
 
 VERSION 0.16.0507
  * fix Linuxpfade / keine Berechtigung
- * fix Eingabemöglichkeit von "_" (Unterstrich) bei KassenID entfernt
+ * fix Eingabemöglichkeit von "_" (Unterstrich) bei KassenID entfernt 
 
 VERSION 0.16.0502
  * fix MySql - Database
  * Wenn ein Artikel auf unsichtbar gestellt wurde ist er auch in der Autovervollständigung
    nicht sichtbar. Ist eine Gruppe auf unsichtbar wird diese bei den QuickButtons nicht angezeigt.
    Artikel in dieser Gruppe werden bei der Autovervollständigung angezeigt.
- * fix bei manueller Erstellung von Tages/Monatsabschluss wurde nicht automatisch gedruckt
+ * fix bei manueller Erstellung von Tages/Monatsabschluss wurde nicht automatisch gedruckt 
 
 VERSION 0.16.0427
  * fix Tages/Monatsabschluß aus Dokumenten Modus drucken
 
-VERSION 0.16.0426
+ VERSION 0.16.0426
  * noch kleinerer QR-Code (TEST)
  * Wenn Artikel Anzahl "0" ist wurde der Einzelpreis durch "nan" ersetzt
- * Beim auf/ab spinnen der Anzahl wird der Gesamtpreis Aktualisiert
- * Wenn in den Einstellungen der QR-Code ausgeschalten ist wird vor 2017
-   bzw. vor einer Verwendung der Signatureinheit der OCR-Code nicht gedruckt
+ * Beim auf/ab spinnen der Anzahl wird der Gesamtpreis aktualisiert
+ * Wenn in den Einstellungen der QR-Code ausgeschaltet ist wird vor 2017
+   bzw. vor einer Verwendung der Signatureinheit der OCR-Code nicht gedruckt 
 
 
 VERSION 0.16.0411
  * Fix Font für Bonausdruck
  * QR-Code etwas kleiner gemacht
 
-VERSION 0.16.0410
+ VERSION 0.16.0410
  + QRCode wird jetzt erstellt und am BON gedruckt (Noch ohne Signatureinheit!)
    Einstellbar in den Einstellungen Bon-Drucker. Wenn der QRCode deaktiviert ist
    wird NUR für Österreich der OCR gedruckt.
@@ -176,7 +215,7 @@ VERSION 0.16.0410
    Steuersatz 12% wurde entfernt. Die wurden durch die 13% ersetzt und als
    Steuersatz-Besonders wurden die neuen 19% aufgenommen.
  * Fix Kunden Zusatztext wurde bei Kopie nicht gedruckt
- * Gruppen und Produkt Manager Die Größe der Felder kann manuel geändert werden
+ * Gruppen und Produkt Manager Die Größe der Felder kann manuell geändert werden
  * Produkt Manager Anzahl der Felder wurde reduziert (Preis/Mwst)
  * Manager Design wurde angepasst
  * Tages/Monatsabschluß Wenn ein Artikel mehrmals verkauft wird und der Preis nicht der
@@ -184,12 +223,12 @@ VERSION 0.16.0410
    (Zb. Es wurde der Tages oder Kundenpreis händisch geändert)
  * Fix für kleine (<= 60mm) Bondrucker, Druckdesignänderung für Bondrucker deren Druckbreite
    kleiner als 60mm ist
- * Pflichteingabefeld "Netto" bei R2B wurde entfernt
+ * Pflichteingabefeld "Netto" bei R2B wurde entfernt 
 
 VERSION 0.16.0308
  * Beim verlassen des Demomodes wurden die Reports nicht gelöscht.
  + Beim starten des Servermodes wird gleich gescannt ob es Imports gibt.
-
+ 
 VERSION 0.16.0306
  * fix payedBy im ServerBetrieb
  * fix wenn im KassenMode in einer Zeile ein bestehender Produktname geändert wurde wurde dieser
@@ -234,10 +273,10 @@ VERSION 0.16.0222
     Erfolgreich importierte Dateien werden in .old umbenannt
     Fehlerhafte Dateien werden in .false umbenannt
 
-
+ 
 VERSION 0.16.0212
  * fix Tagesabschluss hatte in manchen fällen die Datenbank beschädigt.
-   Sollten die Daten denoch falsch (Falsche Rechnungsnummer am Bon)sein bitte bei mir melden.
+   Sollten die Daten denoch falsch (Falsche Rechnungsnummer am Bon) sein bitte bei mir melden.
  * fix Komma und Punkt Eingabe bei Produktpreisen
  + Färbige Gruppen QuickButtons
  + Färbige Produkt QuickButtons
@@ -255,7 +294,7 @@ VERSION 0.16.0202
  * Es wird nur ein PNG Image gedruckt. JPEG und CO wurden ignoriert.
  * Fehlende DLL's für Windows hinzugefügt
 
-VERSION 0.16.0201
+ VERSION 0.16.0201
  * fix Monatsaschluß (0)
  + Autoupdatefunktion
 
@@ -264,21 +303,21 @@ VERSION 0.16.0130
  + Firmenname kann jetzt FETT gedruckt werden
  * Maximale Anzahl der Produkte auf 99999 erhöht.
  * BON Überschrift kann jetzt zwischen KASSABON, KASSENBON und Zahlungsbestätigung gewählt werden
- * fix Meistverkaufter Artikel (wurde nicht gespeichert)
+ * fix meistverkaufter Artikel (wurde nicht gespeichert)
  * fix BonKopie wurde ebenfalls zweimal gedruckt.
 
-VERSION 0.16.0120
+ VERSION 0.16.0120
  + Meistverkaufter Artikel kann als Standard Artikel verwendet werden. (Einstellungen->Extras)
  + Abfrage bei Monatsabschluß
  + Bezahlbuttons sind deaktiviert wenn sich kein Artikel im Produktfeld befindet
  + Wenn das Logo breiter als der druckbare Bereich ist wird automatisch skaliert
  * Fix bei Storno (Betrag 0,00)
- * Datebank anpassungen
- * Und wieder einige fixes an die ich mich nicht mehr erinnern kann :)
+ * Datenbankanpassungen
+ * Und wieder einige fixes an die ich mich nicht mehr erinnern kann :) 
 
 
 VERSION 0.16.0115
- * Manche Druckertreiber unterstützen nur eine kopie pro Druckerauftrag
+ * Manche Druckertreiber unterstützen nur eine Kopie pro Druckauftrag
    Diese Eigenschaft wurde behoben. Es wird jetzt wenn nötig ein zweiter
    Druckauftrag gesendet
  + Datenverzeichnis Pfadangabe im Settings Dialog
@@ -288,21 +327,21 @@ VERSION 0.16.0115
  * Fix falsche  Anzahl verkaufter Produkte oder Leistungen im Tages/Monatsbericht
  * einige fixes an die ich mich nicht mehr erinnern kann :)
 
-VERSION 0.16.0112a
+ VERSION 0.16.0112a
  * nur Linux
  * Fehler bei der Installation behoben (Abhängigkeiten)
 
-VERSION 0.16.0112
+ VERSION 0.16.0112
  + Nettoeingabe möglich (Im Settings Dialog einstellbar)
- * Datenbank anpassungen
+ * Datenbankanpassungen
  * AES256 phase 1
 
-VERSION 0.16.0106
- + Einige Informations Boxen hinzugefügt
+ VERSION 0.16.0106
+ + Einige Informations-Boxen hinzugefügt
  * fix es wurden immer zwei Belege gedruckt.
- * fix Journal Export überschreibt Datei ohne nachfrage
+ * fix Journal Export überschreibt Datei ohne Nachfrage
 
-VERSION 0.16.0105
+ VERSION 0.16.0105
  + Deutsche und Schweizer Steuersätze
 
 VERSION 0.16.0104
@@ -313,16 +352,16 @@ VERSION 0.16.0104
  * Tages und Monatsabschluss Formatiert
  + Stammdaten zu Einstellungs Dialog hinzugefügt
  + Fußtext auf Kassebon. Im Einstellungs Dialog editierbar
- * Kopftext unabhängig von Firmennamen änderbar
+ * Kopftext unabhängig von Firmennamen änderbar 
 
 VERSION 0.15.1231
- + BON-Druck - Zeilenumbruch für lange Artikel
+ + BON-Druck - Zeilenumbruch für lange Artikel 
 
 VERSION 0.15.1230-2
- + Diverse Buttons (Storno, Belegkopie drucken) aktiviert
+ + Diverse Buttons (Storno, Belegkopie drucken) aktiviert 
 
 VERSION 0.15.1230-1
- * fixes
+ * fixes 
 
 VERSION 0.15.1230
  * erste veröffentlichte Version

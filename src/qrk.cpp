@@ -96,6 +96,7 @@ QRK::QRK(bool servermode)
     statusBar()->addPermanentWidget(m_progressBar,0);
     statusBar()->addPermanentWidget(m_dateLcd,0);
 
+    m_checkDateTime = QDateTime::currentDateTime();
     m_timer = new QTimer (this);
     connect (m_timer, SIGNAL(timeout()), SLOT(timerDone()));
 
@@ -189,9 +190,39 @@ void QRK::timerDone()
 {
     QDateTime t = QDateTime::currentDateTime();
     m_dateLcd->display (t.toString("dd-MM-yyyy  hh:mm:ss"));
+    if (m_checkDateTime.secsTo(t) < 0)
+        DateTimeCheck();
+
+    m_checkDateTime = t;
 }
 
 //--------------------------------------------------------------------------------
+
+void QRK::DateTimeCheck()
+{
+    // DateTime check
+    if (Database::getLastJournalEntryDate().secsTo(QDateTime::currentDateTime()) < 0) {
+        QMessageBox messageBox(QMessageBox::Critical,
+                               QObject::tr("Eventueller Datum/Uhrzeit Fehler"),
+                               QObject::tr("ACHTUNG! Die Uhrzeit des Computers ist eventuell falsch.\n\nLetzter Datenbankeintrag: %1\nDatum/Uhrzeit: %2").arg(Database::getLastJournalEntryDate().toString()).arg(QDateTime::currentDateTime().toString()),
+                               QMessageBox::Yes | QMessageBox::No,
+                               0);
+        messageBox.setButtonText(QMessageBox::Yes, QObject::tr("QRK beenden?"));
+        messageBox.setButtonText(QMessageBox::No, QObject::tr("Weiter machen"));
+
+        if (messageBox.exec() == QMessageBox::Yes )
+        {
+            QrkSettings settings;
+            settings.removeSettings("QRK_RUNNING", false);
+            if ( !isFullScreen() ) {
+                settings.save2Settings("mainWindowGeometry", saveGeometry(), false);
+                settings.save2Settings("mainWindowState", saveState(), false);
+            }
+            PluginManager::instance()->uninitialize();
+            QApplication::exit();
+        }
+    }
+}
 
 void QRK::setStatusBarProgressBar(int value, bool add)
 {
